@@ -90,9 +90,7 @@ Format the response as a markdown document with clear sections and headers.`;
 
     // Return the study guide as a JSON response with status 200 (OK)
     return NextResponse.json({ studyGuide }, { status: 200 });
-  } catch (error) {
-    // Log any errors and return a 500 (Internal Server Error) response
-    console.error('Error generating study guide:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to generate study guide' },
       { status: 500 }

@@ -94,8 +94,7 @@ export default function StudyGuideGenerator() {
       const studyGuideData = await studyGuideResponse.json();
       setStudyGuide(studyGuideData.studyGuide);
       setActiveTab('result');
-    } catch (error) {
-      console.error('Error:', error);
+    } catch {
       toast.error('Failed to generate study guide', {
         description: 'Please try again later',
       });

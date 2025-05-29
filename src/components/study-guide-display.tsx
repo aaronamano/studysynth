@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -62,15 +62,6 @@ const parseQAPairs = (content: string) => {
 export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGenerating }: StudyGuideDisplayProps) {
   // State to track which tab/view is active
   const [activeView, setActiveView] = useState("full")
-
-  // Add console logging to debug the content
-  useEffect(() => {
-    if (practiceMaterials) {
-      console.log('Practice Materials:', practiceMaterials);
-      console.log('Practice Problems:', extractSection(practiceMaterials, 'Practice Problems'));
-      console.log('Mock Exam:', extractSection(practiceMaterials, 'Mock Exam'));
-    }
-  }, [practiceMaterials]);
 
   // Copies the study guide text to the clipboard and shows a toast notification
   const handleCopy = () => {

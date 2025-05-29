@@ -79,8 +79,7 @@ Student Profile:
     }
 
     return NextResponse.json({ practiceMaterials }, { status: 200 });
-  } catch (error) {
-    console.error('Error generating practice materials:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to generate practice materials' },
       { status: 500 }
