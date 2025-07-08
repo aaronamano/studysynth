@@ -114,9 +114,9 @@ export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGen
         <CardContent className="flex flex-col items-center justify-center p-10">
           <BookOpen className="h-10 w-10 text-purple-500" />
           <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Fill out the form and click "Create Study Guide" to generate your personalized study materials
-          </p>
+            <p className="text-sm text-muted-foreground mt-2">
+            Fill out the form and click &quot;Create Study Guide&quot; to generate your personalized study materials
+            </p>
         </CardContent>
       </Card>
     )
