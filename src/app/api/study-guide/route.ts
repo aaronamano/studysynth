@@ -64,7 +64,7 @@ Format the response as a markdown document with clear sections and headers.`;
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "sonar-deep-research",
+        model: "sonar-pro",
         messages: [
           {
             role: "system",
