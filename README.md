@@ -8,6 +8,6 @@ make sure to `git clone <URL>` this repository first then follow the steps below
 
 ## Backend setup
 1. `cd backend` and create a virtual environment by running `python3 -m venv venv`
-2. run `source .venv/bin/activate` then run `pip3 install -r requirements.txt`
+2. run `source .venv/bin/activate` then run `pip install -r requirements.txt`
 3. run `uvicorn main:app --reload`
 4. to leave environment type `deactivate`
