@@ -9,5 +9,7 @@ make sure to `git clone <URL>` this repository first then follow the steps below
 ## Backend setup
 1. `cd backend` and create a virtual environment by running `python3 -m venv venv`
 2. run `source .venv/bin/activate` then run `pip install -r requirements.txt`
-3. run `uvicorn main:app --reload`
-4. to leave environment type `deactivate`
+3. run `fastapi dev main.py`
+4. go to `http://127.0.0.1:8000/docs` to test the routes
+5. press CTRL + C to quit
+6. to leave environment type `deactivate`
