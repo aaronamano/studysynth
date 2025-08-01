@@ -1,3 +1,5 @@
+// this component is used to select media preferences for study materials
+
 "use client"
 
 import { Checkbox } from "@/components/ui/checkbox"

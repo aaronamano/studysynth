@@ -1,3 +1,5 @@
+// this component is used to display the generated study guide
+
 "use client"
 
 import { useState } from "react"

@@ -1,3 +1,5 @@
+// this component is used to input multiple strengths/weaknesses on certain topics
+
 "use client"
 
 import type React from "react"
