@@ -1,3 +1,5 @@
+// this component adjusts the study plan based on user preferred intensity and learning style
+
 "use client"
 
 import { Label } from "@/components/ui/label"

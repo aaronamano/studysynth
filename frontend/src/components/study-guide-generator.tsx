@@ -1,4 +1,6 @@
-"use client" // Enables React Server Components to use client-side features
+// this component is used to handle study guide generation
+
+"use client"
 
 import { Textarea } from "@/components/ui/textarea"
 import { useState } from "react"
@@ -7,13 +9,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, BookOpen, FileText } from "lucide-react"
+import { Loader2, BookOpen, FileText, WalletCards, Brain } from "lucide-react"
 import MediaPreferences from "./media-preferences"
 import StudyPlanAdjuster from "./study-plan-adjuster"
 import PracticeOptions from "./practice-options"
 import StudyGuideDisplay from "./study-guide-display"
 import TopicInput from "./topic-input" // Input for strengths/weaknesses
-import TopicTextarea from "./topic-textarea" // Input for topics/concepts
+import TopicTextarea from "./topic-pdf-import" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
 
 export default function StudyGuideGenerator() {
@@ -108,7 +110,7 @@ export default function StudyGuideGenerator() {
     <div className="grid grid-cols-1 gap-6">
       {/* Tab navigation for input/result */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-purple-100">
+        <TabsList className="grid w-full grid-cols-4 bg-purple-100">
           {/* Input tab */}
           <TabsTrigger value="input" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <FileText className="mr-2 h-4 w-4" />
@@ -118,6 +120,16 @@ export default function StudyGuideGenerator() {
           <TabsTrigger value="result" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <BookOpen className="mr-2 h-4 w-4" />
             Study Guide
+          </TabsTrigger>
+          {/* Flashcard tab */}
+          <TabsTrigger value="flashcard" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <WalletCards className="mr-2 h-4 w-4" />
+            Flashcard Lab
+          </TabsTrigger>
+          {/* Practice problems tab */}
+          <TabsTrigger value="practice" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <Brain className="mr-2 h-4 w-4" />
+            Practice Problems
           </TabsTrigger>
         </TabsList>
 
@@ -242,6 +254,30 @@ export default function StudyGuideGenerator() {
             practiceMaterials={practiceMaterials}
             isGenerating={isGenerating} 
           />
+        </TabsContent>
+
+        <TabsContent value="flashcard" className="mt-6">
+          {/* Placeholder for Flashcard Lab content */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center text-gray-500">
+                <p className="text-lg">Flashcard Lab is under construction!</p>
+                <p className="mt-2">Stay tuned for updates.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="practice" className="mt-6">
+          {/* Placeholder for Practice Problems content */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center text-gray-500">
+                <p className="text-lg">Practice Problems section is coming soon!</p>
+                <p className="mt-2">Check back later for more features.</p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

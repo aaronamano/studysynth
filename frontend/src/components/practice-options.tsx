@@ -1,3 +1,5 @@
+// this component is used to handle practice options like practice problems, mock exams, etc.
+
 "use client"
 
 import { Checkbox } from "@/components/ui/checkbox"
