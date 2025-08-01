@@ -6,6 +6,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FileQuestion, FileCheck } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
+import { useState } from "react"
+import TopicPdfImport from "./topic-pdf-import"
+import TopicInput from "./topic-input" // Input for strengths/weaknesses
 
 interface PracticeOptionsProps {
   includePracticeProblems: boolean;
@@ -28,8 +34,62 @@ export default function PracticeOptions({
   onDifficultyChange,
   onQuantityChange,
 }: PracticeOptionsProps) {
+  const [pdfFile, setPdfFile] = useState<File | null>(null) // PDF file input
+  const [constraints, setConstraints] = useState("") // Constraints input
+  const [strengths, setStrengths] = useState([""]) // List of strengths
+  const [weaknesses, setWeaknesses] = useState([""]) // List of weaknesses
+
   return (
     <div className="space-y-4">
+      {/* pdf input */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
+        <TopicPdfImport value={pdfFile} onChange={setPdfFile} />
+      </div>
+
+      <Separator />
+
+      {/* Constraints input */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4 text-purple-700">Constraints & Requirements</h2>
+        <Label htmlFor="constraints">Study Constraints</Label>
+        <Textarea
+          id="constraints"
+          placeholder="Enter any constraints (e.g., time available, exam date, specific format requirements)"
+          className="mt-2"
+          value={constraints}
+          onChange={(e) => setConstraints(e.target.value)}
+        />
+      </div>
+
+      <Separator />
+
+      {/* Strengths and weaknesses input */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4 text-purple-700">Strengths & Weaknesses</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <TopicInput
+              items={strengths}
+              setItems={setStrengths}
+              placeholder="Enter a strength"
+              label="Strengths"
+            />
+          </div>
+          <div>
+            <TopicInput
+              items={weaknesses}
+              setItems={setWeaknesses}
+              placeholder="Enter a weakness"
+              label="Weaknesses"
+            />
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      <h2 className="text-xl font-semibold mb-4 text-purple-700">Practice Materials</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex items-start space-x-3 space-y-0">
           <Checkbox
@@ -93,6 +153,13 @@ export default function PracticeOptions({
           className="w-full border border-purple-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
       </div>
+      {/* Generate button */}
+      <Button
+        className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+        size="lg"
+      >
+        Generate Practice Materials
+      </Button>
     </div>
   )
 }

@@ -15,12 +15,10 @@ import StudyPlanAdjuster from "./study-plan-adjuster"
 import StudyGuideDisplay from "./study-guide-display"
 import PracticeOptionsDisplay from "./practice-options-display" // Import practice problems display
 import TopicInput from "./topic-input" // Input for strengths/weaknesses
-import TopicTextarea from "./topic-pdf-import" // Input for topics/concepts
+import TopicPdfImport from "./topic-pdf-import" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
 
 export default function StudyGuideGenerator() {
-  // Add new state variable for practice materials
-  const [practiceMaterials, setPracticeMaterials] = useState<string | null>(null);
 
   // Add new state variables
   const [intensity, setIntensity] = useState("balanced")
@@ -29,7 +27,7 @@ export default function StudyGuideGenerator() {
   // State variables for form fields and UI state
   const [isGenerating, setIsGenerating] = useState(false) // Loading state
   const [studyGuide, setStudyGuide] = useState<string | null>(null) // Generated guide
-  const [topics, setTopics] = useState("") // Topics input
+  const [pdfFile, setPdfFile] = useState<File | null>(null) // PDF file input
   const [constraints, setConstraints] = useState("") // Constraints input
   const [strengths, setStrengths] = useState([""]) // List of strengths
   const [weaknesses, setWeaknesses] = useState([""]) // List of weaknesses
@@ -39,6 +37,8 @@ export default function StudyGuideGenerator() {
   const handleGenerateStudyGuide = async () => {
     setIsGenerating(true);
 
+    // api route to generate study guide
+
     try {
 
       // Get the study guide
@@ -46,7 +46,7 @@ export default function StudyGuideGenerator() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          topics,
+          pdfFile,
           constraints,
           strengths: strengths.filter(s => s.trim()),
           weaknesses: weaknesses.filter(w => w.trim()),
@@ -110,10 +110,10 @@ export default function StudyGuideGenerator() {
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-6">
-                {/* Topics input */}
+                {/* pdf input */}
                 <div>
                   <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
-                  <TopicTextarea value={topics} onChange={setTopics} />
+                  <TopicPdfImport value={pdfFile} onChange={setPdfFile} />
                 </div>
 
                 <Separator />
@@ -184,7 +184,7 @@ export default function StudyGuideGenerator() {
                   onClick={handleGenerateStudyGuide}
                   className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
                   size="lg"
-                  disabled={isGenerating || !topics.trim()}
+                  disabled={isGenerating}
                 >
                   {isGenerating ? (
                     <>
@@ -204,7 +204,6 @@ export default function StudyGuideGenerator() {
         <TabsContent value="result" className="mt-6">
           <StudyGuideDisplay 
             studyGuide={studyGuide} 
-            practiceMaterials={practiceMaterials}
             isGenerating={isGenerating} 
           />
         </TabsContent>
@@ -225,10 +224,6 @@ export default function StudyGuideGenerator() {
           {/* Placeholder for Practice Problems content */}
           <Card>
             <CardContent className="p-6">
-              <div className="text-center text-gray-500">
-                <p className="text-lg">Practice Problems section is coming soon!</p>
-                <p className="mt-2">Check back later for more features.</p>
-              </div>
               <PracticeOptionsDisplay />
             </CardContent>
           </Card>

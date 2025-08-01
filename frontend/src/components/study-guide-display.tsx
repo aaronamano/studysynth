@@ -12,55 +12,11 @@ import { toast } from "sonner"
 // Props interface for the StudyGuideDisplay component
 interface StudyGuideDisplayProps {
   studyGuide: string | null
-  practiceMaterials: string | null
   isGenerating: boolean
 }
 
-// Update the extractSection helper function to be more robust
-const extractSection = (content: string | null, sectionName: string) => {
-  if (!content) return '';
-  
-  // First try to find content between section headers
-  const sections = content.split(/# /m);
-  const sectionContent = sections.find(s => s.startsWith(sectionName));
-  
-  if (sectionContent) {
-    // Remove the section name and trim
-    return sectionContent.replace(sectionName, '').trim();
-  }
-
-  // If no sections found, try to extract Q&A pairs directly
-  const lines = content.split('\n');
-  const relevantLines = lines.filter(line => {
-    const trimmedLine = line.trim();
-    return trimmedLine.startsWith('Q') || trimmedLine.startsWith('A');
-  });
-
-  return relevantLines.join('\n');
-};
-
-const parseQAPairs = (content: string) => {
-  if (!content) return [];
-  
-  const lines = content.split('\n');
-  return lines.reduce((acc: { question: string; answer: string }[], line, index, array) => {
-    const trimmedLine = line.trim();
-    if (trimmedLine.startsWith('Q')) {
-      const questionNum = trimmedLine.match(/Q(\d+)/)?.[1];
-      const answer = array.find(l => l.trim().startsWith(`A${questionNum}`));
-      if (answer) {
-        acc.push({
-          question: trimmedLine,
-          answer: answer.trim()
-        });
-      }
-    }
-    return acc;
-  }, []);
-};
-
 // Main component for displaying the study guide
-export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGenerating }: StudyGuideDisplayProps) {
+export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGuideDisplayProps) {
   // State to track which tab/view is active
   const [activeView, setActiveView] = useState("full")
 

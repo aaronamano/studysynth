@@ -1,6 +1,6 @@
 "use client"
 
-import PracticeOptions from "./practice-options"
+import PracticeOptions from "./practice-options-generator"
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ListChecks, PenTool } from "lucide-react"
@@ -20,7 +20,6 @@ export default function PracticeProblemsDisplay() {
         <>
             {/* Practice materials options */}
             <div>
-                <h2 className="text-xl font-semibold mb-4 text-purple-700">Practice Materials</h2>
                 <PracticeOptions
                     includePracticeProblems={practiceOptions.includePracticeProblems}
                     includeMockExams={practiceOptions.includeMockExams}

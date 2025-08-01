@@ -7,11 +7,11 @@ import { Info } from "lucide-react"
 import { useRef } from "react"
 
 interface TopicTextareaProps {
-  value: string
-  onChange: (value: string) => void
+  value: File | null
+  onChange: (value: File | null) => void
 }
 
-export default function TopicTextarea({ value, onChange }: TopicTextareaProps) {
+export default function TopicPdfImport({ value, onChange }: TopicTextareaProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -41,7 +41,7 @@ export default function TopicTextarea({ value, onChange }: TopicTextareaProps) {
 
       {value && (
         <div className="mt-2 p-2 border rounded bg-muted text-xs max-h-48 overflow-auto whitespace-pre-wrap">
-          {value}
+          {value.name}
         </div>
       )}
 
