@@ -1,5 +1,9 @@
 fastapi[standard]
 uvicorn
 httpx
-python-dotenv
+python-dotenv # obtain environment variables from .env file
 pydantic
+python-multipart  # for handling file uploads
+PyPDF2  # for PDF text extraction
+numpy
+sentence-transformers  # for sentence embeddings and similarity calculations
