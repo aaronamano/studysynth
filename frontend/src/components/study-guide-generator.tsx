@@ -12,8 +12,8 @@ import { Separator } from "@/components/ui/separator"
 import { Loader2, BookOpen, FileText, WalletCards, Brain } from "lucide-react"
 import MediaPreferences from "./media-preferences"
 import StudyPlanAdjuster from "./study-plan-adjuster"
-import PracticeOptions from "./practice-options"
 import StudyGuideDisplay from "./study-guide-display"
+import PracticeOptionsDisplay from "./practice-options-display" // Import practice problems display
 import TopicInput from "./topic-input" // Input for strengths/weaknesses
 import TopicTextarea from "./topic-pdf-import" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
@@ -25,14 +25,6 @@ export default function StudyGuideGenerator() {
   // Add new state variables
   const [intensity, setIntensity] = useState("balanced")
   const [learningStyle, setLearningStyle] = useState("visual")
-
-  // Add new state variables for practice options
-  const [practiceOptions, setPracticeOptions] = useState({
-    includePracticeProblems: true,
-    includeMockExams: false,
-    difficulty: "mixed",
-    quantity: 50,
-  });
 
   // State variables for form fields and UI state
   const [isGenerating, setIsGenerating] = useState(false) // Loading state
@@ -48,28 +40,8 @@ export default function StudyGuideGenerator() {
     setIsGenerating(true);
 
     try {
-      // First, get practice materials if needed
-      if (practiceOptions.includePracticeProblems || practiceOptions.includeMockExams) {
-        const practiceMaterialsResponse = await fetch('/api/practice-materials', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            topics,
-            strengths: strengths.filter(s => s.trim()),
-            weaknesses: weaknesses.filter(w => w.trim()),
-            practiceOptions
-          }),
-        });
 
-        if (!practiceMaterialsResponse.ok) {
-          throw new Error('Failed to generate practice materials');
-        }
-
-        const practiceMaterialsData = await practiceMaterialsResponse.json();
-        setPracticeMaterials(practiceMaterialsData.practiceMaterials);
-      }
-
-      // Then, get the study guide
+      // Get the study guide
       const studyGuideResponse = await fetch('/api/study-guide', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -207,25 +179,6 @@ export default function StudyGuideGenerator() {
 
                 <Separator />
 
-                {/* Practice materials options */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-purple-700">Practice Materials</h2>
-                  <PracticeOptions
-                    includePracticeProblems={practiceOptions.includePracticeProblems}
-                    includeMockExams={practiceOptions.includeMockExams}
-                    difficulty={practiceOptions.difficulty}
-                    quantity={practiceOptions.quantity}
-                    onPracticeProblemsChange={(checked) => 
-                      setPracticeOptions(prev => ({ ...prev, includePracticeProblems: checked }))}
-                    onMockExamsChange={(checked) => 
-                      setPracticeOptions(prev => ({ ...prev, includeMockExams: checked }))}
-                    onDifficultyChange={(value) => 
-                      setPracticeOptions(prev => ({ ...prev, difficulty: value }))}
-                    onQuantityChange={(value) => 
-                      setPracticeOptions(prev => ({ ...prev, quantity: value }))}
-                  />
-                </div>
-
                 {/* Generate button */}
                 <Button
                   onClick={handleGenerateStudyGuide}
@@ -276,6 +229,7 @@ export default function StudyGuideGenerator() {
                 <p className="text-lg">Practice Problems section is coming soon!</p>
                 <p className="mt-2">Check back later for more features.</p>
               </div>
+              <PracticeOptionsDisplay />
             </CardContent>
           </Card>
         </TabsContent>

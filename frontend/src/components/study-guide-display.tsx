@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Download, Copy, BookOpen, FileText, ListChecks, PenTool } from "lucide-react"
-import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 
 // Props interface for the StudyGuideDisplay component
@@ -109,21 +108,6 @@ export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGen
     )
   }
 
-  // If there is no study guide yet, show an empty state card
-  if (!studyGuide) {
-    return (
-      <Card className="w-full">
-        <CardContent className="flex flex-col items-center justify-center p-10">
-          <BookOpen className="h-10 w-10 text-purple-500" />
-          <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
-            <p className="text-sm text-muted-foreground mt-2">
-            Fill out the form and click &quot;Create Study Guide&quot; to generate your personalized study materials
-            </p>
-        </CardContent>
-      </Card>
-    )
-  }
-
   // Function to process and render links in text (moved to top level for reuse)
   const renderTextWithLinks = (text: string) => {
     // Match markdown links [text](url)
@@ -198,7 +182,7 @@ export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGen
       {/* Tabs for switching between different study guide views */}
       <Tabs value={activeView} onValueChange={setActiveView}>
         <div className="flex justify-center">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-purple-100">
+          <TabsList className="grid grid-cols-2 w-full max-w-2xl bg-purple-100">
             <TabsTrigger value="full" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
               <BookOpen className="mr-2 h-4 w-4" />
               Full Guide
@@ -206,14 +190,6 @@ export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGen
             <TabsTrigger value="summary" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
               <FileText className="mr-2 h-4 w-4" />
               Summary
-            </TabsTrigger>
-            <TabsTrigger value="practice" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-              <ListChecks className="mr-2 h-4 w-4" />
-              Practice
-            </TabsTrigger>
-            <TabsTrigger value="exam" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-              <PenTool className="mr-2 h-4 w-4" />
-              Mock Exam
             </TabsTrigger>
           </TabsList>
         </div>
@@ -224,41 +200,52 @@ export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGen
             <CardContent className="p-6">
               <div className="prose max-w-none">
                 {/* Render each line of the study guide with basic markdown-like formatting */}
-                {studyGuide.split("\n").map((line, index) => {
-                  if (line.startsWith("# ")) {
-                    return (
-                      <h1 key={index} className="text-2xl font-bold mt-0 mb-4">
-                        {renderTextWithLinks(line.substring(2))}
-                      </h1>
-                    )
-                  } else if (line.startsWith("## ")) {
-                    return (
-                      <h2 key={index} className="text-xl font-semibold mt-6 mb-3">
-                        {renderTextWithLinks(line.substring(3))}
-                      </h2>
-                    )
-                  } else if (line.startsWith("- ")) {
-                    return (
-                      <li key={index} className="ml-6 mb-1">
-                        {renderTextWithLinks(line.substring(2))}
-                      </li>
-                    )
-                  } else if (line.trim() === "") {
-                    return <br key={index} />
-                  } else if (/^\d+\./.test(line)) {
-                    return (
-                      <div key={index} className="ml-6 mb-1">
-                        {renderTextWithLinks(line)}
-                      </div>
-                    )
-                  } else {
-                    return (
-                      <p key={index} className="mb-4">
-                        {renderTextWithLinks(line)}
+                {studyGuide
+                  ? studyGuide.split("\n").map((line, index) => {
+                    if (line.startsWith("# ")) {
+                      return (
+                        <h1 key={index} className="text-2xl font-bold mt-0 mb-4">
+                          {renderTextWithLinks(line.substring(2))}
+                        </h1>
+                      )
+                    } else if (line.startsWith("## ")) {
+                      return (
+                        <h2 key={index} className="text-xl font-semibold mt-6 mb-3">
+                          {renderTextWithLinks(line.substring(3))}
+                        </h2>
+                      )
+                    } else if (line.startsWith("- ")) {
+                      return (
+                        <li key={index} className="ml-6 mb-1">
+                          {renderTextWithLinks(line.substring(2))}
+                        </li>
+                      )
+                    } else if (line.trim() === "") {
+                      return <br key={index} />
+                    } else if (/^\d+\./.test(line)) {
+                      return (
+                        <div key={index} className="ml-6 mb-1">
+                          {renderTextWithLinks(line)}
+                        </div>
+                      )
+                    } else {
+                      return (
+                        <p key={index} className="mb-4">
+                          {renderTextWithLinks(line)}
+                        </p>
+                      )
+                    }
+                  })
+                  : (
+                    <div className="flex flex-col items-center justify-center p-10">
+                      <BookOpen className="h-10 w-10 text-purple-500" />
+                      <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Fill out the form and click &quot;Create Study Guide&quot; to generate your personalized study materials
                       </p>
-                    )
-                  }
-                })}
+                    </div>
+                  )
+                }
               </div>
             </CardContent>
           </Card>
@@ -272,7 +259,7 @@ export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGen
                 <h2 className="text-xl font-semibold mb-4">Study Guide Summary</h2>
                 <p>This personalized study guide covers the following topics:</p>
                 <ul className="my-4">
-                  {studyGuide.includes("Key Concepts") ? (
+                  {studyGuide && studyGuide.includes("Key Concepts") ? (
                     studyGuide
                       .split("Key Concepts")[1]
                       .split("\n")
@@ -281,7 +268,11 @@ export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGen
                         <li key={index}>{renderTextWithLinks(line.substring(2))}</li>
                       ))
                   ) : (
-                    <li>Various topics as specified in your input</li>
+                    <>
+                      <li>Topic 1 (placeholder)</li>
+                      <li>Topic 2 (placeholder)</li>
+                      <li>Topic 3 (placeholder)</li>
+                    </>
                   )}
                 </ul>
 
@@ -295,93 +286,6 @@ export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGen
           </Card>
         </TabsContent>
 
-        {/* Practice Problems content */}
-        <TabsContent value="practice">
-          <Card>
-            <CardContent className="p-6">
-              <div className="prose max-w-none">
-                <h2 className="text-xl font-semibold mb-4">Practice Problems</h2>
-                {practiceMaterials ? (
-                  <div className="space-y-6">
-                    {parseQAPairs(extractSection(practiceMaterials, 'Practice Problems')).map(({ question, answer }, index) => (
-                      <div key={index} className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
-                        <p className="font-medium mb-2">{renderTextWithLinks(question)}</p>
-                        <details className="mt-2">
-                          <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
-                            Show Solution
-                          </summary>
-                          <p className="mt-2 text-muted-foreground">
-                            {renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
-                          </p>
-                        </details>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No practice problems available.</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Mock Exam content */}
-        <TabsContent value="exam">
-          <Card>
-            <CardContent className="p-6">
-              <div className="prose max-w-none">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold">Mock Exam</h2>
-                  <div className="space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.print()}
-                      className="border-purple-200 hover:bg-purple-50 hover:text-purple-700"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Exam
-                    </Button>
-                  </div>
-                </div>
-                {practiceMaterials ? (
-                  <>
-                    <div className="mb-6">
-                      <p className="font-medium text-purple-700">Instructions:</p>
-                      <ul className="list-disc ml-6 text-sm text-muted-foreground">
-                        <li>Read each question carefully before answering</li>
-                        <li>Manage your time wisely</li>
-                        <li>Show your work where applicable</li>
-                      </ul>
-                    </div>
-                    <div className="space-y-6">
-                      {parseQAPairs(extractSection(practiceMaterials, 'Mock Exam')).map(({ question, answer }, index) => (
-                        <div key={index} className="mb-8 p-4 bg-purple-50 rounded-lg border border-purple-100">
-                          <p className="font-medium mb-4">{renderTextWithLinks(question)}</p>
-                          <Textarea
-                            placeholder="Enter your answer here..."
-                            className="mt-2"
-                            rows={4}
-                          />
-                          <details className="mt-4">
-                            <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
-                              Show Solution
-                            </summary>
-                            <p className="mt-2 p-3 bg-white rounded text-muted-foreground">
-                              {renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
-                            </p>
-                          </details>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-muted-foreground">No mock exam available.</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   )
