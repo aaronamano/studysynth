@@ -1,59 +1,37 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 import httpx
 import os
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from io import BytesIO
+import json
 
 load_dotenv()
 
 router = APIRouter()
 
-# Models for Study Guide Endpoint
-class MediaPreferences(BaseModel):
-    videos: bool
-    flashcards: bool
-    diagrams: bool
-    readings: bool
-    summaries: bool
-
-# Models for Study Plan Request
-class StudyPlan(BaseModel):
-    intensity: str
-    learningStyle: str
-
-# Models for Study Guide Request
-class StudyGuideRequest(BaseModel):
-    pdf_file: UploadFile = File(...)
-    constraints: str = ""
-    strengths: List[str] = []
-    weaknesses: List[str] = []
-    mediaPreferences: MediaPreferences = None
-    studyPlan: StudyPlan = None
-
-PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
-
 @router.post("/study-guide")
-async def create_study_guide(request: StudyGuideRequest):
-    pdf_file = request.pdf_file
-    constraints = request.constraints
-    strengths = request.strengths
-    weaknesses = request.weaknesses
-    mediaPreferences = request.mediaPreferences or MediaPreferences()
-    studyPlan = request.studyPlan or StudyPlan(intensity="medium", learningStyle="visual")
+async def create_study_guide(
+    pdf_file: UploadFile = File(...), 
+    constraints: str = "",
+    strengths: str = "",
+    weaknesses: str = "",
+    mediaPreferences: str = "",
+    intensity: str = "moderate",  # Default intensity
+    learningStyle: str = "visual"  # Default learning style
+):
     try:
-        # Extract text from PDF
+        # Extract text from PDF, limit to first 2 pages
         pdf_bytes = await pdf_file.read()
         reader = PdfReader(BytesIO(pdf_bytes))
         topics = ""
-        for page in reader.pages:
-            topics += page.extract_text() or ""
-
-        media_preferences = "\n".join(
-            [f"- {key.capitalize()}" for key, value in mediaPreferences.dict().items() if value]
-        )
+        for i, page in enumerate(reader.pages):
+            if i >= 2:
+                break
+            page_text = page.extract_text() or ""
+            topics += page_text
 
         prompt = f"""Generate a detailed study guide for the following topics:
 {topics}
@@ -62,13 +40,13 @@ Additional Context:
 {constraints}
 
 Parameters:
-- Strengths: {", ".join(strengths)}
-- Areas for improvement: {", ".join(weaknesses)}
-- Study Intensity: {studyPlan.intensity}
-- Learning Style: {studyPlan.learningStyle}
+- Strengths: {strengths}
+- Areas for improvement: {weaknesses}
+- Study Intensity: {intensity}
+- Learning Style: {learningStyle}
 
 Preferred Learning Materials:
-{media_preferences}
+{mediaPreferences}
 
 Requirements for resources:
 - Include relevant hyperlinks using markdown format [text](url)
@@ -79,11 +57,11 @@ Requirements for resources:
 
 Format the response as a markdown document with clear sections and headers."""
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 'https://api.perplexity.ai/chat/completions',
                 headers={
-                    'Authorization': f'Bearer {PERPLEXITY_API_KEY}',
+                    'Authorization': f'Bearer {os.getenv("PERPLEXITY_API_KEY")}',
                     'Content-Type': 'application/json'
                 },
                 json={
@@ -105,6 +83,7 @@ Format the response as a markdown document with clear sections and headers."""
             raise HTTPException(status_code=response.status_code, detail="Perplexity API request failed")
 
         data = response.json()
+
         study_guide = data.get("choices", [{}])[0].get("message", {}).get("content")
 
         if not study_guide:
