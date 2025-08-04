@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import List
 import httpx
@@ -12,17 +12,33 @@ load_dotenv()
 
 router = APIRouter()
 
+# Models for media preferences
+class MediaPreferences(BaseModel):
+    videos: bool = False
+    flashcards: bool = False
+    diagrams: bool = False
+    readings: bool = False
+    summaries: bool = False
+
+# Models for study plan
+class StudyPlan(BaseModel):
+    intensity: str
+    learningStyle: str
+
 @router.post("/study-guide")
 async def create_study_guide(
     pdf_file: UploadFile = File(...), 
-    constraints: str = "",
-    strengths: str = "",
-    weaknesses: str = "",
-    mediaPreferences: str = "",
-    intensity: str = "moderate",  # Default intensity
-    learningStyle: str = "visual"  # Default learning style
+    constraints: str = Form(""),
+    strengths: List[str] = None,
+    weaknesses: List[str] = None,
+    mediaPreferences: str = Form(""),
+    studyPlan: str = Form("")
 ):
     try:
+        # Parse mediaPreferences and studyPlan from strings to models
+        media_preferences_obj = MediaPreferences.parse_raw(mediaPreferences) if mediaPreferences else MediaPreferences()
+        study_plan_obj = StudyPlan.parse_raw(studyPlan) if studyPlan else StudyPlan(intensity="balanced", learningStyle="visual")
+
         # Extract text from PDF, limit to first 2 pages
         pdf_bytes = await pdf_file.read()
         reader = PdfReader(BytesIO(pdf_bytes))
@@ -40,13 +56,13 @@ Additional Context:
 {constraints}
 
 Parameters:
-- Strengths: {strengths}
-- Areas for improvement: {weaknesses}
-- Study Intensity: {intensity}
-- Learning Style: {learningStyle}
+- Strengths: {', '.join(strengths) if strengths else 'None'}
+- Areas for improvement: {', '.join(weaknesses) if weaknesses else 'None'}
+- Study Intensity: {study_plan_obj.intensity}
+- Learning Style: {study_plan_obj.learningStyle}
 
 Preferred Learning Materials:
-{mediaPreferences}
+{json.dumps(media_preferences_obj.dict(), indent=2)}
 
 Requirements for resources:
 - Include relevant hyperlinks using markdown format [text](url)
