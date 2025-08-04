@@ -1,10 +1,20 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import FastAPI, APIRouter, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 from PyPDF2 import PdfReader
 from io import BytesIO
 import numpy as np
 from sentence_transformers import SentenceTransformer
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust as needed for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 router = APIRouter()
 
