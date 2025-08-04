@@ -1,9 +1,12 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import List
 import httpx
 import os
+import json
 from dotenv import load_dotenv
+from PyPDF2 import PdfReader
+from io import BytesIO
 
 load_dotenv()
 
@@ -11,48 +14,63 @@ router = APIRouter()
 
 # Models for Practice Options
 class PracticeOptions(BaseModel):
-    includePracticeProblems: bool
+    includePracticeProblems: bool = True
     includeMockExams: bool
-    difficulty: str
-    quantity: int
-
-# Models for Practice Materials Request
-class PracticeMaterialsRequest(BaseModel):
-    pdf_file: UploadFile = File(...)
-    strengths: List[str] = []
-    weaknesses: List[str] = []
-    practiceOptions: PracticeOptions
+    difficulty: str = "mixed"
+    quantity: int = 10
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 @router.post("/practice-materials")
-async def create_practice_materials(request: PracticeMaterialsRequest):
+async def create_practice_materials(
+    pdf_file: UploadFile = File(...),
+    constraints: str = Form(""),
+    strengths: List[str] = None,
+    weaknesses: List[str] = None,
+    practiceOptions: str = Form("")
+):
     try:
-        prompt = f"""Generate:
-{f'# Practice Problems' if request.practiceOptions.includePracticeProblems else ''}
-{f'Generate {request.practiceOptions.quantity} practice problems with the following requirements:' if request.practiceOptions.includePracticeProblems else ''}
-{f'- Format each problem starting with "Q1.", "Q2.", etc.' if request.practiceOptions.includePracticeProblems else ''}
-{f'- Format each answer starting with "A1.", "A2.", etc.' if request.practiceOptions.includePracticeProblems else ''}
-{f'- Difficulty level: {request.practiceOptions.difficulty}' if request.practiceProblems.includePracticeProblems else ''}
-{f'- Focus on weak areas: {", ".join(request.weaknesses)}' if request.practiceOptions.includePracticeProblems and request.weaknesses else ''}
+        # Parse practiceOptions string to PracticeOptions model
+        practice_options_obj = PracticeOptions.parse_raw(practiceOptions) if practiceOptions else PracticeOptions()
 
-{f'# Mock Exam' if request.practiceOptions.includeMockExams else ''}
-{f'Create a mock exam with the following requirements:' if request.practiceOptions.includeMockExams else ''}
-{f'- Format questions as "Q1.", "Q2.", etc.' if request.practiceOptions.includeMockExams else ''}
-{f'- Format answers as "A1.", "A2.", etc.' if request.practiceOptions.includeMockExams else ''}
-{f'- Difficulty level: {request.practiceOptions.difficulty}' if request.practiceOptions.includeMockExams else ''}
-{f'- Include a mix of question types' if request.practiceOptions.includeMockExams else ''}
-{f'- Ensure 60% of questions focus on: {", ".join(request.weaknesses)}' if request.practiceOptions.includeMockExams and request.weaknesses else ''}
+        # Extract text from PDF, limit to first 2 pages
+        pdf_bytes = await pdf_file.read()
+        reader = PdfReader(BytesIO(pdf_bytes))
+        topics = ""
+        for i, page in enumerate(reader.pages):
+            if i >= 2:
+                break
+            page_text = page.extract_text() or ""
+            topics += page_text
 
-Topics to cover:
-{request.topics}
+        # Build prompt string directly
+        prompt = "Generate:\n"
 
-Student Profile:
-- Strengths: {", ".join(request.strengths) if request.strengths else 'None'}
-- Areas needing improvement: {", ".join(request.weaknesses) if request.weaknesses else 'None'}
-"""
+        if practice_options_obj.includePracticeProblems:
+            prompt += "# Practice Problems\n"
+            prompt += f"Generate {practice_options_obj.quantity} practice problems with the following requirements:\n"
+            prompt += '- Format each problem starting with "Q1.", "Q2.", etc.\n'
+            prompt += '- Format each answer starting with "A1.", "A2.", etc.\n'
+            prompt += f'- Difficulty level: {practice_options_obj.difficulty}\n'
+            if weaknesses:
+                prompt += f'- Focus on weak areas: {", ".join(weaknesses)}\n'
 
-        async with httpx.AsyncClient() as client:
+        if practice_options_obj.includeMockExams:
+            prompt += "# Mock Exam\n"
+            prompt += "Create a mock exam with the following requirements:\n"
+            prompt += '- Format questions as "Q1.", "Q2.", etc.\n'
+            prompt += '- Format answers as "A1.", "A2.", etc.\n'
+            prompt += f'- Difficulty level: {practice_options_obj.difficulty}\n'
+            prompt += '- Include a mix of question types\n'
+            if weaknesses:
+                prompt += f'- Ensure 60% of questions focus on: {", ".join(weaknesses)}\n'
+
+        prompt += f"Topics to cover:\n{topics if topics else 'None'}\n"
+        prompt += "Student Profile:\n"
+        prompt += f"- Strengths: {', '.join(strengths) if strengths else 'None'}\n"
+        prompt += f"- Areas needing improvement: {', '.join(weaknesses) if weaknesses else 'None'}\n"
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 'https://api.openai.com/v1/chat/completions',
                 headers={
