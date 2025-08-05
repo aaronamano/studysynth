@@ -5,8 +5,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Download, Copy, BookOpen, FileText, ListChecks, PenTool } from "lucide-react"
+import { Loader2, Download, Copy, BookOpen } from "lucide-react"
 import { toast } from "sonner"
 
 // Props interface for the StudyGuideDisplay component
@@ -135,114 +134,59 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
         </div>
       </div>
 
-      {/* Tabs for switching between different study guide views */}
-      <Tabs value={activeView} onValueChange={setActiveView}>
-        <div className="flex justify-center">
-          <TabsList className="grid grid-cols-2 w-full max-w-2xl bg-purple-100">
-            <TabsTrigger value="full" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-              <BookOpen className="mr-2 h-4 w-4" />
-              Full Guide
-            </TabsTrigger>
-            <TabsTrigger value="summary" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-              <FileText className="mr-2 h-4 w-4" />
-              Summary
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        {/* Full Guide content */}
-        <TabsContent value="full">
-          <Card>
-            <CardContent className="p-6">
-              <div className="prose max-w-none">
-                {/* Render each line of the study guide with basic markdown-like formatting */}
-                {studyGuide
-                  ? studyGuide.split("\n").map((line, index) => {
-                    if (line.startsWith("# ")) {
-                      return (
-                        <h1 key={index} className="text-2xl font-bold mt-0 mb-4">
-                          {renderTextWithLinks(line.substring(2))}
-                        </h1>
-                      )
-                    } else if (line.startsWith("## ")) {
-                      return (
-                        <h2 key={index} className="text-xl font-semibold mt-6 mb-3">
-                          {renderTextWithLinks(line.substring(3))}
-                        </h2>
-                      )
-                    } else if (line.startsWith("- ")) {
-                      return (
-                        <li key={index} className="ml-6 mb-1">
-                          {renderTextWithLinks(line.substring(2))}
-                        </li>
-                      )
-                    } else if (line.trim() === "") {
-                      return <br key={index} />
-                    } else if (/^\d+\./.test(line)) {
-                      return (
-                        <div key={index} className="ml-6 mb-1">
-                          {renderTextWithLinks(line)}
-                        </div>
-                      )
-                    } else {
-                      return (
-                        <p key={index} className="mb-4">
-                          {renderTextWithLinks(line)}
-                        </p>
-                      )
-                    }
-                  })
-                  : (
-                    <div className="flex flex-col items-center justify-center p-10">
-                      <BookOpen className="h-10 w-10 text-purple-500" />
-                      <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Fill out the form and click &quot;Create Study Guide&quot; to generate your personalized study materials
-                      </p>
+      {/* Render study guide content directly */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="prose max-w-none">
+            {studyGuide
+              ? studyGuide.split("\n").map((line, index) => {
+                if (line.startsWith("# ")) {
+                  return (
+                    <h1 key={index} className="text-2xl font-bold mt-0 mb-4">
+                      {renderTextWithLinks(line.substring(2))}
+                    </h1>
+                  )
+                } else if (line.startsWith("## ")) {
+                  return (
+                    <h2 key={index} className="text-xl font-semibold mt-6 mb-3">
+                      {renderTextWithLinks(line.substring(3))}
+                    </h2>
+                  )
+                } else if (line.startsWith("- ")) {
+                  return (
+                    <li key={index} className="ml-6 mb-1">
+                      {renderTextWithLinks(line.substring(2))}
+                    </li>
+                  )
+                } else if (line.trim() === "") {
+                  return <br key={index} />
+                } else if (/^\d+\./.test(line)) {
+                  return (
+                    <div key={index} className="ml-6 mb-1">
+                      {renderTextWithLinks(line)}
                     </div>
                   )
+                } else {
+                  return (
+                    <p key={index} className="mb-4">
+                      {renderTextWithLinks(line)}
+                    </p>
+                  )
                 }
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Summary content */}
-        <TabsContent value="summary">
-          <Card>
-            <CardContent className="p-6">
-              <div className="prose max-w-none">
-                <h2 className="text-xl font-semibold mb-4">Study Guide Summary</h2>
-                <p>This personalized study guide covers the following topics:</p>
-                <ul className="my-4">
-                  {studyGuide && studyGuide.includes("Key Concepts") ? (
-                    studyGuide
-                      .split("Key Concepts")[1]
-                      .split("\n")
-                      .filter((line) => line.startsWith("- "))
-                      .map((line, index) => (
-                        <li key={index}>{renderTextWithLinks(line.substring(2))}</li>
-                      ))
-                  ) : (
-                    <>
-                      <li>Topic 1 (placeholder)</li>
-                      <li>Topic 2 (placeholder)</li>
-                      <li>Topic 3 (placeholder)</li>
-                    </>
-                  )}
-                </ul>
-
-                <p className="mb-4">
-                  {renderTextWithLinks(
-                    "The guide is structured to help you leverage your strengths while addressing areas that need improvement. It includes a customized study plan with resources tailored to your learning preferences."
-                  )}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-      </Tabs>
+              })
+              : (
+                <div className="flex flex-col items-center justify-center p-10">
+                  <BookOpen className="h-10 w-10 text-purple-500" />
+                  <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Fill out the form and click &quot;Create Study Guide&quot; to generate your personalized study materials
+                  </p>
+                </div>
+              )
+            }
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
