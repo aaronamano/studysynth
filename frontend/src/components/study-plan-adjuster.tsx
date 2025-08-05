@@ -7,23 +7,32 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface StudyPlanAdjusterProps {
-  intensity: string;
-  learningStyle: string;
-  onIntensityChange: (value: string) => void;
-  onLearningStyleChange: (value: string) => void;
+  studyPlan: {
+    intensity: string;
+    learningStyle: string;
+  };
+  setStudyPlan: (plan: { intensity: string; learningStyle: string }) => void;
 }
 
 export default function StudyPlanAdjuster({
-  intensity,
-  learningStyle,
-  onIntensityChange,
-  onLearningStyleChange
+  studyPlan,
+  setStudyPlan
 }: StudyPlanAdjusterProps) {
+  // Handler for intensity change
+  const handleIntensityChange = (value: string) => {
+    setStudyPlan({ ...studyPlan, intensity: value });
+  };
+
+  // Handler for learning style change
+  const handleLearningStyleChange = (value: string) => {
+    setStudyPlan({ ...studyPlan, learningStyle: value });
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <Label>Study Intensity</Label>
-        <RadioGroup value={intensity} onValueChange={onIntensityChange} className="flex space-x-2">
+        <RadioGroup value={studyPlan.intensity} onValueChange={handleIntensityChange} className="flex space-x-2">
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="light" id="light" className="border-purple-300 text-purple-600" />
             <Label htmlFor="light">Light</Label>
@@ -41,7 +50,7 @@ export default function StudyPlanAdjuster({
 
       <div className="space-y-2">
         <Label>Learning Style Priority</Label>
-        <Select value={learningStyle} onValueChange={onLearningStyleChange}>
+        <Select value={studyPlan.learningStyle} onValueChange={handleLearningStyleChange}>
           <SelectTrigger className="border-purple-200 focus:ring-purple-500">
             <SelectValue placeholder="Select learning style" />
           </SelectTrigger>

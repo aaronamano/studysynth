@@ -4,15 +4,27 @@
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Video, BookText, FileText, ImageIcon, ListChecks } from "lucide-react"
+import { Video, BookText, FileText, ImageIcon } from "lucide-react"
 
-export default function MediaPreferences() {
+interface MediaPreferencesProps {
+  preferences: {
+    videos: boolean;
+    diagrams: boolean;
+    readings: boolean;
+    summaries: boolean;
+  };
+  setPreferences: (prefs: MediaPreferencesProps["preferences"]) => void;
+}
+
+export default function MediaPreferences({ preferences, setPreferences }: MediaPreferencesProps) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex items-start space-x-3 space-y-0">
           <Checkbox
             id="videos"
+            checked={preferences.videos}
+            onCheckedChange={checked => setPreferences({ ...preferences, videos: !!checked })}
             className="border-purple-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
           />
           <div className="space-y-1 leading-none">
@@ -26,24 +38,10 @@ export default function MediaPreferences() {
 
         <div className="flex items-start space-x-3 space-y-0">
           <Checkbox
-            id="flashcards"
-            className="border-purple-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-            defaultChecked
-          />
-          <div className="space-y-1 leading-none">
-            <Label htmlFor="flashcards" className="flex items-center">
-              <ListChecks className="mr-2 h-4 w-4" />
-              Flashcards
-            </Label>
-            <p className="text-sm text-muted-foreground">Include flashcards for key concepts</p>
-          </div>
-        </div>
-
-        <div className="flex items-start space-x-3 space-y-0">
-          <Checkbox
             id="diagrams"
+            checked={preferences.diagrams}
+            onCheckedChange={checked => setPreferences({ ...preferences, diagrams: !!checked })}
             className="border-purple-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-            defaultChecked
           />
           <div className="space-y-1 leading-none">
             <Label htmlFor="diagrams" className="flex items-center">
@@ -57,6 +55,8 @@ export default function MediaPreferences() {
         <div className="flex items-start space-x-3 space-y-0">
           <Checkbox
             id="readings"
+            checked={preferences.readings}
+            onCheckedChange={checked => setPreferences({ ...preferences, readings: !!checked })}
             className="border-purple-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
           />
           <div className="space-y-1 leading-none">
@@ -71,8 +71,9 @@ export default function MediaPreferences() {
         <div className="flex items-start space-x-3 space-y-0">
           <Checkbox
             id="summaries"
+            checked={preferences.summaries}
+            onCheckedChange={checked => setPreferences({ ...preferences, summaries: !!checked })}
             className="border-purple-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-            defaultChecked
           />
           <div className="space-y-1 leading-none">
             <Label htmlFor="summaries" className="flex items-center">

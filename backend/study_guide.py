@@ -1,7 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
 import httpx
 import os
 from dotenv import load_dotenv
@@ -12,23 +10,15 @@ import json
 load_dotenv()
 
 app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Adjust as needed for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 router = APIRouter()
 
 # Models for media preferences
 class MediaPreferences(BaseModel):
-    videos: bool = False
-    flashcards: bool = False
-    diagrams: bool = False
-    readings: bool = False
-    summaries: bool = False
+    videos: bool
+    diagrams: bool
+    readings: bool
+    summaries: bool
 
 # Models for study plan
 class StudyPlan(BaseModel):
@@ -37,17 +27,18 @@ class StudyPlan(BaseModel):
 
 @router.post("/study-guide")
 async def create_study_guide(
-    pdf_file: UploadFile = File(...), 
-    constraints: str = Form(""),
-    strengths: List[str] = None,
-    weaknesses: List[str] = None,
-    mediaPreferences: str = Form(""),
-    studyPlan: str = Form("")
+    pdf_file: UploadFile = File(...), # this is passed as a pdf file
+    constraints: str = Form(""), # this is passed as a string
+    strengths: str = Form(""), # this is passed as a string but make sure it is inputted as an array
+    weaknesses: str = Form(""), # this is passed as a string but make sure it is inputted as an array
+    mediaPreferences: str = Form(""), # this is passed as a string but make sure it is inputted as object format
+    studyPlan: str = Form("") # this is passed as a string but make sure it is inputted as object format
 ):
     try:
+
         # Parse mediaPreferences and studyPlan from strings to models
         media_preferences_obj = MediaPreferences.parse_raw(mediaPreferences) if mediaPreferences else MediaPreferences()
-        study_plan_obj = StudyPlan.parse_raw(studyPlan) if studyPlan else StudyPlan(intensity="balanced", learningStyle="visual")
+        study_plan_obj = StudyPlan.parse_raw(studyPlan) if studyPlan else StudyPlan()
 
         # Extract text from PDF, limit to first 2 pages
         pdf_bytes = await pdf_file.read()
@@ -83,7 +74,7 @@ Requirements for resources:
 
 Format the response as a markdown document with clear sections and headers."""
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
                 'https://api.perplexity.ai/chat/completions',
                 headers={
@@ -114,7 +105,9 @@ Format the response as a markdown document with clear sections and headers."""
 
         if not study_guide:
             raise HTTPException(status_code=500, detail="No content received from Perplexity")
-
+        
         return {"studyGuide": study_guide}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate study guide: {e}")
+
+app.include_router(router)

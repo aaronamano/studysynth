@@ -15,7 +15,8 @@ export default function TopicPdfImport({ value, onChange }: TopicTextareaProps) 
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    // call backend API to extract text from PDF
+    const file = e.target.files?.[0] || null;
+    onChange(file);
   }
 
   return (

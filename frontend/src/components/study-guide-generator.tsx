@@ -19,11 +19,6 @@ import TopicPdfImport from "./topic-pdf-import" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
 
 export default function StudyGuideGenerator() {
-
-  // Add new state variables
-  const [intensity, setIntensity] = useState("balanced")
-  const [learningStyle, setLearningStyle] = useState("visual")
-
   // State variables for form fields and UI state
   const [isGenerating, setIsGenerating] = useState(false) // Loading state
   const [studyGuide, setStudyGuide] = useState<string | null>(null) // Generated guide
@@ -31,37 +26,47 @@ export default function StudyGuideGenerator() {
   const [constraints, setConstraints] = useState("") // Constraints input
   const [strengths, setStrengths] = useState([""]) // List of strengths
   const [weaknesses, setWeaknesses] = useState([""]) // List of weaknesses
+  const [studyPlan, setStudyPlan] = useState({
+    intensity: "balanced",
+    learningStyle: "visual",
+  }); // Study plan preferences
+  // Tabs state for input/result
   const [activeTab, setActiveTab] = useState("input") // Tabs: input/result
+  const [mediaPreferences, setMediaPreferences] = useState({
+    videos: true,
+    diagrams: false,
+    readings: true,
+    summaries: false,
+  });
 
   // Handles the "Create Study Guide" button click
   const handleGenerateStudyGuide = async () => {
     setIsGenerating(true);
 
-    // api route to generate study guide
-
     try {
+      // Prepare FormData for FastAPI endpoint
+      const formData = new FormData();
+      if (pdfFile) {
+        formData.append("pdf_file", pdfFile);
+      }
+      formData.append("constraints", constraints);
 
-      // Get the study guide
-      const studyGuideResponse = await fetch('/api/study-guide', {
+      // strengths and weaknesses as arrays (JSON string)
+      formData.append("strengths", JSON.stringify(strengths));
+      formData.append("weaknesses", JSON.stringify(weaknesses));
+
+      // Use lifted mediaPreferences state
+      formData.append("mediaPreferences", JSON.stringify(mediaPreferences));
+      formData.append("studyPlan", JSON.stringify(studyPlan));
+
+      // Correct: use formData for multipart/form-data
+      const studyGuideResponse = await fetch('http://127.0.0.1:8000/study-guide', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pdfFile,
-          constraints,
-          strengths: strengths.filter(s => s.trim()),
-          weaknesses: weaknesses.filter(w => w.trim()),
-          mediaPreferences: {
-            videos: (document.getElementById('videos') as HTMLInputElement | null)?.checked || false,
-            flashcards: (document.getElementById('flashcards') as HTMLInputElement | null)?.checked || false,
-            diagrams: (document.getElementById('diagrams') as HTMLInputElement | null)?.checked || false,
-            readings: (document.getElementById('readings') as HTMLInputElement | null)?.checked || false,
-            summaries: (document.getElementById('summaries') as HTMLInputElement | null)?.checked || false
-          },
-          studyPlan: { intensity, learningStyle }
-        }),
+        body: formData,
       });
 
       if (!studyGuideResponse.ok) {
+        const errorText = await studyGuideResponse.text();
         throw new Error('Failed to generate study guide');
       }
 
@@ -136,7 +141,10 @@ export default function StudyGuideGenerator() {
                 {/* Media preferences checkboxes */}
                 <div>
                   <h2 className="text-xl font-semibold mb-4 text-purple-700">Media Preferences</h2>
-                  <MediaPreferences />
+                  <MediaPreferences
+                    preferences={mediaPreferences}
+                    setPreferences={setMediaPreferences}
+                  />
                 </div>
 
                 <Separator />
@@ -170,10 +178,8 @@ export default function StudyGuideGenerator() {
                 <div>
                   <h2 className="text-xl font-semibold mb-4 text-purple-700">Study Plan Preferences</h2>
                   <StudyPlanAdjuster
-                    intensity={intensity}
-                    learningStyle={learningStyle}
-                    onIntensityChange={setIntensity}
-                    onLearningStyleChange={setLearningStyle}
+                    studyPlan={studyPlan}
+                    setStudyPlan={setStudyPlan}
                   />
                 </div>
 
@@ -184,7 +190,6 @@ export default function StudyGuideGenerator() {
                   onClick={handleGenerateStudyGuide}
                   className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
                   size="lg"
-                  disabled={isGenerating}
                 >
                   {isGenerating ? (
                     <>
@@ -202,10 +207,32 @@ export default function StudyGuideGenerator() {
 
         {/* Study guide result display */}
         <TabsContent value="result" className="mt-6">
-          <StudyGuideDisplay 
-            studyGuide={studyGuide} 
-            isGenerating={isGenerating} 
-          />
+          {isGenerating ? (
+            <Card className="w-full">
+              <CardContent className="flex flex-col items-center justify-center p-10">
+                <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
+                <p className="mt-4 text-lg font-medium text-purple-700">Generating your personalized study guide...</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  This may take a moment as we tailor the content to your preferences
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {studyGuide ? (
+                <StudyGuideDisplay 
+                  studyGuide={studyGuide} 
+                  isGenerating={false} 
+                />
+              ) : (
+                <Card className="w-full mt-4">
+                  <CardContent className="p-6 text-gray-500">
+                    No study guide generated yet. Fill out the form and click "Create Study Guide".
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="flashcard" className="mt-6">
