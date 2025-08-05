@@ -5,16 +5,16 @@ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ListChecks, PenTool } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
 
 export default function PracticeProblemsDisplay() {
     const [practiceOptions, setPracticeOptions] = useState({
         includePracticeProblems: true,
         includeMockExams: false,
         difficulty: "mixed",
-        quantity: 50,
+        quantity: 10,
     });
     const [activeTab, setActiveTab] = useState("practice")
+    const [generatedMaterials, setGeneratedMaterials] = useState<string | null>(null)
 
     return (
         <>
@@ -33,6 +33,7 @@ export default function PracticeProblemsDisplay() {
                         setPracticeOptions(prev => ({ ...prev, difficulty: value }))}
                     onQuantityChange={(value) =>
                         setPracticeOptions(prev => ({ ...prev, quantity: value }))}
+                    onGenerate={setGeneratedMaterials}
                 />
             </div>
 
@@ -55,21 +56,9 @@ export default function PracticeProblemsDisplay() {
                     <Card>
                         <CardContent className="p-6">
                             <h2 className="text-xl font-semibold mb-4">Practice Problems</h2>
-                            <div className="space-y-6">
-                                {[1, 2, 3].map((num) => (
-                                    <div key={num} className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
-                                        <p className="font-medium mb-2">Q{num}: Placeholder practice question {num}?</p>
-                                        <details className="mt-2">
-                                            <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
-                                                Show Solution
-                                            </summary>
-                                            <p className="mt-2 text-muted-foreground">
-                                                Placeholder answer for practice question {num}.
-                                            </p>
-                                        </details>
-                                    </div>
-                                ))}
-                            </div>
+                            {practiceOptions.includePracticeProblems && generatedMaterials ? (
+                                <pre className="whitespace-pre-wrap text-sm">{generatedMaterials}</pre>
+                            ) : null}
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -86,26 +75,9 @@ export default function PracticeProblemsDisplay() {
                                     <li>Show your work where applicable</li>
                                 </ul>
                             </div>
-                            <div className="space-y-6">
-                                {[1, 2, 3].map((num) => (
-                                    <div key={num} className="mb-8 p-4 bg-purple-50 rounded-lg border border-purple-100">
-                                        <p className="font-medium mb-4">Q{num}: Mock exam placeholder question {num}?</p>
-                                        <Textarea
-                                            placeholder="Enter your answer here..."
-                                            className="mt-2"
-                                            rows={4}
-                                        />
-                                        <details className="mt-4">
-                                            <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
-                                                Show Solution
-                                            </summary>
-                                            <p className="mt-2 p-3 bg-white rounded text-muted-foreground">
-                                                Placeholder solution for mock exam question {num}.
-                                            </p>
-                                        </details>
-                                    </div>
-                                ))}
-                            </div>
+                            {practiceOptions.includeMockExams && generatedMaterials ? (
+                                <pre className="whitespace-pre-wrap text-sm">{generatedMaterials}</pre>
+                            ) : null}
                         </CardContent>
                     </Card>
                 </TabsContent>

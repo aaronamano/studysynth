@@ -1,7 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
 import httpx
 import os
 from dotenv import load_dotenv
@@ -11,36 +9,40 @@ from io import BytesIO
 load_dotenv()
 
 app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Adjust as needed for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 router = APIRouter()
 
 # Models for Practice Options
 class PracticeOptions(BaseModel):
-    includePracticeProblems: bool = True
+    includePracticeProblems: bool
     includeMockExams: bool
-    difficulty: str = "mixed"
-    quantity: int = 10
+    difficulty: str
+    quantity: int
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 @router.post("/practice-materials")
 async def create_practice_materials(
-    pdf_file: UploadFile = File(...),
-    constraints: str = Form(""),
-    strengths: List[str] = None,
-    weaknesses: List[str] = None,
-    practiceOptions: str = Form("")
+    pdf_file: UploadFile = File(...), # this is passed as a pdf file
+    constraints: str = Form(""), # this is passed as a string
+    strengths: str = Form(""), # this is passed as a string but make sure it is inputted as an array
+    weaknesses: str = Form(""), # this is passed as a string but make sure it is inputted as an array
+    practiceOptions: str = Form("") # this is passed as a string but make sure it is inputted as object format
 ):
     try:
         # Parse practiceOptions string to PracticeOptions model
         practice_options_obj = PracticeOptions.parse_raw(practiceOptions) if practiceOptions else PracticeOptions()
+
+        # Parse strengths and weaknesses if they are JSON arrays
+        import json
+        try:
+            strengths_list = json.loads(strengths) if strengths else []
+        except Exception as e:
+            strengths_list = []
+        try:
+            weaknesses_list = json.loads(weaknesses) if weaknesses else []
+        except Exception as e:
+            weaknesses_list = []
 
         # Extract text from PDF, limit to first 2 pages
         pdf_bytes = await pdf_file.read()
@@ -55,31 +57,36 @@ async def create_practice_materials(
         # Build prompt string directly
         prompt = "Generate:\n"
 
-        if practice_options_obj.includePracticeProblems:
+        if practice_options_obj.includePracticeProblems == True:
             prompt += "# Practice Problems\n"
             prompt += f"Generate {practice_options_obj.quantity} practice problems with the following requirements:\n"
             prompt += '- Format each problem starting with "Q1.", "Q2.", etc.\n'
             prompt += '- Format each answer starting with "A1.", "A2.", etc.\n'
             prompt += f'- Difficulty level: {practice_options_obj.difficulty}\n'
-            if weaknesses:
-                prompt += f'- Focus on weak areas: {", ".join(weaknesses)}\n'
+            if weaknesses_list:
+                prompt += f'- Focus on weak areas: {", ".join(weaknesses_list)}\n'
+            if constraints:
+                prompt += f'- Additional constraints: {constraints}\n'
 
-        if practice_options_obj.includeMockExams:
+        if practice_options_obj.includeMockExams == True:
             prompt += "# Mock Exam\n"
             prompt += "Create a mock exam with the following requirements:\n"
             prompt += '- Format questions as "Q1.", "Q2.", etc.\n'
             prompt += '- Format answers as "A1.", "A2.", etc.\n'
             prompt += f'- Difficulty level: {practice_options_obj.difficulty}\n'
             prompt += '- Include a mix of question types\n'
-            if weaknesses:
-                prompt += f'- Ensure 60% of questions focus on: {", ".join(weaknesses)}\n'
+            if weaknesses_list:
+                prompt += f'- Ensure 60% of questions focus on: {", ".join(weaknesses_list)}\n'
+            if constraints:
+                prompt += f'- Additional constraints: {constraints}\n'
 
         prompt += f"Topics to cover:\n{topics if topics else 'None'}\n"
         prompt += "Student Profile:\n"
-        prompt += f"- Strengths: {', '.join(strengths) if strengths else 'None'}\n"
-        prompt += f"- Areas needing improvement: {', '.join(weaknesses) if weaknesses else 'None'}\n"
+        prompt += f"- Strengths: {', '.join(str(strength) for strength in strengths_list) if strengths_list else 'None'}\n"
+        prompt += f"- Areas needing improvement: {', '.join(str(weakness) for weakness in weaknesses_list) if weaknesses_list else 'None'}\n"
+        prompt += "At the end, provide an answer key for all questions generated above.\n"
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
                 'https://api.openai.com/v1/chat/completions',
                 headers={
@@ -113,3 +120,5 @@ async def create_practice_materials(
         return {"practiceMaterials": practice_materials}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate practice materials: {e}")
+
+app.include_router(router)

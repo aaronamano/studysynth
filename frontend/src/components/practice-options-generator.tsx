@@ -22,6 +22,7 @@ interface PracticeOptionsProps {
   onMockExamsChange: (checked: boolean) => void;
   onDifficultyChange: (value: string) => void;
   onQuantityChange: (value: number) => void;
+  onGenerate?: (materials: string) => void; // callback for generated materials
 }
 
 export default function PracticeOptions({
@@ -33,11 +34,43 @@ export default function PracticeOptions({
   onMockExamsChange,
   onDifficultyChange,
   onQuantityChange,
+  onGenerate,
 }: PracticeOptionsProps) {
   const [pdfFile, setPdfFile] = useState<File | null>(null) // PDF file input
   const [constraints, setConstraints] = useState("") // Constraints input
   const [strengths, setStrengths] = useState([""]) // List of strengths
   const [weaknesses, setWeaknesses] = useState([""]) // List of weaknesses
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleGenerate = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const formData = new FormData()
+      if (pdfFile) formData.append("pdf_file", pdfFile)
+      formData.append("constraints", constraints)
+      formData.append("strengths", JSON.stringify(strengths.filter(s => s)))
+      formData.append("weaknesses", JSON.stringify(weaknesses.filter(w => w)))
+      formData.append("practiceOptions", JSON.stringify({
+        includePracticeProblems,
+        includeMockExams,
+        difficulty,
+        quantity,
+      }))
+      const res = await fetch("http://127.0.0.1:8000/practice-materials", {
+        method: "POST",
+        body: formData,
+      })
+      if (!res.ok) throw new Error("Failed to generate practice materials")
+      const data = await res.json()
+      if (onGenerate) onGenerate(data.practiceMaterials)
+    } catch (e: any) {
+      setError(e.message || "Unknown error")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -157,9 +190,12 @@ export default function PracticeOptions({
       <Button
         className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
         size="lg"
+        onClick={handleGenerate}
+        disabled={loading}
       >
-        Generate Practice Materials
+        {loading ? "Generating..." : "Generate Practice Materials"}
       </Button>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
     </div>
   )
 }
