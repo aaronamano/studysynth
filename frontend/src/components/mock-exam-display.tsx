@@ -2,8 +2,6 @@
 
 import PracticeOptions from "./practice-problems-generator"
 import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ListChecks, PenTool } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 export default function PracticeProblemsDisplay() {

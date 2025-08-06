@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { useState } from "react"
-import TopicPdfImport from "./topic-pdf-import"
-import TopicInput from "./topic-input" // Input for strengths/weaknesses
+import TopicPdfImport from "./features/topic-pdf-import"
+import TopicInput from "./features/topic-input" // Input for strengths/weaknesses
 
 interface PracticeOptionsProps {
   difficulty: string;

@@ -10,13 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, BookOpen, FileText, WalletCards, ListChecks, PenTool } from "lucide-react"
-import MediaPreferences from "./media-preferences"
-import StudyPlanAdjuster from "./study-plan-adjuster"
+import MediaPreferences from "./features/media-preferences"
+import StudyPlanAdjuster from "./features/study-plan-adjuster"
 import StudyGuideDisplay from "./study-guide-display"
 import PracticeProblemsDisplay from "./practice-problems-display" // Import practice problems display
 import MockExamDisplay from "./mock-exam-display" // Import mock exam display
-import TopicInput from "./topic-input" // Input for strengths/weaknesses
-import TopicPdfImport from "./topic-pdf-import" // Input for topics/concepts
+import TopicInput from "./features/topic-input" // Input for strengths/weaknesses
+import TopicPdfImport from "./features/topic-pdf-import" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
 
 export default function StudyGuideGenerator() {
