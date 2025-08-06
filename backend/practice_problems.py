@@ -14,14 +14,12 @@ router = APIRouter()
 
 # Models for Practice Options
 class PracticeOptions(BaseModel):
-    includePracticeProblems: bool
-    includeMockExams: bool
     difficulty: str
     quantity: int
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-@router.post("/practice-materials")
+@router.post("/practice-problems")
 async def create_practice_materials(
     pdf_file: UploadFile = File(...), # this is passed as a pdf file
     constraints: str = Form(""), # this is passed as a string
@@ -30,6 +28,14 @@ async def create_practice_materials(
     practiceOptions: str = Form("") # this is passed as a string but make sure it is inputted as object format
 ):
     try:
+        # Debugging statement to see what parameters are inputted
+        print("DEBUG - Received parameters:")
+        print(f"pdf_file: {pdf_file.filename if pdf_file else None}")
+        print(f"constraints: {constraints}")
+        print(f"strengths: {strengths}")
+        print(f"weaknesses: {weaknesses}")
+        print(f"practiceOptions: {practiceOptions}")
+
         # Parse practiceOptions string to PracticeOptions model
         practice_options_obj = PracticeOptions.parse_raw(practiceOptions) if practiceOptions else PracticeOptions()
 
@@ -57,28 +63,15 @@ async def create_practice_materials(
         # Build prompt string directly
         prompt = "Generate:\n"
 
-        if practice_options_obj.includePracticeProblems == True:
-            prompt += "# Practice Problems\n"
-            prompt += f"Generate {practice_options_obj.quantity} practice problems with the following requirements:\n"
-            prompt += '- Format each problem starting with "Q1.", "Q2.", etc.\n'
-            prompt += '- Format each answer starting with "A1.", "A2.", etc.\n'
-            prompt += f'- Difficulty level: {practice_options_obj.difficulty}\n'
-            if weaknesses_list:
-                prompt += f'- Focus on weak areas: {", ".join(weaknesses_list)}\n'
-            if constraints:
-                prompt += f'- Additional constraints: {constraints}\n'
-
-        if practice_options_obj.includeMockExams == True:
-            prompt += "# Mock Exam\n"
-            prompt += "Create a mock exam with the following requirements:\n"
-            prompt += '- Format questions as "Q1.", "Q2.", etc.\n'
-            prompt += '- Format answers as "A1.", "A2.", etc.\n'
-            prompt += f'- Difficulty level: {practice_options_obj.difficulty}\n'
-            prompt += '- Include a mix of question types\n'
-            if weaknesses_list:
-                prompt += f'- Ensure 60% of questions focus on: {", ".join(weaknesses_list)}\n'
-            if constraints:
-                prompt += f'- Additional constraints: {constraints}\n'
+        prompt += "# Practice Problems\n"
+        prompt += f"Generate {practice_options_obj.quantity} practice problems with the following requirements:\n"
+        prompt += '- Format each problem starting with "Q1.", "Q2.", etc.\n'
+        prompt += '- Format each answer starting with "A1.", "A2.", etc.\n'
+        prompt += f'- Difficulty level: {practice_options_obj.difficulty}\n'
+        if weaknesses_list:
+            prompt += f'- Focus on weak areas: {", ".join(weaknesses_list)}\n'
+        if constraints:
+            prompt += f'- Additional constraints: {constraints}\n'
 
         prompt += f"Topics to cover:\n{topics if topics else 'None'}\n"
         prompt += "Student Profile:\n"

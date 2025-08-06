@@ -2,10 +2,8 @@
 
 "use client"
 
-import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FileQuestion, FileCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
@@ -14,24 +12,16 @@ import TopicPdfImport from "./topic-pdf-import"
 import TopicInput from "./topic-input" // Input for strengths/weaknesses
 
 interface PracticeOptionsProps {
-  includePracticeProblems: boolean;
-  includeMockExams: boolean;
   difficulty: string;
   quantity: number;
-  onPracticeProblemsChange: (checked: boolean) => void;
-  onMockExamsChange: (checked: boolean) => void;
   onDifficultyChange: (value: string) => void;
   onQuantityChange: (value: number) => void;
   onGenerate?: (materials: string) => void; // callback for generated materials
 }
 
 export default function PracticeOptions({
-  includePracticeProblems,
-  includeMockExams,
   difficulty,
   quantity,
-  onPracticeProblemsChange,
-  onMockExamsChange,
   onDifficultyChange,
   onQuantityChange,
   onGenerate,
@@ -53,12 +43,10 @@ export default function PracticeOptions({
       formData.append("strengths", JSON.stringify(strengths.filter(s => s)))
       formData.append("weaknesses", JSON.stringify(weaknesses.filter(w => w)))
       formData.append("practiceOptions", JSON.stringify({
-        includePracticeProblems,
-        includeMockExams,
         difficulty,
         quantity,
       }))
-      const res = await fetch("http://127.0.0.1:8000/practice-materials", {
+      const res = await fetch("http://127.0.0.1:8000/practice-problems", {
         method: "POST",
         body: formData,
       })
@@ -121,41 +109,6 @@ export default function PracticeOptions({
       </div>
 
       <Separator />
-
-      <h2 className="text-xl font-semibold mb-4 text-purple-700">Practice Materials</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="flex items-start space-x-3 space-y-0">
-          <Checkbox
-            id="practice-problems"
-            className="border-purple-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-            checked={includePracticeProblems}
-            onCheckedChange={onPracticeProblemsChange}
-          />
-          <div className="space-y-1 leading-none">
-            <Label htmlFor="practice-problems" className="flex items-center">
-              <FileQuestion className="mr-2 h-4 w-4" />
-              Practice Problems
-            </Label>
-            <p className="text-sm text-muted-foreground">Include practice problems with solutions</p>
-          </div>
-        </div>
-
-        <div className="flex items-start space-x-3 space-y-0">
-          <Checkbox
-            id="mock-exams"
-            className="border-purple-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-            checked={includeMockExams}
-            onCheckedChange={onMockExamsChange}
-          />
-          <div className="space-y-1 leading-none">
-            <Label htmlFor="mock-exams" className="flex items-center">
-              <FileCheck className="mr-2 h-4 w-4" />
-              Mock Exams
-            </Label>
-            <p className="text-sm text-muted-foreground">Include full-length practice exams</p>
-          </div>
-        </div>
-      </div>
 
       <div className="space-y-2">
         <Label>Problem Difficulty</Label>

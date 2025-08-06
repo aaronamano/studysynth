@@ -23,11 +23,10 @@ class StudyPlan(BaseModel):
     learningStyle: str
 
 class MediaPreferences(BaseModel):
-    videos: bool
-    flashcards: bool
-    diagrams: bool
-    readings: bool
-    summaries: bool
+    videos: bool = True
+    diagrams: bool = False
+    readings: bool = True
+    summaries: bool = False
 
 class StudyGuideRequest(BaseModel):
     pdf_file: UploadFile = File(...)
@@ -72,3 +71,5 @@ async def analyze_coverage(study_guide_request: StudyGuideRequest, study_guide_r
 
     except Exception as e:
         return {"error": str(e)}
+
+app.include_router(router)

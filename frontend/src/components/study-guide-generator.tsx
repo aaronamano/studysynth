@@ -9,11 +9,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, BookOpen, FileText, WalletCards, Brain } from "lucide-react"
+import { Loader2, BookOpen, FileText, WalletCards, ListChecks, PenTool } from "lucide-react"
 import MediaPreferences from "./media-preferences"
 import StudyPlanAdjuster from "./study-plan-adjuster"
 import StudyGuideDisplay from "./study-guide-display"
-import PracticeOptionsDisplay from "./practice-options-display" // Import practice problems display
+import PracticeProblemsDisplay from "./practice-problems-display" // Import practice problems display
+import MockExamDisplay from "./mock-exam-display" // Import mock exam display
 import TopicInput from "./topic-input" // Input for strengths/weaknesses
 import TopicPdfImport from "./topic-pdf-import" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
@@ -87,16 +88,16 @@ export default function StudyGuideGenerator() {
     <div className="grid grid-cols-1 gap-6">
       {/* Tab navigation for input/result */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-purple-100">
+        <TabsList className="grid w-full grid-cols-5 bg-purple-100">
           {/* Input tab */}
           <TabsTrigger value="input" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <FileText className="mr-2 h-4 w-4" />
-            Input Parameters
+            Create Study Guide
           </TabsTrigger>
           {/* Result tab */}
           <TabsTrigger value="result" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <BookOpen className="mr-2 h-4 w-4" />
-            Study Guide
+            View Study Guide
           </TabsTrigger>
           {/* Flashcard tab */}
           <TabsTrigger value="flashcard" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
@@ -105,8 +106,13 @@ export default function StudyGuideGenerator() {
           </TabsTrigger>
           {/* Practice problems tab */}
           <TabsTrigger value="practice" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-            <Brain className="mr-2 h-4 w-4" />
+            <ListChecks className="mr-2 h-4 w-4" />
             Practice Problems
+          </TabsTrigger>
+          {/* Mock exams tab */}
+          <TabsTrigger value="exam" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <PenTool className="mr-2 h-4 w-4" />
+            Mock Exams
           </TabsTrigger>
         </TabsList>
 
@@ -251,7 +257,16 @@ export default function StudyGuideGenerator() {
           {/* Placeholder for Practice Problems content */}
           <Card>
             <CardContent className="p-6">
-              <PracticeOptionsDisplay />
+              <PracticeProblemsDisplay />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="exam" className="mt-6">
+          {/* Placeholder for Mock Exams content */}
+          <Card>
+            <CardContent className="p-6">
+              <MockExamDisplay />
             </CardContent>
           </Card>
         </TabsContent>
