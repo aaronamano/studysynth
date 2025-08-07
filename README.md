@@ -13,3 +13,7 @@ make sure to `git clone <URL>` this repository first then follow the steps below
 4. go to `http://127.0.0.1:8000/docs` to test the routes
 5. press CTRL + C to quit
 6. to leave environment type `deactivate`
+
+## Docker
+1. run `docker build -t studysynth-backend .`
+2. run `docker run -p 8000:8000 --env-file .env studysynth-backend`
