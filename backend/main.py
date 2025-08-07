@@ -17,6 +17,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {"message": "Welcome to StudySynth API"}
+
 app.include_router(study_guide_router)
 app.include_router(practice_materials_router)
 app.include_router(analyze_coverage_router)
