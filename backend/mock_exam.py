@@ -14,8 +14,6 @@ router = APIRouter()
 
 # Models for Practice Options
 class PracticeOptions(BaseModel):
-    includePracticeProblems: bool
-    includeMockExams: bool
     difficulty: str
     quantity: int
 
@@ -108,13 +106,13 @@ async def create_practice_materials(
             raise HTTPException(status_code=response.status_code, detail="OpenAI API request failed")
 
         data = response.json()
-        practice_materials = data.get("choices", [{}])[0].get("message", {}).get("content")
+        mock_exam = data.get("choices", [{}])[0].get("message", {}).get("content")
 
-        if not practice_materials:
+        if not mock_exam:
             raise HTTPException(status_code=500, detail="No content received from OpenAI")
 
-        return {"practiceMaterials": practice_materials}
+        return {"mockExam": mock_exam}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate practice materials: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate mock exam: {e}")
 
 app.include_router(router)

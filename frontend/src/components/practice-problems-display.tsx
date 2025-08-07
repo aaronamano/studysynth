@@ -1,6 +1,6 @@
 "use client"
 
-import PracticeOptions from "./practice-problems-generator"
+import PracticeProblemsOptions from "./practice-problems-generator"
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -17,7 +17,7 @@ export default function PracticeProblemsDisplay() {
         <>
             {/* Practice materials options */}
             <div>
-                <PracticeOptions
+                <PracticeProblemsOptions
                     difficulty={practiceOptions.difficulty}
                     quantity={practiceOptions.quantity}
                     onDifficultyChange={(value) =>

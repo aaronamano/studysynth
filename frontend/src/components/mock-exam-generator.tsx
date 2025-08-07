@@ -2,10 +2,8 @@
 
 "use client"
 
-import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FileQuestion, FileCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
@@ -13,29 +11,21 @@ import { useState } from "react"
 import TopicPdfImport from "./features/topic-pdf-import"
 import TopicInput from "./features/topic-input" // Input for strengths/weaknesses
 
-interface PracticeOptionsProps {
-  includePracticeProblems: boolean;
-  includeMockExams: boolean;
+interface MockExamProps {
   difficulty: string;
   quantity: number;
-  onPracticeProblemsChange: (checked: boolean) => void;
-  onMockExamsChange: (checked: boolean) => void;
   onDifficultyChange: (value: string) => void;
   onQuantityChange: (value: number) => void;
   onGenerate?: (materials: string) => void; // callback for generated materials
 }
 
-export default function PracticeOptions({
-  includePracticeProblems,
-  includeMockExams,
+export default function MockExamOptions({
   difficulty,
   quantity,
-  onPracticeProblemsChange,
-  onMockExamsChange,
   onDifficultyChange,
   onQuantityChange,
   onGenerate,
-}: PracticeOptionsProps) {
+}: MockExamProps) {
   const [pdfFile, setPdfFile] = useState<File | null>(null) // PDF file input
   const [constraints, setConstraints] = useState("") // Constraints input
   const [strengths, setStrengths] = useState([""]) // List of strengths
@@ -53,8 +43,6 @@ export default function PracticeOptions({
       formData.append("strengths", JSON.stringify(strengths.filter(s => s)))
       formData.append("weaknesses", JSON.stringify(weaknesses.filter(w => w)))
       formData.append("practiceOptions", JSON.stringify({
-        includePracticeProblems,
-        includeMockExams,
         difficulty,
         quantity,
       }))
@@ -62,9 +50,9 @@ export default function PracticeOptions({
         method: "POST",
         body: formData,
       })
-      if (!res.ok) throw new Error("Failed to generate practice materials")
+      if (!res.ok) throw new Error("Failed to generate mock exam")
       const data = await res.json()
-      if (onGenerate) onGenerate(data.practiceMaterials)
+      if (onGenerate) onGenerate(data.mockExam)
     } catch (e: any) {
       setError(e.message || "Unknown error")
     } finally {
@@ -158,7 +146,7 @@ export default function PracticeOptions({
         onClick={handleGenerate}
         disabled={loading}
       >
-        {loading ? "Generating..." : "Generate Practice Materials"}
+        {loading ? "Generating..." : "Generate Mock Exam"}
       </Button>
       {error && <p className="text-red-500 mt-2">{error}</p>}
     </div>

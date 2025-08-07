@@ -105,13 +105,13 @@ async def create_practice_materials(
             raise HTTPException(status_code=response.status_code, detail="OpenAI API request failed")
 
         data = response.json()
-        practice_materials = data.get("choices", [{}])[0].get("message", {}).get("content")
+        practice_problems = data.get("choices", [{}])[0].get("message", {}).get("content")
 
-        if not practice_materials:
+        if not practice_problems:
             raise HTTPException(status_code=500, detail="No content received from OpenAI")
 
-        return {"practiceMaterials": practice_materials}
+        return {"practiceProblems": practice_problems}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate practice materials: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate practice problems: {e}")
 
 app.include_router(router)

@@ -11,7 +11,7 @@ import { useState } from "react"
 import TopicPdfImport from "./features/topic-pdf-import"
 import TopicInput from "./features/topic-input" // Input for strengths/weaknesses
 
-interface PracticeOptionsProps {
+interface PracticeProblemsProps {
   difficulty: string;
   quantity: number;
   onDifficultyChange: (value: string) => void;
@@ -19,13 +19,13 @@ interface PracticeOptionsProps {
   onGenerate?: (materials: string) => void; // callback for generated materials
 }
 
-export default function PracticeOptions({
+export default function PracticeProblemsOptions({
   difficulty,
   quantity,
   onDifficultyChange,
   onQuantityChange,
   onGenerate,
-}: PracticeOptionsProps) {
+}: PracticeProblemsProps) {
   const [pdfFile, setPdfFile] = useState<File | null>(null) // PDF file input
   const [constraints, setConstraints] = useState("") // Constraints input
   const [strengths, setStrengths] = useState([""]) // List of strengths
@@ -50,9 +50,9 @@ export default function PracticeOptions({
         method: "POST",
         body: formData,
       })
-      if (!res.ok) throw new Error("Failed to generate practice materials")
+      if (!res.ok) throw new Error("Failed to generate practice problems")
       const data = await res.json()
-      if (onGenerate) onGenerate(data.practiceMaterials)
+      if (onGenerate) onGenerate(data.practiceProblems)
     } catch (e: any) {
       setError(e.message || "Unknown error")
     } finally {
@@ -146,7 +146,7 @@ export default function PracticeOptions({
         onClick={handleGenerate}
         disabled={loading}
       >
-        {loading ? "Generating..." : "Generate Practice Materials"}
+        {loading ? "Generating..." : "Generate Practice Problems"}
       </Button>
       {error && <p className="text-red-500 mt-2">{error}</p>}
     </div>

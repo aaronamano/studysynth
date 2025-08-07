@@ -1,13 +1,11 @@
 "use client"
 
-import PracticeOptions from "./practice-problems-generator"
+import MockExamOptions from "./mock-exam-generator"
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 
-export default function PracticeProblemsDisplay() {
+export default function MockExamDisplay() {
     const [practiceOptions, setPracticeOptions] = useState({
-        includePracticeProblems: true,
-        includeMockExams: false,
         difficulty: "mixed",
         quantity: 10,
     });
@@ -17,7 +15,7 @@ export default function PracticeProblemsDisplay() {
         <>
             {/* Practice materials options */}
             <div>
-                <PracticeOptions
+                <MockExamOptions
                     difficulty={practiceOptions.difficulty}
                     quantity={practiceOptions.quantity}
                     onDifficultyChange={(value) =>
@@ -42,7 +40,7 @@ export default function PracticeProblemsDisplay() {
                             <li>Show your work where applicable</li>
                         </ul>
                     </div>
-                    {practiceOptions.includeMockExams && generatedMaterials ? (
+                    {generatedMaterials ? (
                         <pre className="whitespace-pre-wrap text-sm">{generatedMaterials}</pre>
                     ) : null}
                 </CardContent>
