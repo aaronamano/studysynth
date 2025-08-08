@@ -46,7 +46,7 @@ export default function MockExamOptions({
         difficulty,
         quantity,
       }))
-      const res = await fetch("http://127.0.0.1:8000/mock-exam", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/mock-exam`, {
         method: "POST",
         body: formData,
       })
