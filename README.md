@@ -15,5 +15,6 @@ make sure to `git clone <URL>` this repository first then follow the steps below
 6. to leave environment type `deactivate`
 
 ## Docker
+this is to deploy the backend
 1. run `docker build -t studysynth-backend .`
 2. run `docker run -p 8000:8000 --env-file .env studysynth-backend`
