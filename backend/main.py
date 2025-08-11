@@ -10,7 +10,8 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://studysynth.vercel.app/"  # Replace with your actual Vercel domain
+        "https://studysynth.vercel.app/",
+        "https://studysynth-aaronamanos-projects.vercel.app/"
     ],
     allow_credentials=True,
     allow_methods=["*"],
