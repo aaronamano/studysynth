@@ -10,17 +10,22 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://studysynth.vercel.app/",
-        "https://studysynth-aaronamanos-projects.vercel.app/"
+        "https://studysynth.vercel.app",
+        "https://studysynth-aaronamanos-projects.vercel.app",
+        "https://studysynth-git-main-aaronamanos-projects.vercel.app"
     ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to StudySynth API"}
+
+@app.get("/test-cors")
+async def test_cors():
+    return {"message": "CORS is working!", "status": "success"}
 
 app.include_router(study_guide_router)
 app.include_router(practice_materials_router)
