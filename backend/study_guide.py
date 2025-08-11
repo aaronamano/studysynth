@@ -44,9 +44,7 @@ async def create_study_guide(
         pdf_bytes = await pdf_file.read()
         reader = PdfReader(BytesIO(pdf_bytes))
         topics = ""
-        for i, page in enumerate(reader.pages):
-            if i >= 2:
-                break
+        for page in reader.pages:
             page_text = page.extract_text() or ""
             topics += page_text
 
