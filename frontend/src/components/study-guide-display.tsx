@@ -2,10 +2,9 @@
 
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Loader2, Download, Copy, BookOpen } from "lucide-react"
+import { Download, Copy, BookOpen, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 // Props interface for the StudyGuideDisplay component
@@ -16,8 +15,6 @@ interface StudyGuideDisplayProps {
 
 // Main component for displaying the study guide
 export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGuideDisplayProps) {
-  // State to track which tab/view is active
-  const [activeView, setActiveView] = useState("full")
 
   // Copies the study guide text to the clipboard and shows a toast notification
   const handleCopy = () => {
@@ -48,27 +45,12 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     }
   }
 
-  // If the study guide is being generated, show a loading card
-  if (isGenerating) {
-    return (
-      <Card className="w-full">
-        <CardContent className="flex flex-col items-center justify-center p-10">
-          <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
-          <p className="mt-4 text-lg font-medium text-purple-700">Generating your personalized study guide...</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            This may take a moment as we tailor the content to your preferences
-          </p>
-        </CardContent>
-      </Card>
-    )
-  }
-
   // Function to process and render links in text (moved to top level for reuse)
   const renderTextWithLinks = (text: string) => {
     // Match markdown links [text](url)
-    const parts = text.split(/(\[.*?\]\(.*?\))/g);
+    const parts = text.split(/(\s*\[.*?\]\(.*\)\s*)/g);
     return parts.map((part, i) => {
-      const linkMatch = part.match(/\[(.*?)\]\((.*?)\)/);
+      const linkMatch = part.match(/\s*\[(.*?)\]\((.*?)\)\s*/);
       if (linkMatch) {
         return (
           <a
@@ -135,11 +117,19 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
       </div>
 
       {/* Render study guide content directly */}
-      <Card>
+      <Card className="h-full">
         <CardContent className="p-6">
-          <div className="prose max-w-none">
-            {studyGuide
-              ? studyGuide.split("\n").map((line, index) => {
+          {isGenerating ? (
+            <div className="flex flex-col items-center justify-center p-10">
+              <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
+              <p className="mt-4 text-lg font-medium text-purple-700">Generating your personalized study guide...</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                This may take a moment as we tailor the content to your preferences
+              </p>
+            </div>
+          ) : studyGuide ? (
+            <div className="prose max-w-none">
+              {studyGuide.split("\n").map((line, index) => {
                 if (line.startsWith("# ")) {
                   return (
                     <h1 key={index} className="text-2xl font-bold mt-0 mb-4">
@@ -173,18 +163,17 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                     </p>
                   )
                 }
-              })
-              : (
-                <div className="flex flex-col items-center justify-center p-10">
-                  <BookOpen className="h-10 w-10 text-purple-500" />
-                  <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Fill out the form and click &quot;Create Study Guide&quot; to generate your personalized study materials
-                  </p>
-                </div>
-              )
-            }
-          </div>
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center p-10">
+              <BookOpen className="h-10 w-10 text-purple-500" />
+              <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Fill out the form and click &quot;Create Study Guide&quot; to generate your personalized study materials
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

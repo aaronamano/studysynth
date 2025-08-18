@@ -32,7 +32,7 @@ export default function StudyGuideGenerator() {
     learningStyle: "visual",
   }); // Study plan preferences
   // Tabs state for input/result
-  const [activeTab, setActiveTab] = useState("input") // Tabs: input/result
+  const [activeTab, setActiveTab] = useState("create-study-guide") // Tabs: input/result
   const [mediaPreferences, setMediaPreferences] = useState({
     videos: true,
     diagrams: false,
@@ -73,7 +73,6 @@ export default function StudyGuideGenerator() {
 
       const studyGuideData = await studyGuideResponse.json();
       setStudyGuide(studyGuideData.studyGuide);
-      setActiveTab('result');
     } catch {
       toast.error('Failed to generate study guide', {
         description: 'Please try again later',
@@ -86,18 +85,13 @@ export default function StudyGuideGenerator() {
   // Main UI rendering
   return (
     <div className="grid grid-cols-1 gap-6">
-      {/* Tab navigation for input/result */}
+      {/* Tab navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-purple-100">
-          {/* Input tab */}
-          <TabsTrigger value="input" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+        <TabsList className="grid w-full grid-cols-4 bg-purple-100">
+          {/* Create Study Guide tab */}
+          <TabsTrigger value="create-study-guide" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <FileText className="mr-2 h-4 w-4" />
             Create Study Guide
-          </TabsTrigger>
-          {/* Result tab */}
-          <TabsTrigger value="result" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-            <BookOpen className="mr-2 h-4 w-4" />
-            View Study Guide
           </TabsTrigger>
           {/* Flashcard tab */}
           <TabsTrigger value="flashcard" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
@@ -116,133 +110,113 @@ export default function StudyGuideGenerator() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Input form content */}
-        <TabsContent value="input" className="space-y-6 mt-6">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-6">
-                {/* pdf input */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
-                  <TopicPdfImport value={pdfFile} onChange={setPdfFile} />
-                </div>
-
-                <Separator />
-
-                {/* Constraints input */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-purple-700">Constraints & Requirements</h2>
-                  <Label htmlFor="constraints">Study Constraints</Label>
-                  <Textarea
-                    id="constraints"
-                    placeholder="Enter any constraints (e.g., time available, exam date, specific format requirements)"
-                    className="mt-2"
-                    value={constraints}
-                    onChange={(e) => setConstraints(e.target.value)}
-                  />
-                </div>
-
-                <Separator />
-
-                {/* Media preferences checkboxes */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-purple-700">Media Preferences</h2>
-                  <MediaPreferences
-                    preferences={mediaPreferences}
-                    setPreferences={setMediaPreferences}
-                  />
-                </div>
-
-                <Separator />
-
-                {/* Strengths and weaknesses input */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-purple-700">Strengths & Weaknesses</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Create Study Guide tab content */}
+        <TabsContent value="create-study-guide" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column: Generator Form */}
+            <div className="space-y-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-6">
+                    {/* pdf input */}
                     <div>
-                      <TopicInput
-                        items={strengths}
-                        setItems={setStrengths}
-                        placeholder="Enter a strength"
-                        label="Strengths"
+                      <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
+                      <TopicPdfImport value={pdfFile} onChange={setPdfFile} />
+                    </div>
+
+                    <Separator />
+
+                    {/* Constraints input */}
+                    <div>
+                      <h2 className="text-xl font-semibold mb-4 text-purple-700">Constraints & Requirements</h2>
+                      <Label htmlFor="constraints">Study Constraints</Label>
+                      <Textarea
+                        id="constraints"
+                        placeholder="Enter any constraints (e.g., time available, exam date, specific format requirements)"
+                        className="mt-2"
+                        value={constraints}
+                        onChange={(e) => setConstraints(e.target.value)}
                       />
                     </div>
+
+                    <Separator />
+
+                    {/* Media preferences checkboxes */}
                     <div>
-                      <TopicInput
-                        items={weaknesses}
-                        setItems={setWeaknesses}
-                        placeholder="Enter a weakness"
-                        label="Weaknesses"
+                      <h2 className="text-xl font-semibold mb-4 text-purple-700">Media Preferences</h2>
+                      <MediaPreferences
+                        preferences={mediaPreferences}
+                        setPreferences={setMediaPreferences}
                       />
                     </div>
+
+                    <Separator />
+
+                    {/* Strengths and weaknesses input */}
+                    <div>
+                      <h2 className="text-xl font-semibold mb-4 text-purple-700">Strengths & Weaknesses</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <TopicInput
+                            items={strengths}
+                            setItems={setStrengths}
+                            placeholder="Enter a strength"
+                            label="Strengths"
+                          />
+                        </div>
+                        <div>
+                          <TopicInput
+                            items={weaknesses}
+                            setItems={setWeaknesses}
+                            placeholder="Enter a weakness"
+                            label="Weaknesses"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Study plan preferences (duration, intensity, etc.) */}
+                    <div>
+                      <h2 className="text-xl font-semibold mb-4 text-purple-700">Study Plan Preferences</h2>
+                      <StudyPlanAdjuster
+                        studyPlan={studyPlan}
+                        setStudyPlan={setStudyPlan}
+                      />
+                    </div>
+
+                    <Separator />
+
+                    {/* Generate button */}
+                    <Button
+                      onClick={handleGenerateStudyGuide}
+                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+                      size="lg"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Generating Study Guide...
+                        </>
+                      ) : (
+                        "Create Study Guide"
+                      )}
+                    </Button>
                   </div>
-                </div>
-
-                <Separator />
-
-                {/* Study plan preferences (duration, intensity, etc.) */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 text-purple-700">Study Plan Preferences</h2>
-                  <StudyPlanAdjuster
-                    studyPlan={studyPlan}
-                    setStudyPlan={setStudyPlan}
-                  />
-                </div>
-
-                <Separator />
-
-                {/* Generate button */}
-                <Button
-                  onClick={handleGenerateStudyGuide}
-                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
-                  size="lg"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating Study Guide...
-                    </>
-                  ) : (
-                    "Create Study Guide"
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Right Column: Study Guide Display */}
+            <div>
+              <StudyGuideDisplay studyGuide={studyGuide} isGenerating={isGenerating} />
+            </div>
+          </div>
         </TabsContent>
 
-        {/* Study guide result display */}
-        <TabsContent value="result" className="mt-6">
-          {isGenerating ? (
-            <Card className="w-full">
-              <CardContent className="flex flex-col items-center justify-center p-10">
-                <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
-                <p className="mt-4 text-lg font-medium text-purple-700">Generating your personalized study guide...</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  This may take a moment as we tailor the content to your preferences
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              {studyGuide ? (
-                <StudyGuideDisplay 
-                  studyGuide={studyGuide} 
-                  isGenerating={false} 
-                />
-              ) : (
-                <Card className="w-full mt-4">
-                  <CardContent className="p-6 text-gray-500">
-                    No study guide generated yet. Fill out the form and click "Create Study Guide".
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          )}
-        </TabsContent>
-
+        {/* Other tabs */}
         <TabsContent value="flashcard" className="mt-6">
-          {/* Placeholder for Flashcard Lab content */}
           <Card>
             <CardContent className="p-6">
               <div className="text-center text-gray-500">
@@ -254,7 +228,6 @@ export default function StudyGuideGenerator() {
         </TabsContent>
 
         <TabsContent value="practice" className="mt-6">
-          {/* Placeholder for Practice Problems content */}
           <Card>
             <CardContent className="p-6">
               <PracticeProblemsDisplay />
@@ -263,7 +236,6 @@ export default function StudyGuideGenerator() {
         </TabsContent>
 
         <TabsContent value="exam" className="mt-6">
-          {/* Placeholder for Mock Exams content */}
           <Card>
             <CardContent className="p-6">
               <MockExamDisplay />

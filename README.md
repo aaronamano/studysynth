@@ -18,3 +18,25 @@ make sure to `git clone <URL>` this repository first then follow the steps below
 this is to deploy the backend
 1. run `docker build -t studysynth-backend .`
 2. run `docker run -p 8000:8000 --env-file .env studysynth-backend`
+
+## API Routes
+- POST /study-guide
+- POST /mock-exam
+- POST /practice-problems
+- POST /analyze-coverage
+
+## Components
+### Features
+- `media-preferences.tsx`: selects what study materials they'd like to use
+- `study-plan-adjuster.tsx`: adjusts the intensity and learning style of the user's study plan
+- `topic-input.tsx`: inputs the user's strengths and weaknesses
+- `topic-pdf-import.tsx`: imports a pdf file that covers the main concepts to study for
+### Displays
+- `mock-exam-display.tsx`: renders mock exam content from the `POST /mock-exam` api response
+- `practice-problems-display.tsx`: renders practice problems content from the `POST /practice-problems` api response
+- `study-guide-display.tsx`: renders study guide content from the `POST /study-guide` api response
+### Generators
+- `mock-exam-generator.tsx`: calls the `POST /mock-exam` api route
+- `practice-problems-generator.tsx`: calls the `POST /practice-problems` api route
+- `study-guide-generator.tsx`: calls the `POST /study-guide` api route
+
