@@ -38,6 +38,7 @@ export default function StudyGuideGenerator() {
   // Handles the "Create Study Guide" button click
   const handleGenerateStudyGuide = async () => {
     setIsGenerating(true);
+    setStudyGuide(""); // Reset the study guide content
 
     try {
       // Prepare FormData for FastAPI endpoint
@@ -56,21 +57,54 @@ export default function StudyGuideGenerator() {
       formData.append("studyPlan", JSON.stringify(studyPlan));
 
       // Correct: use formData for multipart/form-data
-      const studyGuideResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/study-guide`, {
+      const studyGuideResponse = await fetch(`http://127.0.0.1:8000/study-guide`, {
         method: 'POST',
         body: formData,
       });
 
       if (!studyGuideResponse.ok) {
         const errorText = await studyGuideResponse.text();
-        throw new Error('Failed to generate study guide');
+        throw new Error(`Failed to generate study guide: ${errorText}`);
       }
 
-      const studyGuideData = await studyGuideResponse.json();
-      setStudyGuide(studyGuideData.studyGuide);
-    } catch {
+      if (!studyGuideResponse.body) {
+        throw new Error("Response body is empty.");
+      }
+
+      const reader = studyGuideResponse.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let done = false;
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        buffer += decoder.decode(value, { stream: true });
+
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop() || '';
+
+        for (const part of parts) {
+          if (part.startsWith('data: ')) {
+            const dataStr = part.substring(6);
+            try {
+              const data = JSON.parse(dataStr);
+              if (data.error) {
+                throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+              }
+              if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+                setStudyGuide((prev) => (prev || '') + data.choices[0].delta.content);
+              }
+            } catch (e) {
+              console.error("Error parsing stream data:", dataStr, e);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
       toast.error('Failed to generate study guide', {
-        description: 'Please try again later',
+        description: message,
       });
     } finally {
       setIsGenerating(false);

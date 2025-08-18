@@ -48,17 +48,41 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
   }
 
   const renderFormattedText = (text: string) => {
-    const parts = text.split(/(\s*\[.*?\]\(.*\)\s*)/g);
+    const regex = /\s*\[(.*?)\]\((.*?)\)\s*|\*\*(.*?)\*\*|\\\((.*?)\\\\(?=\s|$)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
 
-    return parts.map((part, i) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <b key={i}>{part.slice(2, -2)}</b>;
+    while ((match = regex.exec(text)) !== null) {
+      // Add the plain text before the match
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
       }
-      if (part.startsWith('\(') && part.endsWith('\)')) {
-        return <InlineMath key={i} math={part.slice(2, -2)} />;
+
+      const key = match.index;
+
+      // Check which group was matched and add the corresponding JSX element
+      if (match[1] !== undefined && match[2] !== undefined) { // Markdown Link
+        parts.push(
+          <a key={key} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-800 hover:underline">
+            {match[1]}
+          </a>
+        );
+      } else if (match[3] !== undefined) { // Bold
+        parts.push(<b key={key}>{match[3]}</b>);
+      } else if (match[4] !== undefined) { // KaTeX
+        parts.push(<InlineMath key={key} math={match[4]} />);
       }
-      return part;
-    });
+      
+      lastIndex = regex.lastIndex;
+    }
+
+    // Add any remaining plain text
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    return parts;
   };
 
   // Main UI when a study guide is available
@@ -94,7 +118,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
       {/* Render study guide content directly */}
       <Card className="h-full">
         <CardContent className="p-6">
-          {isGenerating ? (
+          {isGenerating && !studyGuide && (
             <div className="flex flex-col items-center justify-center p-10">
               <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
               <p className="mt-4 text-lg font-medium text-purple-700">Generating your personalized study guide...</p>
@@ -102,7 +126,8 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                 This may take a moment as we tailor the content to your preferences
               </p>
             </div>
-          ) : studyGuide ? (
+          )}
+          {studyGuide && (
             <div className="prose max-w-none">
               {studyGuide.split("\n").map((line, index) => {
                 if (line.startsWith("# ")) {
@@ -151,8 +176,9 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                   )
                 }
               })}
-            </div>
-          ) : (
+              {isGenerating && <span className="inline-block w-2 h-5 bg-purple-700 animate-pulse ml-1" />}            </div>
+          )}
+          {!isGenerating && !studyGuide && (
             <div className="flex flex-col items-center justify-center p-10">
               <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
               <p className="text-sm text-muted-foreground mt-2">

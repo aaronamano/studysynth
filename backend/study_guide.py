@@ -1,11 +1,12 @@
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-import httpx
 import os
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from io import BytesIO
 import json
+from openai import OpenAI
 
 load_dotenv()
 
@@ -72,39 +73,33 @@ Requirements for resources:
 
 Format the response as a markdown document with clear sections and headers."""
 
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            response = await client.post(
-                'https://api.perplexity.ai/chat/completions',
-                headers={
-                    'Authorization': f'Bearer {os.getenv("PERPLEXITY_API_KEY")}',
-                    'Content-Type': 'application/json'
-                },
-                json={
-                    "model": "sonar-pro",
-                    "messages": [
+        client = OpenAI(api_key=os.getenv("PERPLEXITY_API_KEY"), base_url="https://api.perplexity.ai")
+
+        async def event_stream():
+            try:
+                stream = client.chat.completions.create(
+                    model="sonar-pro",
+                    messages=[
                         {
                             "role": "system",
-                            "content": "You are a professional study guide creator. Generate detailed, well-structured study guides in markdown format. Always include relevant hyperlinks to high-quality resources, official documentation, tutorials, and practice materials. Use markdown link format [text](url) for all references."
+                            "content": "You are a professional study guide creator. Generate detailed, well-structured study guides in. Always include relevant hyperlinks to high-quality resources, official documentation, tutorials, and practice materials. Use markdown link format [text](url) for all references."
                         },
                         {
                             "role": "user",
                             "content": prompt
                         }
-                    ]
-                }
-            )
+                    ],
+                    stream=True,
+                )
+                for chunk in stream:
+                    yield f"data: {chunk.model_dump_json()}\n\n"
+            except Exception as e:
+                # Properly handle exceptions and yield an error message
+                error_message = {"error": str(e)}
+                yield f"data: {json.dumps(error_message)}\n\n"
 
-        if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail="Perplexity API request failed")
-
-        data = response.json()
-
-        study_guide = data.get("choices", [{}])[0].get("message", {}).get("content")
-
-        if not study_guide:
-            raise HTTPException(status_code=500, detail="No content received from Perplexity")
+        return StreamingResponse(event_stream(), media_type="text/event-stream")
         
-        return {"studyGuide": study_guide}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate study guide: {e}")
 
