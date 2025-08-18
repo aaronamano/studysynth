@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Download, Copy, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import 'katex/dist/katex.min.css';
+import { InlineMath } from 'react-katex';
 
 // Props interface for the StudyGuideDisplay component
 interface StudyGuideDisplayProps {
@@ -45,44 +47,17 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     }
   }
 
-  // Function to process and render links in text (moved to top level for reuse)
-  const renderTextWithLinks = (text: string) => {
-    // Match markdown links [text](url)
+  const renderFormattedText = (text: string) => {
     const parts = text.split(/(\s*\[.*?\]\(.*\)\s*)/g);
+
     return parts.map((part, i) => {
-      const linkMatch = part.match(/\s*\[(.*?)\]\((.*?)\)\s*/);
-      if (linkMatch) {
-        return (
-          <a
-            key={i}
-            href={linkMatch[2]}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-purple-600 hover:text-purple-800 underline"
-          >
-            {linkMatch[1]}
-          </a>
-        );
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <b key={i}>{part.slice(2, -2)}</b>;
       }
-      // Also handle plain URLs in text
-      const urlRegex = /(https?:\/\/[^\s]+)/g;
-      const textParts = part.split(urlRegex);
-      return textParts.map((textPart, j) => {
-        if (textPart.match(urlRegex)) {
-          return (
-            <a
-              key={`${i}-${j}`}
-              href={textPart}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:text-purple-800 underline"
-            >
-              {textPart}
-            </a>
-          );
-        }
-        return textPart;
-      });
+      if (part.startsWith('\(') && part.endsWith('\)')) {
+        return <InlineMath key={i} math={part.slice(2, -2)} />;
+      }
+      return part;
     });
   };
 
@@ -133,19 +108,31 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                 if (line.startsWith("# ")) {
                   return (
                     <h1 key={index} className="text-2xl font-bold mt-0 mb-4">
-                      {renderTextWithLinks(line.substring(2))}
+                      {renderFormattedText(line.substring(2))}
                     </h1>
                   )
                 } else if (line.startsWith("## ")) {
                   return (
                     <h2 key={index} className="text-xl font-semibold mt-6 mb-3">
-                      {renderTextWithLinks(line.substring(3))}
+                      {renderFormattedText(line.substring(3))}
                     </h2>
+                  )
+                } else if (line.startsWith("### ")) {
+                  return (
+                    <h3 key={index} className="text-lg font-semibold mt-4 mb-2">
+                      {renderFormattedText(line.substring(4))}
+                    </h3>
+                  )
+                } else if (line.startsWith("#### ")) {
+                  return (
+                    <h4 key={index} className="text-base font-semibold mt-4 mb-2">
+                      {renderFormattedText(line.substring(5))}
+                    </h4>
                   )
                 } else if (line.startsWith("- ")) {
                   return (
                     <li key={index} className="ml-6 mb-1">
-                      {renderTextWithLinks(line.substring(2))}
+                      {renderFormattedText(line.substring(2))}
                     </li>
                   )
                 } else if (line.trim() === "") {
@@ -153,13 +140,13 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                 } else if (/^\d+\./.test(line)) {
                   return (
                     <div key={index} className="ml-6 mb-1">
-                      {renderTextWithLinks(line)}
+                      {renderFormattedText(line)}
                     </div>
                   )
                 } else {
                   return (
                     <p key={index} className="mb-4">
-                      {renderTextWithLinks(line)}
+                      {renderFormattedText(line)}
                     </p>
                   )
                 }

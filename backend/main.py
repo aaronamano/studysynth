@@ -12,7 +12,8 @@ app.add_middleware(
     allow_origins=[
         "https://studysynth.vercel.app",
         "https://studysynth-aaronamanos-projects.vercel.app",
-        "https://studysynth-git-main-aaronamanos-projects.vercel.app"
+        "https://studysynth-git-main-aaronamanos-projects.vercel.app",
+        "http://localhost:3000",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
