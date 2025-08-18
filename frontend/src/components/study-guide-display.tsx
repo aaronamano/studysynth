@@ -48,7 +48,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
   }
 
   const renderFormattedText = (text: string) => {
-    const regex = /\s*\[(.*?)\]\((.*?)\)\s*|\*\*(.*?)\*\*|\\\((.*?)\\\\(?=\s|$)/g;
+    const regex = /\[(.*?)\]\((.*?)\)|\*\*(.*?)\*\*|\\\((.*?)\\\)/g;
     const parts = [];
     let lastIndex = 0;
     let match;
@@ -73,7 +73,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
       } else if (match[4] !== undefined) { // KaTeX
         parts.push(<InlineMath key={key} math={match[4]} />);
       }
-      
+
       lastIndex = regex.lastIndex;
     }
 
@@ -176,13 +176,14 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                   )
                 }
               })}
-              {isGenerating && <span className="inline-block w-2 h-5 bg-purple-700 animate-pulse ml-1" />}            </div>
+              {isGenerating && <span className="inline-block w-2 h-5 bg-purple-700 animate-pulse ml-1" />}
+            </div>
           )}
           {!isGenerating && !studyGuide && (
             <div className="flex flex-col items-center justify-center p-10">
               <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Fill out the form and click &quot;Create Study Guide&quot; to generate your personalized study materials
+                Fill out the form and click "Create Study Guide" to generate your personalized study materials
               </p>
             </div>
           )}
