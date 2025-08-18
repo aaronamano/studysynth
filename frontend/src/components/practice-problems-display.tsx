@@ -14,8 +14,8 @@ export default function PracticeProblemsDisplay() {
     const [generatedMaterials, setGeneratedMaterials] = useState<string | null>(null)
 
     return (
-        <>
-            {/* Practice materials options */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column: Generator */}
             <div>
                 <PracticeProblemsOptions
                     difficulty={practiceOptions.difficulty}
@@ -28,17 +28,22 @@ export default function PracticeProblemsDisplay() {
                 />
             </div>
 
-            <br />
-
-            {/* Only display the card output */}
-            <Card>
-                <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">Practice Materials</h2>
-                    {generatedMaterials ? (
-                        <pre className="whitespace-pre-wrap text-sm">{generatedMaterials}</pre>
-                    ) : null}
-                </CardContent>
-            </Card>
-        </>
+            {/* Right Column: Display */}
+            <div>
+                <Card>
+                    <CardContent className="p-6">
+                        <h2 className="text-xl font-semibold mb-4">Practice Problems</h2>
+                        {generatedMaterials ? (
+                            <pre className="whitespace-pre-wrap text-sm">{generatedMaterials}</pre>
+                        ) : (
+                            <div className="text-center text-gray-500">
+                                <p className="text-lg">Your practice problems will appear here.</p>
+                                <p className="mt-2">Fill out the options on the left and click "Generate Practice Problems".</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
     )
 }

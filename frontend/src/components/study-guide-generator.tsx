@@ -83,8 +83,7 @@ export default function StudyGuideGenerator() {
       {/* Left Column: Generator Form */}
       <div className="space-y-6">
         <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-6">
+          <CardContent className="space-y-6">
               {/* pdf input */}
               <div>
                 <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
@@ -170,7 +169,6 @@ export default function StudyGuideGenerator() {
                   "Create Study Guide"
                 )}
               </Button>
-            </div>
           </CardContent>
         </Card>
       </div>

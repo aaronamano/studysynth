@@ -4,7 +4,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Download, Copy, BookOpen, Loader2 } from "lucide-react"
+import { Download, Copy, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 // Props interface for the StudyGuideDisplay component
@@ -167,7 +167,6 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center p-10">
-              <BookOpen className="h-10 w-10 text-purple-500" />
               <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
               <p className="text-sm text-muted-foreground mt-2">
                 Fill out the form and click &quot;Create Study Guide&quot; to generate your personalized study materials

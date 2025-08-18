@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useState } from "react"
 import TopicPdfImport from "./features/topic-pdf-import"
 import TopicInput from "./features/topic-input" // Input for strengths/weaknesses
+import { Card, CardContent } from "@/components/ui/card"
 
 interface PracticeProblemsProps {
   difficulty: string;
@@ -61,94 +62,98 @@ export default function PracticeProblemsOptions({
   }
 
   return (
-    <div className="space-y-4">
-      {/* pdf input */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
-        <TopicPdfImport value={pdfFile} onChange={setPdfFile} />
-      </div>
-
-      <Separator />
-
-      {/* Constraints input */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4 text-purple-700">Constraints & Requirements</h2>
-        <Label htmlFor="constraints">Study Constraints</Label>
-        <Textarea
-          id="constraints"
-          placeholder="Enter any constraints (e.g., time available, exam date, specific format requirements)"
-          className="mt-2"
-          value={constraints}
-          onChange={(e) => setConstraints(e.target.value)}
-        />
-      </div>
-
-      <Separator />
-
-      {/* Strengths and weaknesses input */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4 text-purple-700">Strengths & Weaknesses</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="space-y-6">
+          {/* pdf input */}
           <div>
-            <TopicInput
-              items={strengths}
-              setItems={setStrengths}
-              placeholder="Enter a strength"
-              label="Strengths"
+            <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
+            <TopicPdfImport value={pdfFile} onChange={setPdfFile} />
+          </div>
+
+          <Separator />
+
+          {/* Constraints input */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-purple-700">Constraints & Requirements</h2>
+            <Label htmlFor="constraints">Study Constraints</Label>
+            <Textarea
+              id="constraints"
+              placeholder="Enter any constraints (e.g., time available, exam date, specific format requirements)"
+              className="mt-2"
+              value={constraints}
+              onChange={(e) => setConstraints(e.target.value)}
             />
           </div>
+
+          <Separator />
+
+          {/* Strengths and weaknesses input */}
           <div>
-            <TopicInput
-              items={weaknesses}
-              setItems={setWeaknesses}
-              placeholder="Enter a weakness"
-              label="Weaknesses"
+            <h2 className="text-xl font-semibold mb-4 text-purple-700">Strengths & Weaknesses</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <TopicInput
+                  items={strengths}
+                  setItems={setStrengths}
+                  placeholder="Enter a strength"
+                  label="Strengths"
+                />
+              </div>
+              <div>
+                <TopicInput
+                  items={weaknesses}
+                  setItems={setWeaknesses}
+                  placeholder="Enter a weakness"
+                  label="Weaknesses"
+                />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-2">
+            <Label>Problem Difficulty</Label>
+            <Select value={difficulty} onValueChange={onDifficultyChange}>
+              <SelectTrigger className="border-purple-200 focus:ring-purple-500">
+                <SelectValue placeholder="Select difficulty" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">Easy</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="hard">Hard</SelectItem>
+                <SelectItem value="mixed">Mixed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <Label htmlFor="problem-quantity">Problem Quantity</Label>
+            </div>
+            <input
+              id="problem-quantity"
+              type="number"
+              min={1}
+              max={100}
+              value={quantity}
+              onChange={(e) => onQuantityChange(parseInt(e.target.value) || 1)}
+              className="w-full border border-purple-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-2">
-        <Label>Problem Difficulty</Label>
-        <Select value={difficulty} onValueChange={onDifficultyChange}>
-          <SelectTrigger className="border-purple-200 focus:ring-purple-500">
-            <SelectValue placeholder="Select difficulty" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="easy">Easy</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="hard">Hard</SelectItem>
-            <SelectItem value="mixed">Mixed</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex justify-between">
-          <Label htmlFor="problem-quantity">Problem Quantity</Label>
-        </div>
-        <input
-          id="problem-quantity"
-          type="number"
-          min={1}
-          max={100}
-          value={quantity}
-          onChange={(e) => onQuantityChange(parseInt(e.target.value) || 1)}
-          className="w-full border border-purple-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-      </div>
-      {/* Generate button */}
-      <Button
-        className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
-        size="lg"
-        onClick={handleGenerate}
-        disabled={loading}
-      >
-        {loading ? "Generating..." : "Generate Practice Problems"}
-      </Button>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+          {/* Generate button */}
+          <Button
+            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+            size="lg"
+            onClick={handleGenerate}
+            disabled={loading}
+          >
+            {loading ? "Generating..." : "Generate Practice Problems"}
+          </Button>
+          {error && <p className="text-red-500 mt-2">{error}</p>}
+        </CardContent>
+      </Card>
     </div>
   )
 }
