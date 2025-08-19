@@ -25,6 +25,14 @@ this is to deploy the backend
 - POST /practice-problems
 - POST /analyze-coverage
 
+## Routes
+- `/`: default route for studysynth. this is the main page where users interact with the core features
+- `/about`: about page which talks about studysynth
+- `/login`: login page for users to login
+- `/signup`: signup page for users to create an account
+- `/reset`: page for users to reset their own password
+- `/account`: page where user can manage their own account by inputting perplexity and openai api keys
+
 ## Components
 ### Features
 - `media-preferences.tsx`: selects what study materials they'd like to use
@@ -39,4 +47,17 @@ this is to deploy the backend
 - `mock-exam-generator.tsx`: calls the `POST /mock-exam` api route
 - `practice-problems-generator.tsx`: calls the `POST /practice-problems` api route
 - `study-guide-generator.tsx`: calls the `POST /study-guide` api route
+
+## Account Schema
+this is the account schema used for mongodb
+```typescript
+{
+    _id: ObjectId(),
+    name: string, // e.g. Tim Cheese
+    password: string // doesn't show actual password but encrypted version of it
+    perplexityKey: string = "" // not actual key but encrypted version; initally empty string cuz no key registered yet
+    openaiKey: string = "" // not actual key but encrypted version; initally empty string cuz no key registered yet
+
+}
+```
 

@@ -1,15 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { FileText, WalletCards, ListChecks, PenTool } from "lucide-react"
+import Link from "next/link"
+import { FileText, WalletCards, ListChecks, PenTool, User } from "lucide-react"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import StudyGuideGenerator from "@/components/study-guide-generator"
 import PracticeProblemsDisplay from "@/components/practice-problems-display"
 import MockExamDisplay from "@/components/mock-exam-display"
-import { BookOpen } from "lucide-react"
-
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("create-study-guide")
@@ -17,16 +17,19 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
       <div className="container mx-auto px-4 py-6">
-        <header className="mb-8 text-center py-8">
-            <div className="flex justify-center items-center mb-4">
-                <div className="bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 text-transparent bg-clip-text">
-                    <h1 className="text-5xl font-bold tracking-tight leading-tight">
-                        StudySynth
-                    </h1>
-                </div>
-                <BookOpen className="h-12 w-12 text-purple-600 ml-3" />
+        <header className="mb-8 py-8 relative">
+            <div className="absolute top-8 right-0 flex items-center space-x-4">
+                <Link href="/about" passHref>
+                    <Button className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
+                        About StudySynth
+                    </Button>
+                </Link>
+                <Link href="/login" passHref>
+                    <Button size="icon" className="px-3 py-3 border border-transparent text-base font-medium rounded-4xl text-white bg-purple-600 hover:bg-purple-700">
+                        <User className="h-6 w-6" />
+                    </Button>
+                </Link>
             </div>
-          <p className="text-lg text-purple-700">Generate personalized study guides tailored to your learning style</p>
         </header>
 
         <div className="grid grid-cols-1 gap-6">
