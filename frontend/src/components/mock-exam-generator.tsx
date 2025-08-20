@@ -11,6 +11,7 @@ import { useState } from "react"
 import TopicPdfImport from "./features/topic-pdf-import"
 import TopicInput from "./features/topic-input" // Input for strengths/weaknesses
 import { Card, CardContent } from "@/components/ui/card"
+import { toast } from "sonner"
 
 
 interface MockExamProps {
@@ -35,10 +36,46 @@ export default function MockExamOptions({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const getOpenAiApiKey = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You must be logged in to generate a mock exam.");
+      return null;
+    }
+
+    try {
+      const res = await fetch("/api/account/keys", {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch API key.");
+      }
+
+      const data = await res.json();
+      return data.openaiKey;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      toast.error('Failed to fetch API key', {
+        description: message,
+      });
+      return null;
+    }
+  };
+
   const handleGenerate = async () => {
     setLoading(true)
     setError(null)
     try {
+      const openaiApiKey = await getOpenAiApiKey();
+      if (!openaiApiKey) {
+        setLoading(false);
+        return;
+      }
+
       const formData = new FormData()
       if (pdfFile) formData.append("pdf_file", pdfFile)
       formData.append("constraints", constraints)
@@ -48,6 +85,8 @@ export default function MockExamOptions({
         difficulty,
         quantity,
       }))
+      formData.append("openai_api_key", openaiApiKey)
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/mock-exam`, {
         method: "POST",
         body: formData,

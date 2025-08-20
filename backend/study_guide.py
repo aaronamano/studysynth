@@ -33,7 +33,8 @@ async def create_study_guide(
     strengths: str = Form(""), # this is passed as a string but make sure it is inputted as an array
     weaknesses: str = Form(""), # this is passed as a string but make sure it is inputted as an array
     mediaPreferences: str = Form(""), # this is passed as a string but make sure it is inputted as object format
-    studyPlan: str = Form("") # this is passed as a string but make sure it is inputted as object format
+    studyPlan: str = Form(""), # this is passed as a string but make sure it is inputted as object format
+    perplexity_api_key: str = Form(...)
 ):
     try:
 
@@ -73,7 +74,7 @@ Requirements for resources:
 
 Format the response as a markdown document with clear sections and headers."""
 
-        client = OpenAI(api_key=os.getenv("PERPLEXITY_API_KEY"), base_url="https://api.perplexity.ai")
+        client = OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
 
         async def event_stream():
             try:

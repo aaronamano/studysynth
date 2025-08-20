@@ -51,13 +51,21 @@ export default function Home() {
           <div className="absolute top-8 right-0 flex items-center space-x-4">
             {isLoggedIn ? (
               <>
-                <p className="text-lg font-medium">Welcome, {firstName}</p>
+                <p className="text-lg font-medium text-purple-600">Welcome {firstName}, glad to have you here. Now time to lock tf in!</p>
                 <Button
                   onClick={handleLogout}
                   className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
                 >
                   Logout
                 </Button>
+                <Link href="/account" passHref>
+                  <Button
+                    size="icon"
+                    className="px-3 py-3 border border-transparent text-base font-medium rounded-4xl text-white bg-purple-600 hover:bg-purple-700"
+                  >
+                    <User className="h-6 w-6" />
+                  </Button>
+                </Link>
               </>
             ) : (
               <>

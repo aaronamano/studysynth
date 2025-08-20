@@ -17,15 +17,14 @@ class PracticeOptions(BaseModel):
     difficulty: str
     quantity: int
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
 @router.post("/mock-exam")
 async def create_practice_materials(
     pdf_file: UploadFile = File(...), # this is passed as a pdf file
     constraints: str = Form(""), # this is passed as a string
     strengths: str = Form(""), # this is passed as a string but make sure it is inputted as an array
     weaknesses: str = Form(""), # this is passed as a string but make sure it is inputted as an array
-    practiceOptions: str = Form("") # this is passed as a string but make sure it is inputted as object format
+    practiceOptions: str = Form(""), # this is passed as a string but make sure it is inputted as object format
+    openai_api_key: str = Form(...)
 ):
     try:
         # Debugging statement to see what parameters are inputted
@@ -82,7 +81,7 @@ async def create_practice_materials(
             response = await client.post(
                 'https://api.openai.com/v1/chat/completions',
                 headers={
-                    'Authorization': f'Bearer {OPENAI_API_KEY}',
+                    'Authorization': f'Bearer {openai_api_key}',
                     'Content-Type': 'application/json'
                 },
                 json={

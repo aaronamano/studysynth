@@ -35,18 +35,55 @@ export default function StudyGuideGenerator() {
     summaries: false,
   });
 
+  const getPerplexityApiKey = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You must be logged in to generate a study guide.");
+      return null;
+    }
+
+    try {
+      const res = await fetch("/api/account/keys", {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch API key.");
+      }
+
+      const data = await res.json();
+      return data.perplexityKey;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      toast.error('Failed to fetch API key', {
+        description: message,
+      });
+      return null;
+    }
+  };
+
+
   // Handles the "Create Study Guide" button click
   const handleGenerateStudyGuide = async () => {
     setIsGenerating(true);
     setStudyGuide(""); // Reset the study guide content
 
     try {
+      const perplexityApiKey = await getPerplexityApiKey();
+      if (!perplexityApiKey) {
+        setIsGenerating(false);
+        return;
+      }
       // Prepare FormData for FastAPI endpoint
       const formData = new FormData();
       if (pdfFile) {
         formData.append("pdf_file", pdfFile);
       }
       formData.append("constraints", constraints);
+      formData.append("perplexity_api_key", perplexityApiKey);
 
       // strengths and weaknesses as arrays (JSON string)
       formData.append("strengths", JSON.stringify(strengths));
@@ -214,3 +251,4 @@ export default function StudyGuideGenerator() {
     </div>
   )
 }
+
