@@ -1,9 +1,12 @@
 # Setup
 ## Frontend
-- under `studysynth\frontend\`, run `pnpm install` then `pnpm run dev`
+- under `studysynth\frontend\`, run `pnpm install`
 ## Backend
 - create a virtual environment under `studysynth\backend\` by running `python3 -m venv venv`
 - run `source venv/bin/activate` then run `pip install -r requirements.txt`
+
+# Testing the frontend
+1. under `studysynth\frontend\`, run `pnpm run dev`
 
 # Testing the API Routes
 ## OG way
