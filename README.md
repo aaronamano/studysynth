@@ -5,7 +5,7 @@
 - create a virtual environment under `studysynth\backend\` by running `python3 -m venv venv`
 - run `source venv/bin/activate` then run `pip install -r requirements.txt`
 
-# Testing the frontend
+# Testing the UI
 1. under `studysynth\frontend\`, run `pnpm run dev`
 
 # Testing the API Routes
@@ -55,7 +55,8 @@ CMD ["fastapi", "dev", "main.py", "--host", "127.0.0.1", "--port", "8000:8000"]
 - `study-guide-generator.tsx`: calls the `POST /study-guide` api route
 
 ## Account Schema
-this is the account schema used for mongodb
+this is the account schema used for MongoDB <br>
+**Make sure to DM me so I can share the MongoDB URL and database with you**
 ```typescript
 {
     _id: ObjectId(),
