@@ -2,10 +2,10 @@
 ## Frontend
 - under `studysynth\frontend\`, run `pnpm install` then `pnpm run dev`
 ## Backend
-1. create a virtual environment under `studysynth\backend\` by running `python3 -m venv venv`
-2. run `source venv/bin/activate` then run `pip install -r requirements.txt`
+- create a virtual environment under `studysynth\backend\` by running `python3 -m venv venv`
+- run `source venv/bin/activate` then run `pip install -r requirements.txt`
 
-# Testing the server in development
+# Testing the API Routes
 ## OG way
 1. make sure you're under `studysynth\backend\` and that you're in a virtual environment by running `source venv/bin/activate`
 2. run `fastapi dev main.py`
@@ -15,15 +15,12 @@
 ## Docker alternative
 1. run `docker build -t studysynth .`
 2. then run `docker run -p 8000:8000 studysynth`
+
 make sure to run this command in `Dockerfile`:
 ```
 CMD ["fastapi", "dev", "main.py", "--host", "127.0.0.1", "--port", "8000:8000"]
 ```
 3. go to `http://127.0.0.1:8000/docs`
-use this command in `Dockerfile` if you're not testing the api routes:
-```
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
 
 ## API Routes
 - POST `/study-guide`
@@ -60,8 +57,8 @@ this is the account schema used for mongodb
 {
     _id: ObjectId(),
     name: string, // e.g. Tim Cheese
-    password: string // doesn't show actual password but encrypted version of it
-    perplexityKey: string = "" // not actual key but encrypted version; initally empty string cuz no key registered yet
+    password: string, // doesn't show actual password but encrypted version of it
+    perplexityKey: string = "", // not actual key but encrypted version; initally empty string cuz no key registered yet
     openaiKey: string = "" // not actual key but encrypted version; initally empty string cuz no key registered yet
 
 }
