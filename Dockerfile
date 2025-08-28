@@ -13,7 +13,8 @@ COPY backend/ .
 EXPOSE 8000
 
 # Start the FastAPI app using uvicorn
+# Run this for production
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-# Testing the server in development
+# Use this command if testing the server + api routes in development
 # CMD ["fastapi", "dev", "main.py", "--host", "127.0.0.1", "--port", "8000:8000"]
