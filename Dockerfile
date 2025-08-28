@@ -14,3 +14,6 @@ EXPOSE 8000
 
 # Start the FastAPI app using uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Testing the server in development
+# CMD ["fastapi", "dev", "main.py", "--host", "127.0.0.1", "--port", "8000:8000"]

@@ -1,29 +1,35 @@
-make sure to `git clone <URL>` this repository first then follow the steps below:
-
-## Frontend setup
-1. create a `.env` file under `studysynth\`
-2. in the `.env` file add `PERPLEXITY_API_KEY=""` and `OPENAI_API_KEY=""`
-3. in the terminal under `studysynth\frontend\`, run `pnpm install`
-4. then in the terminal under `studysynth\frontend\` run `pnpm run dev`
-
-## Backend setup
-1. create a virtual environment in `studysynth\backend` by running `python3 -m venv venv`
+# Setup
+## Frontend
+- under `studysynth\frontend\`, run `pnpm install` then `pnpm run dev`
+## Backend
+1. create a virtual environment under `studysynth\backend\` by running `python3 -m venv venv`
 2. run `source venv/bin/activate` then run `pip install -r requirements.txt`
-3. run `fastapi dev main.py`
-4. go to `http://127.0.0.1:8000/docs` to test the routes
-5. press CTRL + C to quit
-6. to leave environment type `deactivate`
 
-## Docker
-this is to deploy the backend
-1. run `docker build -t studysynth-backend .`
-2. run `docker run -p 8000:8000 --env-file .env studysynth-backend`
+# Testing the server in development
+## OG way
+1. make sure you're under `studysynth\backend\` and that you're in a virtual environment by running `source venv/bin/activate`
+2. run `fastapi dev main.py`
+3. go to `http://127.0.0.1:8000/docs` to test the routes
+3. press CTRL + C to quit in the terminal
+4. to leave environment type `deactivate`
+## Docker alternative
+1. run `docker build -t studysynth .`
+2. then run `docker run -p 8000:8000 studysynth`
+make sure to run this command in `Dockerfile`:
+```
+CMD ["fastapi", "dev", "main.py", "--host", "127.0.0.1", "--port", "8000:8000"]
+```
+3. go to `http://127.0.0.1:8000/docs`
+use this command in `Dockerfile` if you're not testing the api routes:
+```
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
 
 ## API Routes
-- POST /study-guide
-- POST /mock-exam
-- POST /practice-problems
-- POST /analyze-coverage
+- POST `/study-guide`
+- POST `/mock-exam`
+- POST `/practice-problems`
+- POST `/analyze-coverage`
 
 ## Routes
 - `/`: default route for studysynth. this is the main page where users interact with the core features
