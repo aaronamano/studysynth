@@ -9,21 +9,11 @@
 1. under `studysynth\frontend\`, run `pnpm run dev`
 
 # Testing the API Routes
-## OG way
 1. make sure you're under `studysynth\backend\` and that you're in a virtual environment by running `source venv/bin/activate`
 2. run `fastapi dev main.py`
 3. go to `http://127.0.0.1:8000/docs` to test the routes
 3. press CTRL + C to quit in the terminal
 4. to leave environment type `deactivate`
-## Docker alternative
-1. run `docker build -t studysynth .`
-2. then run `docker run -p 8000:8000 studysynth`
-
-make sure to run this command in `Dockerfile`:
-```
-CMD ["fastapi", "dev", "main.py", "--host", "127.0.0.1", "--port", "8000:8000"]
-```
-3. go to `http://127.0.0.1:8000/docs`
 
 ## API Routes
 - POST `/study-guide`
