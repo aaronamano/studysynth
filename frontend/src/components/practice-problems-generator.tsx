@@ -19,6 +19,7 @@ interface PracticeProblemsProps {
   onDifficultyChange: (value: string) => void;
   onQuantityChange: (value: number) => void;
   onGenerate?: (materials: string) => void; // callback for generated materials
+  onIsGeneratingChange?: (isGenerating: boolean) => void;
 }
 
 export default function PracticeProblemsOptions({
@@ -27,6 +28,7 @@ export default function PracticeProblemsOptions({
   onDifficultyChange,
   onQuantityChange,
   onGenerate,
+  onIsGeneratingChange,
 }: PracticeProblemsProps) {
   const [pdfFile, setPdfFile] = useState<File | null>(null) // PDF file input
   const [constraints, setConstraints] = useState("") // Constraints input
@@ -68,10 +70,12 @@ export default function PracticeProblemsOptions({
   const handleGenerate = async () => {
     setLoading(true)
     setError(null)
+    if (onIsGeneratingChange) onIsGeneratingChange(true);
     try {
       const openaiApiKey = await getOpenAiApiKey();
       if (!openaiApiKey) {
         setLoading(false);
+        if (onIsGeneratingChange) onIsGeneratingChange(false);
         return;
       }
 
@@ -97,6 +101,7 @@ export default function PracticeProblemsOptions({
       setError(e.message || "Unknown error")
     } finally {
       setLoading(false)
+      if (onIsGeneratingChange) onIsGeneratingChange(false);
     }
   }
 

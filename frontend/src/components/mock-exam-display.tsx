@@ -4,7 +4,7 @@ import MockExamOptions from "./mock-exam-generator"
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Download, Copy } from "lucide-react"
+import { Download, Copy, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 export default function MockExamDisplay() {
@@ -13,6 +13,7 @@ export default function MockExamDisplay() {
         quantity: 10,
     });
     const [generatedMaterials, setGeneratedMaterials] = useState<string | null>(null)
+    const [isGenerating, setIsGenerating] = useState(false)
 
     const handleCopy = () => {
         if (generatedMaterials) {
@@ -53,6 +54,7 @@ export default function MockExamDisplay() {
                     onQuantityChange={(value) =>
                         setPracticeOptions(prev => ({ ...prev, quantity: value }))}
                     onGenerate={setGeneratedMaterials}
+                    onIsGeneratingChange={setIsGenerating}
                 />
             </div>
 
@@ -91,7 +93,15 @@ export default function MockExamDisplay() {
                                 <li>Show your work where applicable</li>
                             </ul>
                         </div>
-                        {generatedMaterials ? (
+                        {isGenerating ? (
+                            <div className="flex flex-col items-center justify-center p-10">
+                                <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
+                                <p className="mt-4 text-lg font-medium text-purple-700">Generating your mock exam...</p>
+                                <p className="text-sm text-muted-foreground mt-2">
+                                    This may take a moment as we tailor the content to your preferences
+                                </p>
+                            </div>
+                        ) : generatedMaterials ? (
                             <pre className="whitespace-pre-wrap text-sm">{generatedMaterials}</pre>
                         ) : (
                             <div className="text-center text-gray-500">

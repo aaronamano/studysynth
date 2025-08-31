@@ -20,6 +20,7 @@ interface MockExamProps {
   onDifficultyChange: (value: string) => void;
   onQuantityChange: (value: number) => void;
   onGenerate?: (materials: string) => void; // callback for generated materials
+  onIsGeneratingChange?: (isGenerating: boolean) => void;
 }
 
 export default function MockExamOptions({
@@ -28,6 +29,7 @@ export default function MockExamOptions({
   onDifficultyChange,
   onQuantityChange,
   onGenerate,
+  onIsGeneratingChange,
 }: MockExamProps) {
   const [pdfFile, setPdfFile] = useState<File | null>(null) // PDF file input
   const [constraints, setConstraints] = useState("") // Constraints input
@@ -69,10 +71,12 @@ export default function MockExamOptions({
   const handleGenerate = async () => {
     setLoading(true)
     setError(null)
+    if (onIsGeneratingChange) onIsGeneratingChange(true);
     try {
       const openaiApiKey = await getOpenAiApiKey();
       if (!openaiApiKey) {
         setLoading(false);
+        if (onIsGeneratingChange) onIsGeneratingChange(false);
         return;
       }
 
@@ -98,6 +102,7 @@ export default function MockExamOptions({
       setError(e.message || "Unknown error")
     } finally {
       setLoading(false)
+      if (onIsGeneratingChange) onIsGeneratingChange(false);
     }
   }
 
