@@ -89,7 +89,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-purple-100">
+            <TabsList className="grid w-full grid-cols-3 bg-purple-100">
               {/* Create Study Guide tab */}
               <TabsTrigger
                 value="create-study-guide"
@@ -98,7 +98,9 @@ export default function Home() {
                 <FileText className="mr-2 h-4 w-4" />
                 Study Guide
               </TabsTrigger>
+
               {/* Flashcard tab */}
+              {/*
               <TabsTrigger
                 value="flashcard"
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
@@ -106,6 +108,8 @@ export default function Home() {
                 <WalletCards className="mr-2 h-4 w-4" />
                 Flashcard Lab
               </TabsTrigger>
+              */}
+              
               {/* Practice problems tab */}
               <TabsTrigger
                 value="practice"
