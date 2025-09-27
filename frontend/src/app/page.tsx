@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { FileText, WalletCards, ListChecks, PenTool, User, History } from "lucide-react"
+import { FileText, WalletCards, ListChecks, PenTool, User, Bookmark } from "lucide-react"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
@@ -56,8 +56,10 @@ export default function Home() {
                   <Button
                     className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
                   >
-                    <History className="h-5 w-5 mr-2" />
-                    History
+                    <Bookmark className="h-5 w-5" />
+                    <div className="text-sm">
+                      Saved Guides
+                    </div>
                   </Button>
                 </Link>
                 <Button
@@ -117,7 +119,7 @@ export default function Home() {
                 Flashcard Lab
               </TabsTrigger>
               */}
-              
+
               {/* Practice problems tab */}
               <TabsTrigger
                 value="practice"

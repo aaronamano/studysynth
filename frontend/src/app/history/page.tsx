@@ -89,7 +89,7 @@ export default function HistoryPage() {
     <main className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
       <div className="container mx-auto px-4 py-6">
         <header className="mb-8 py-8 flex items-center justify-between">
-          <h1 className="text-4xl font-bold text-purple-800">Study Guide History</h1>
+          <h1 className="text-4xl font-bold text-purple-800">Here's your saved study guides</h1>
           <Link href="/" passHref>
             <Button variant="outline" className="flex items-center">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -106,8 +106,8 @@ export default function HistoryPage() {
           <div className="gap-6">
             <Accordion type="single" collapsible className="w-full grid gap-6">
               {history.map((item) => (
-                <Card className="gap-6">
-                  <AccordionItem value={item._id} key={item._id} className="mx-6">
+                <Card key={item._id} className="gap-6">
+                  <AccordionItem value={item._id} className="mx-6">
                     <AccordionTrigger>
                       <CardHeader>
                         <CardTitle className="whitespace-nowrap">Study Guide from {new Date(item.createdAt).toLocaleString()}</CardTitle>
