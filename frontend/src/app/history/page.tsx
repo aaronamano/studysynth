@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowLeft, Loader2 } from "lucide-react"
@@ -102,35 +103,43 @@ export default function HistoryPage() {
             <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
           </div>
         ) : history.length > 0 ? (
-          <div className="grid gap-6">
-            {history.map((item) => (
-              <Card key={item._id}>
-                <CardHeader>
-                  <CardTitle>Study Guide from {new Date(item.createdAt).toLocaleString()}</CardTitle>
-                </CardHeader>
-                <CardContent className="prose max-w-none">
-                  {item.response.split("\n").map((line, index) => {
-                    if (line.startsWith("# ")) {
-                      return <h1 key={index} className="text-2xl font-bold mt-0 mb-4">{renderFormattedText(line.substring(2))}</h1>
-                    } else if (line.startsWith("## ")) {
-                      return <h2 key={index} className="text-xl font-semibold mt-6 mb-3">{renderFormattedText(line.substring(3))}</h2>
-                    } else if (line.startsWith("### ")) {
-                      return <h3 key={index} className="text-lg font-semibold mt-4 mb-2">{renderFormattedText(line.substring(4))}</h3>
-                    } else if (line.startsWith("#### ")) {
-                      return <h4 key={index} className="text-base font-semibold mt-4 mb-2">{renderFormattedText(line.substring(5))}</h4>
-                    } else if (line.startsWith("- ")) {
-                      return <li key={index} className="ml-6 mb-1">{renderFormattedText(line.substring(2))}</li>
-                    } else if (line.trim() === "") {
-                      return <br key={index} />
-                    } else if (/^\\d+\\./.test(line)) {
-                      return <div key={index} className="ml-6 mb-1">{renderFormattedText(line)}</div>
-                    } else {
-                      return <p key={index} className="mb-4">{renderFormattedText(line)}</p>
-                    }
-                  })}
-                </CardContent>
-              </Card>
-            ))}
+          <div className="gap-6">
+            <Accordion type="single" collapsible className="w-full grid gap-6">
+              {history.map((item) => (
+                <Card className="gap-6">
+                  <AccordionItem value={item._id} key={item._id} className="mx-6">
+                    <AccordionTrigger>
+                      <CardHeader>
+                        <CardTitle className="whitespace-nowrap">Study Guide from {new Date(item.createdAt).toLocaleString()}</CardTitle>
+                      </CardHeader>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <CardContent className="prose max-w-none">
+                        {item.response.split("\n").map((line, index) => {
+                          if (line.startsWith("# ")) {
+                            return <h1 key={index} className="text-2xl font-bold mt-0 mb-4">{renderFormattedText(line.substring(2))}</h1>
+                          } else if (line.startsWith("## ")) {
+                            return <h2 key={index} className="text-xl font-semibold mt-6 mb-3">{renderFormattedText(line.substring(3))}</h2>
+                          } else if (line.startsWith("### ")) {
+                            return <h3 key={index} className="text-lg font-semibold mt-4 mb-2">{renderFormattedText(line.substring(4))}</h3>
+                          } else if (line.startsWith("#### ")) {
+                            return <h4 key={index} className="text-base font-semibold mt-4 mb-2">{renderFormattedText(line.substring(5))}</h4>
+                          } else if (line.startsWith("- ")) {
+                            return <li key={index} className="ml-6 mb-1">{renderFormattedText(line.substring(2))}</li>
+                          } else if (line.trim() === "") {
+                            return <br key={index} />
+                          } else if (/^\\d+\\./.test(line)) {
+                            return <div key={index} className="ml-6 mb-1">{renderFormattedText(line)}</div>
+                          } else {
+                            return <p key={index} className="mb-4">{renderFormattedText(line)}</p>
+                          }
+                        })}
+                      </CardContent>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Card>
+              ))}
+            </Accordion>
           </div>
         ) : (
           <div className="text-center text-gray-500">
