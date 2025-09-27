@@ -4,7 +4,7 @@ import MockExamOptions from "./mock-exam-generator"
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Download, Copy, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
@@ -16,33 +16,6 @@ export default function MockExamDisplay() {
     });
     const [generatedMaterials, setGeneratedMaterials] = useState<string | null>(null)
     const [isGenerating, setIsGenerating] = useState(false)
-
-    const handleCopy = () => {
-        if (generatedMaterials) {
-            navigator.clipboard.writeText(generatedMaterials)
-            toast.success("Copied to clipboard", {
-                description: "The mock exam has been copied to your clipboard"
-            })
-        }
-    }
-
-    const handleDownload = () => {
-        if (generatedMaterials) {
-            const blob = new Blob([generatedMaterials], { type: "text/markdown" })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement("a")
-            a.href = url
-            a.download = "mock-exam.md"
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
-            URL.revokeObjectURL(url)
-
-            toast.success("Downloaded", {
-                description: "Your mock exam has been downloaded"
-            })
-        }
-    }
 
     const renderFormattedText = (text: string) => {
         const regex = /\[(.*?)\]\((.*?)\)|\*\*(.*?)\*\*|\\\((.*?)\\\)/g;
@@ -104,26 +77,7 @@ export default function MockExamDisplay() {
                     <CardContent className="p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-semibold">Mock Exam</h2>
-                            <div className="flex space-x-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleCopy}
-                                    className="border-purple-200 hover:bg-purple-50 hover:text-purple-700"
-                                >
-                                    <Copy className="h-4 w-4 mr-2" />
-                                    Copy
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleDownload}
-                                    className="border-purple-200 hover:bg-purple-50 hover:text-purple-700"
-                                >
-                                    <Download className="h-4 w-4 mr-2" />
-                                    Download
-                                </Button>
-                            </div>
+                            
                         </div>
                         <div className="mb-6">
                             <p className="font-medium text-purple-700">Instructions:</p>

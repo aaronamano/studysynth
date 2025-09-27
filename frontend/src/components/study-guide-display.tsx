@@ -4,7 +4,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Download, Copy, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
@@ -17,35 +17,6 @@ interface StudyGuideDisplayProps {
 
 // Main component for displaying the study guide
 export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGuideDisplayProps) {
-
-  // Copies the study guide text to the clipboard and shows a toast notification
-  const handleCopy = () => {
-    if (studyGuide) {
-      navigator.clipboard.writeText(studyGuide)
-      toast.success("Copied to clipboard", {
-        description: "The study guide has been copied to your clipboard"
-      })
-    }
-  }
-
-  // Downloads the study guide as a markdown file and shows a toast notification
-  const handleDownload = () => {
-    if (studyGuide) {
-      const blob = new Blob([studyGuide], { type: "text/markdown" })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "study-guide.md"
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-
-      toast.success("Downloaded", {
-        description: "Your study guide has been downloaded"
-      })
-    }
-  }
 
   const renderFormattedText = (text: string) => {
     const regex = /\[(.*?)\]\((.*?)\)|\*\*(.*?)\*\*|\\\((.*?)\\\)/g;
@@ -91,28 +62,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
       {/* Header with title and action buttons */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Your Study Guide</h2>
-        <div className="flex space-x-2">
-          {/* Copy button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopy}
-            className="border-purple-200 hover:bg-purple-50 hover:text-purple-700"
-          >
-            <Copy className="h-4 w-4 mr-2" />
-            Copy
-          </Button>
-          {/* Download button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDownload}
-            className="border-purple-200 hover:bg-purple-50 hover:text-purple-700"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Download
-          </Button>
-        </div>
+        
       </div>
 
       {/* Render study guide content directly */}
