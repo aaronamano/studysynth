@@ -44,7 +44,7 @@
 - `practice-problems-generator.tsx`: calls the `POST /practice-problems` api route
 - `study-guide-generator.tsx`: calls the `POST /study-guide` api route
 
-## Account Schema
+## Account collection schema
 this is the account schema used for MongoDB <br>
 **Make sure to DM me so I can share the MongoDB URL and database with you**
 ```typescript
@@ -55,6 +55,15 @@ this is the account schema used for MongoDB <br>
     perplexityKey: string = "", // not actual key but encrypted version; initally empty string cuz no key registered yet
     openaiKey: string = "" // not actual key but encrypted version; initally empty string cuz no key registered yet
 
+}
+```
+
+## History collection schema
+```typescript
+{
+    _id: ObjectId(),
+    profileId: ObjectId(), // get the id of an existing user
+    response: string | {} // usually return the API response in json or a string
 }
 ```
 

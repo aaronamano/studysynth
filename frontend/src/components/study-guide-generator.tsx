@@ -155,95 +155,95 @@ export default function StudyGuideGenerator() {
       <div className="space-y-6">
         <Card>
           <CardContent className="space-y-6">
-              {/* pdf input */}
-              <div>
-                <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
-                <TopicPdfImport value={pdfFile} onChange={setPdfFile} />
-              </div>
+            {/* pdf input */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
+              <TopicPdfImport value={pdfFile} onChange={setPdfFile} />
+            </div>
 
-              <Separator />
+            <Separator />
 
-              {/* Constraints input */}
-              <div>
-                <h2 className="text-xl font-semibold mb-4 text-purple-700">Constraints & Requirements</h2>
-                <Label htmlFor="constraints">Study Constraints</Label>
-                <Textarea
-                  id="constraints"
-                  placeholder="Enter any constraints (e.g., time available, exam date, specific format requirements)"
-                  className="mt-2"
-                  value={constraints}
-                  onChange={(e) => setConstraints(e.target.value)}
-                />
-              </div>
+            {/* Constraints input */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-purple-700">Constraints & Requirements</h2>
+              <Label htmlFor="constraints">Study Constraints</Label>
+              <Textarea
+                id="constraints"
+                placeholder="Enter any constraints (e.g., time available, exam date, specific format requirements)"
+                className="mt-2"
+                value={constraints}
+                onChange={(e) => setConstraints(e.target.value)}
+              />
+            </div>
 
-              <Separator />
+            <Separator />
 
-              {/* Media preferences checkboxes */}
-              <div>
-                <h2 className="text-xl font-semibold mb-4 text-purple-700">Media Preferences</h2>
-                <MediaPreferences
-                  preferences={mediaPreferences}
-                  setPreferences={setMediaPreferences}
-                />
-              </div>
+            {/* Media preferences checkboxes */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-purple-700">Media Preferences</h2>
+              <MediaPreferences
+                preferences={mediaPreferences}
+                setPreferences={setMediaPreferences}
+              />
+            </div>
 
-              <Separator />
+            <Separator />
 
-              {/* Strengths and weaknesses input */}
-              <div>
-                <h2 className="text-xl font-semibold mb-4 text-purple-700">Strengths & Weaknesses</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <TopicInput
-                      items={strengths}
-                      setItems={setStrengths}
-                      placeholder="Enter a strength"
-                      label="Strengths"
-                    />
-                  </div>
-                  <div>
-                    <TopicInput
-                      items={weaknesses}
-                      setItems={setWeaknesses}
-                      placeholder="Enter a weakness"
-                      label="Weaknesses"
-                    />
-                  </div>
+            {/* Strengths and weaknesses input */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-purple-700">Strengths & Weaknesses</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <TopicInput
+                    items={strengths}
+                    setItems={setStrengths}
+                    placeholder="Enter a strength"
+                    label="Strengths"
+                  />
+                </div>
+                <div>
+                  <TopicInput
+                    items={weaknesses}
+                    setItems={setWeaknesses}
+                    placeholder="Enter a weakness"
+                    label="Weaknesses"
+                  />
                 </div>
               </div>
+            </div>
 
-              <Separator />
+            <Separator />
 
-              {/* Study plan preferences (duration, intensity, etc.) */}
-              <div>
-                <h2 className="text-xl font-semibold mb-4 text-purple-700">Study Plan Preferences</h2>
-                <StudyPlanAdjuster
-                  studyPlan={studyPlan}
-                  setStudyPlan={setStudyPlan}
-                />
-              </div>
+            {/* Study plan preferences (duration, intensity, etc.) */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-purple-700">Study Plan Preferences</h2>
+              <StudyPlanAdjuster
+                studyPlan={studyPlan}
+                setStudyPlan={setStudyPlan}
+              />
+            </div>
 
-              <Separator />
+            <Separator />
 
-              {/* Generate button */}
-              <Button
-                onClick={handleGenerateStudyGuide}
-                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
-                size="lg"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Study Guide...
-                  </>
-                ) : (
-                  "Create Study Guide"
-                )}
-              </Button>
+            {/* Generate button */}
+            <Button
+              onClick={handleGenerateStudyGuide}
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+              size="lg"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Study Guide...
+                </>
+              ) : (
+                "Create Study Guide"
+              )}
+            </Button>
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Right Column: Study Guide Display */}
       <div>
         <StudyGuideDisplay studyGuide={studyGuide} isGenerating={isGenerating} />
@@ -251,4 +251,3 @@ export default function StudyGuideGenerator() {
     </div>
   )
 }
-

@@ -4,15 +4,15 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
+import { Loader2, Save } from "lucide-react"
 import { toast } from "sonner"
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 
 // Props interface for the StudyGuideDisplay component
 interface StudyGuideDisplayProps {
-  studyGuide: string | null
-  isGenerating: boolean
+  studyGuide: string | null;
+  isGenerating: boolean;
 }
 
 // Main component for displaying the study guide
@@ -56,13 +56,59 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     return parts;
   };
 
+  const handleSaveStudyGuide = async () => {
+    if (!studyGuide) {
+      toast.error("No study guide to save.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You must be logged in to save a study guide.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/history", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ studyGuide }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to save study guide.");
+      }
+
+      toast.success("Study guide saved successfully!");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      toast.error("Failed to save study guide", {
+        description: message,
+      });
+    }
+  };
+
+
+
   // Main UI when a study guide is available
   return (
     <div className="space-y-4">
       {/* Header with title and action buttons */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Your Study Guide</h2>
-        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSaveStudyGuide}
+          disabled={!studyGuide || isGenerating}
+          className="border-purple-200 hover:bg-purple-50 hover:text-purple-700"
+        >
+          <Save className="h-4 w-4 mr-2" />
+          Save
+        </Button>
       </div>
 
       {/* Render study guide content directly */}
@@ -139,6 +185,6 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
           )}
         </CardContent>
       </Card>
-    </div>
+    </div >
   )
 }

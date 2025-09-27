@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
+import jwt from 'jsonwebtoken';
+
+interface DecodedToken {
+  userId: string;
+  iat: number;
+  exp: number;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,11 +21,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: 'Token missing' }, { status: 401 });
     }
 
+    let decodedToken: DecodedToken;
+    try {
+      decodedToken = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
+    } catch (error) {
+      return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
+    }
+
     const client = await clientPromise;
     const db = client.db('studysynth');
     const accounts = db.collection('accounts');
 
-    const user = await accounts.findOne({ _id: new ObjectId(token) });
+    const user = await accounts.findOne({ _id: new ObjectId(decodedToken.userId) });
 
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });

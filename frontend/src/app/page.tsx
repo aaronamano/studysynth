@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { FileText, WalletCards, ListChecks, PenTool, User } from "lucide-react"
+import { FileText, WalletCards, ListChecks, PenTool, User, History } from "lucide-react"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
@@ -52,6 +52,14 @@ export default function Home() {
             {isLoggedIn ? (
               <>
                 <p className="text-lg font-medium text-purple-600">Welcome {firstName}, glad to have you here. Now time to lock tf in!</p>
+                <Link href="/history" passHref>
+                  <Button
+                    className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                  >
+                    <History className="h-5 w-5 mr-2" />
+                    History
+                  </Button>
+                </Link>
                 <Button
                   onClick={handleLogout}
                   className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
