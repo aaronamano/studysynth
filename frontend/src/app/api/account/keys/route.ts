@@ -51,7 +51,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ perplexityKey: decryptedPerplexityKey, openaiKey: decryptedOpenaiKey }, { status: 200 });
   } catch (error) {
-    console.error(error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
@@ -90,7 +89,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: 'API keys updated successfully' }, { status: 200 });
   } catch (error) {
-    console.error(error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }

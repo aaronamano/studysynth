@@ -54,16 +54,13 @@ export default function MockExamOptions({
       });
 
       if (!res.ok) {
-        throw new Error("Failed to fetch API key.");
+        return null;
       }
 
       const data = await res.json();
       return data.openaiKey;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
-      toast.error('Failed to fetch API key', {
-        description: message,
-      });
       return null;
     }
   };

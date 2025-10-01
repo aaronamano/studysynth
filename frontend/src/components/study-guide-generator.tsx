@@ -51,16 +51,13 @@ export default function StudyGuideGenerator() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to fetch API key.");
+        return null;
       }
 
       const data = await res.json();
       return data.perplexityKey;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
-      toast.error('Failed to fetch API key', {
-        description: message,
-      });
       return null;
     }
   };
@@ -101,11 +98,10 @@ export default function StudyGuideGenerator() {
 
       if (!studyGuideResponse.ok) {
         const errorText = await studyGuideResponse.text();
-        throw new Error(`Failed to generate study guide: ${errorText}`);
       }
 
       if (!studyGuideResponse.body) {
-        throw new Error("Response body is empty.");
+        return;
       }
 
       const reader = studyGuideResponse.body.getReader();
@@ -127,22 +123,17 @@ export default function StudyGuideGenerator() {
             try {
               const data = JSON.parse(dataStr);
               if (data.error) {
-                throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
               }
               if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
                 setStudyGuide((prev) => (prev || '') + data.choices[0].delta.content);
               }
             } catch (e) {
-              console.error("Error parsing stream data:", dataStr, e);
             }
           }
         }
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
-      toast.error('Failed to generate study guide', {
-        description: message,
-      });
     } finally {
       setIsGenerating(false);
     }

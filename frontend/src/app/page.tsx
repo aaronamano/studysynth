@@ -16,9 +16,11 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("create-study-guide")
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [firstName, setFirstName] = useState("")
+  const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
+    setIsMounted(true)
     const token = localStorage.getItem("token");
     if (token) {
       setIsLoggedIn(true);
@@ -49,7 +51,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-6">
         <header className="mb-8 py-8 relative">
           <div className="absolute top-8 right-0 flex items-center space-x-4">
-            {isLoggedIn ? (
+            {isMounted && isLoggedIn ? (
               <>
                 <p className="text-lg font-medium text-purple-600">Welcome {firstName}, glad to have you here. Now time to lock tf in!</p>
                 <Link href="/history" passHref>
@@ -77,7 +79,7 @@ export default function Home() {
                   </Button>
                 </Link>
               </>
-            ) : (
+            ) : isMounted && (
               <>
                 <Link href="/about" passHref>
                   <Button className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">

@@ -47,7 +47,7 @@ export default function TopicPdfImport({ value, onChange }: TopicTextareaProps) 
       )}
 
       <p className="text-xs text-muted-foreground">
-        Upload a PDF file. The text will be extracted and used as your topics and concepts.
+        Please upload a PDF file, preferably 5 pages max.
       </p>
     </div>
   )

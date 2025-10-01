@@ -7,13 +7,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
 
 export default function AccountPage() {
   const [perplexityApiKey, setPerplexityApiKey] = useState("")
   const [openaiApiKey, setOpenaiApiKey] = useState("")
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
     const token = localStorage.getItem("token")
     if (token) {
       fetch("/api/account/keys", {
@@ -37,7 +39,6 @@ export default function AccountPage() {
     e.preventDefault()
     const token = localStorage.getItem("token")
     if (!token) {
-      toast.error("You must be logged in to update your API keys.")
       return
     }
 
@@ -55,11 +56,17 @@ export default function AccountPage() {
         toast.success("API keys updated successfully!")
       } else {
         const data = await res.json()
-        toast.error(data.message || "Something went wrong")
       }
     } catch (error) {
-      toast.error("Something went wrong")
     }
+  }
+
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
+      </div>
+    )
   }
 
   return (
