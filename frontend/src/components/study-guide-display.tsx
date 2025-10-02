@@ -8,6 +8,7 @@ import { Loader2, Save } from "lucide-react"
 import { toast } from "sonner"
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
+import { useState, useEffect } from "react";
 
 // Props interface for the StudyGuideDisplay component
 interface StudyGuideDisplayProps {
@@ -17,9 +18,14 @@ interface StudyGuideDisplayProps {
 
 // Main component for displaying the study guide
 export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGuideDisplayProps) {
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    setIsSaved(false);
+  }, [studyGuide]);
 
   const renderFormattedText = (text: string) => {
-    const regex = /\[(.*?)\]\((.*?)\)|\*\*(.*?)\*\*|\\\((.*?)\\\)/g;
+    const regex = /.*\[(.*?)].*\((.*?)\)|\*\*(.*?)\*\*|\\\((.*?)\\\)/g;
     const parts = [];
     let lastIndex = 0;
     let match;
@@ -83,6 +89,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
       }
 
       toast.success("Study guide saved successfully!");
+      setIsSaved(true);
     } catch (error) {
       const message = error instanceof Error ? error.message : "An unknown error occurred";
       toast.error("Failed to save study guide", {
@@ -110,6 +117,8 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
           Save
         </Button>
       </div>
+
+      {isSaved &&  <p className="text-green-600">Study guide succesfully saved.</p> }
 
       {/* Render study guide content directly */}
       <Card className="h-full">

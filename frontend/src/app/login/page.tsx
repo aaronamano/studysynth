@@ -66,7 +66,7 @@ export default function LoginPage() {
             {error && <p className="text-red-500 text-sm">{error}</p>}
           </CardContent>
           <CardFooter className="flex flex-col">
-            <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white">Sign in</Button>
+            <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white mt-4">Sign in</Button>
             <div className="mt-4 text-center text-sm">
               Don't have an account?{" "}
               <Link href="/signup" className="underline text-purple-600">

@@ -33,7 +33,7 @@ export default function ResetPasswordPage() {
       })
 
       if (res.ok) {
-        setSuccess("Password reset successfully!")
+        setSuccess("Password reset successfully")
       } else {
         const data = await res.json()
         setError(data.message || "Something went wrong")
@@ -68,7 +68,7 @@ export default function ResetPasswordPage() {
             {success && <p className="text-green-500 text-sm">{success}</p>}
           </CardContent>
           <CardFooter className="flex flex-col">
-            <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white">Reset Password</Button>
+            <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white mt-4">Reset Password</Button>
             <div className="mt-4 text-center text-sm">
               Remember your password?{" "}
               <Link href="/login" className="underline text-purple-600">

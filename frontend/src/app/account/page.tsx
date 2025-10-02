@@ -13,6 +13,7 @@ export default function AccountPage() {
   const [perplexityApiKey, setPerplexityApiKey] = useState("")
   const [openaiApiKey, setOpenaiApiKey] = useState("")
   const [isMounted, setIsMounted] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -35,6 +36,10 @@ export default function AccountPage() {
     }
   }, [])
 
+  useEffect(() => {
+    setIsSaved(false)
+  }, [perplexityApiKey, openaiApiKey])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const token = localStorage.getItem("token")
@@ -54,6 +59,7 @@ export default function AccountPage() {
 
       if (res.ok) {
         toast.success("API keys updated successfully!")
+        setIsSaved(true)
       } else {
         const data = await res.json()
       }
@@ -102,9 +108,11 @@ export default function AccountPage() {
                 onChange={(e) => setOpenaiApiKey(e.target.value)}
               />
             </div>
+            {isSaved && <p className="text-green-600 text-sm">API key saved.</p>}
           </CardContent>
+          
           <CardFooter>
-            <Button type="submit">Save</Button>
+            <Button type="submit" className="mt-4">Save</Button>
           </CardFooter>
         </form>
       </Card>
