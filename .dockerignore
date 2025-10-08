@@ -1,6 +1,0 @@
-backend/__pycache__
-backend/venv
-.env
-
-# ignore this file for production
-backend/analyze_coverage.py

@@ -66,7 +66,7 @@ export default function StudyGuideGenerator() {
   // Handles the "Create Study Guide" button click
   const handleGenerateStudyGuide = async () => {
     setIsGenerating(true);
-    setStudyGuide(""); // Reset the study guide content
+    setStudyGuide(null); // Reset the study guide content
 
     try {
       const perplexityApiKey = await getPerplexityApiKey();
@@ -91,49 +91,23 @@ export default function StudyGuideGenerator() {
       formData.append("studyPlan", JSON.stringify(studyPlan));
 
       // Correct: use formData for multipart/form-data
-      const studyGuideResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/study-guide`, {
+      const studyGuideResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}study-guide`, {
         method: 'POST',
         body: formData,
       });
 
       if (!studyGuideResponse.ok) {
         const errorText = await studyGuideResponse.text();
+        toast.error("Failed to generate study guide.", { description: errorText });
+        throw new Error(`Failed to generate study guide: ${errorText}`);
       }
 
-      if (!studyGuideResponse.body) {
-        return;
-      }
+      const data = await studyGuideResponse.json();
+      setStudyGuide(data.study_guide);
 
-      const reader = studyGuideResponse.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let done = false;
-
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-        buffer += decoder.decode(value, { stream: true });
-
-        const parts = buffer.split('\n\n');
-        buffer = parts.pop() || '';
-
-        for (const part of parts) {
-          if (part.startsWith('data: ')) {
-            const dataStr = part.substring(6);
-            try {
-              const data = JSON.parse(dataStr);
-              if (data.error) {
-              }
-              if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
-                setStudyGuide((prev) => (prev || '') + data.choices[0].delta.content);
-              }
-            } catch (e) {
-            }
-          }
-        }
-      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      toast.error("An error occurred while generating the study guide.", { description: message });
     } finally {
       setIsGenerating(false);
     }

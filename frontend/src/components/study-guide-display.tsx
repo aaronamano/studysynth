@@ -181,7 +181,6 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                   )
                 }
               })}
-              {isGenerating && <Loader2 className="inline-block h-5 w-5 animate-spin text-purple-700 ml-1" />}
             </div>
           )}
           {!isGenerating && !studyGuide && (

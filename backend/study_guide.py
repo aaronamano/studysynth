@@ -1,5 +1,4 @@
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
-from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
@@ -76,30 +75,23 @@ Format the response as a markdown document with clear sections and headers."""
 
         client = OpenAI(api_key=perplexity_api_key, base_url="https://api.perplexity.ai")
 
-        async def event_stream():
-            try:
-                stream = client.chat.completions.create(
-                    model="sonar-pro",
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": "You are a professional study guide creator. Generate detailed, well-structured study guides in. Always include relevant hyperlinks to high-quality resources, official documentation, tutorials, and practice materials. Use markdown link format [text](url) for all references."
-                        },
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                    stream=True,
-                )
-                for chunk in stream:
-                    yield f"data: {chunk.model_dump_json()}\n\n"
-            except Exception as e:
-                # Properly handle exceptions and yield an error message
-                error_message = {"error": str(e)}
-                yield f"data: {json.dumps(error_message)}\n\n"
-
-        return StreamingResponse(event_stream(), media_type="text/event-stream")
+        response = client.chat.completions.create(
+            model="sonar-pro",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a professional study guide creator. Generate detailed, well-structured study guides in. Always include relevant hyperlinks to high-quality resources, official documentation, tutorials, and practice materials. Use markdown link format [text](url) for all references."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+        )
+        
+        study_guide_content = response.choices[0].message.content
+        
+        return {"study_guide": study_guide_content}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate study guide: {e}")
