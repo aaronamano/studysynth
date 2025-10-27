@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { FileText, WalletCards, ListChecks, PenTool, User, Bookmark, CalendarIcon } from "lucide-react"
-
+import { FileText, User, Bookmark, CalendarIcon } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import StudyGuideGenerator from "@/components/study-guide-generator"
-import { CalendarView } from "@/components/calendar-view"
+import { StudyCalendar } from "@/components/study-calendar"
 
 
 export default function Home() {
@@ -128,7 +126,7 @@ export default function Home() {
 
             {/* Calendar tab content */}
             <TabsContent value="calendar" className="mt-6">
-              <CalendarView />
+              <StudyCalendar />
             </TabsContent>
           </Tabs>
         </div>
