@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, BookOpen, FileText } from "lucide-react"
+import { Loader2, BookOpen, FileText, Calendar } from "lucide-react"
 import MediaPreferences from "./media-preferences"
 import StudyPlanAdjuster from "./study-plan-adjuster"
 import PracticeOptions from "./practice-options"
@@ -15,6 +15,7 @@ import StudyGuideDisplay from "./study-guide-display"
 import TopicInput from "./topic-input" // Input for strengths/weaknesses
 import TopicTextarea from "./topic-textarea" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
+import StudyCalendar from "./study-calendar"
 
 export default function StudyGuideGenerator() {
   // Add new state variable for practice materials
@@ -108,7 +109,7 @@ export default function StudyGuideGenerator() {
     <div className="grid grid-cols-1 gap-6">
       {/* Tab navigation for input/result */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-purple-100">
+        <TabsList className="grid w-full grid-cols-3 bg-purple-100">
           {/* Input tab */}
           <TabsTrigger value="input" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <FileText className="mr-2 h-4 w-4" />
@@ -118,6 +119,11 @@ export default function StudyGuideGenerator() {
           <TabsTrigger value="result" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <BookOpen className="mr-2 h-4 w-4" />
             Study Guide
+          </TabsTrigger>
+          {/* Calendar tab */}
+          <TabsTrigger value="calendar" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <Calendar className="mr-2 h-4 w-4" />
+            Study Calendar
           </TabsTrigger>
         </TabsList>
 
@@ -242,6 +248,15 @@ export default function StudyGuideGenerator() {
             practiceMaterials={practiceMaterials}
             isGenerating={isGenerating} 
           />
+        </TabsContent>
+
+        {/* Calendar display */}
+        <TabsContent value="calendar" className="mt-6">
+          <Card>
+            <CardContent className="pt-6">
+              <StudyCalendar />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
