@@ -9,8 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import StudyGuideGenerator from "@/components/study-guide-generator"
-import PracticeProblemsDisplay from "@/components/practice-problems-display"
-import MockExamDisplay from "@/components/mock-exam-display"
+
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("create-study-guide")
@@ -101,7 +100,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-purple-100">
+            <TabsList className="grid w-full grid-cols-1 bg-purple-100">
               {/* Create Study Guide tab */}
               <TabsTrigger
                 value="create-study-guide"
@@ -122,22 +121,7 @@ export default function Home() {
               </TabsTrigger>
               */}
 
-              {/* Practice problems tab */}
-              <TabsTrigger
-                value="practice"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-              >
-                <ListChecks className="mr-2 h-4 w-4" />
-                Practice Problems
-              </TabsTrigger>
-              {/* Mock exams tab */}
-              <TabsTrigger
-                value="exam"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-              >
-                <PenTool className="mr-2 h-4 w-4" />
-                Mock Exams
-              </TabsTrigger>
+              
             </TabsList>
 
             {/* Create Study Guide tab content */}
@@ -159,13 +143,7 @@ export default function Home() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="practice" className="mt-6">
-              <PracticeProblemsDisplay />
-            </TabsContent>
-
-            <TabsContent value="exam" className="mt-6">
-              <MockExamDisplay />
-            </TabsContent>
+            
           </Tabs>
         </div>
       </div>
