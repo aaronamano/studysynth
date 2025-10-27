@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { FileText, WalletCards, ListChecks, PenTool, User, Bookmark } from "lucide-react"
+import { FileText, WalletCards, ListChecks, PenTool, User, Bookmark, CalendarIcon } from "lucide-react"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import StudyGuideGenerator from "@/components/study-guide-generator"
+import { CalendarView } from "@/components/calendar-view"
 
 
 export default function Home() {
@@ -100,7 +101,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-1 bg-purple-100">
+            <TabsList className="grid w-full grid-cols-2 bg-purple-100">
               {/* Create Study Guide tab */}
               <TabsTrigger
                 value="create-study-guide"
@@ -110,18 +111,14 @@ export default function Home() {
                 Study Guide
               </TabsTrigger>
 
-              {/* Flashcard tab */}
-              {/*
+              {/* Calendar tab */}
               <TabsTrigger
-                value="flashcard"
+                value="calendar"
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
               >
-                <WalletCards className="mr-2 h-4 w-4" />
-                Flashcard Lab
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                Calendar
               </TabsTrigger>
-              */}
-
-              
             </TabsList>
 
             {/* Create Study Guide tab content */}
@@ -129,21 +126,10 @@ export default function Home() {
               <StudyGuideGenerator />
             </TabsContent>
 
-            {/* Other tabs */}
-            <TabsContent value="flashcard" className="mt-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-center text-gray-500">
-                    <p className="text-lg">
-                      Flashcard Lab is under construction!
-                    </p>
-                    <p className="mt-2">Stay tuned for updates.</p>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Calendar tab content */}
+            <TabsContent value="calendar" className="mt-6">
+              <CalendarView />
             </TabsContent>
-
-            
           </Tabs>
         </div>
       </div>
