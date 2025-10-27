@@ -91,7 +91,7 @@ export default function StudyGuideGenerator() {
       formData.append("studyPlan", JSON.stringify(studyPlan));
 
       // Correct: use formData for multipart/form-data
-      const studyGuideResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/study-guide`, {
+      const studyGuideResponse = await fetch('http://localhost:3000/api/study-guide', {
         method: 'POST',
         body: formData,
       });
