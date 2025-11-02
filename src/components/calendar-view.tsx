@@ -1,72 +1,217 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { Calendar } from "@/components/ui/calendar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import React, { useState } from 'react';
+import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
+import { format } from 'date-fns/format';
+import { parse } from 'date-fns/parse';
+import { startOfWeek } from 'date-fns/startOfWeek';
+import { getDay } from 'date-fns/getDay';
+import { enUS } from 'date-fns/locale/en-US';
+import DatePicker from 'react-datepicker';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
-// Mock data for study sessions
-const studySessions = [
+const locales = {
+  'en-US': enUS,
+};
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+});
+
+const initialEvents = [
   {
-    title: "Quantum Physics Midterm",
-    date: new Date(2025, 10, 15),
-    timeframe: "9:00 AM - 11:00 AM",
+    title: 'Quantum Physics Midterm Prep',
+    start: new Date(2025, 10, 15, 9, 0, 0),
+    end: new Date(2025, 10, 15, 11, 0, 0),
   },
   {
-    title: "Organic Chemistry Final",
-    date: new Date(2025, 10, 22),
-    timeframe: "1:00 PM - 3:00 PM",
-  },
-  {
-    title: "Calculus III Quiz",
-    date: new Date(2025, 10, 28),
-    timeframe: "10:00 AM - 11:30 AM",
-  },
-  {
-    title: "Data Structures Project",
-    date: new Date(2025, 11, 5),
-    timeframe: "All Day",
+    title: 'Organic Chemistry Final Review',
+    start: new Date(2025, 10, 22, 13, 0, 0),
+    end: new Date(2025, 10, 22, 15, 0, 0),
   },
 ];
 
-export function CalendarView() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date(2025, 10, 1))
+import { jwtDecode } from "jwt-decode";
 
-  const studyDays = studySessions.map(session => session.date);
+const CustomToolbar = ({ label, onNavigate, onView }) => {
+  return (
+    <div className="rbc-toolbar">
+      <span className="rbc-btn-group">
+        <Button onClick={() => onNavigate('PREV')}>Back</Button>
+        <Button onClick={() => onNavigate('TODAY')}>Today</Button>
+        <Button onClick={() => onNavigate('NEXT')}>Next</Button>
+      </span>
+      <span className="rbc-toolbar-label">{label}</span>
+      <span className="rbc-btn-group">
+        <Button onClick={() => onView(Views.MONTH)}>Month</Button>
+        <Button onClick={() => onView(Views.WEEK)}>Week</Button>
+        <Button onClick={() => onView(Views.DAY)}>Day</Button>
+        <Button onClick={() => onView(Views.AGENDA)}>Agenda</Button>
+      </span>
+    </div>
+  );
+};
+
+export function CalendarView() {
+  const [events, setEvents] = useState(initialEvents);
+  const [newEvent, setNewEvent] = useState({ title: '', start: new Date(), end: new Date() });
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [view, setView] = useState(Views.MONTH);
+  const [date, setDate] = useState(new Date());
+
+  const handleAddEvent = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Handle case where user is not logged in
+      return;
+    }
+    const decodedToken: { userId: string } = jwtDecode(token);
+    const userId = decodedToken.userId;
+
+    const response = await fetch('/api/calendar/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ 
+        ...newEvent, 
+        startDate: newEvent.start, 
+        endDate: newEvent.end 
+      }),
+    });
+    if (response.ok) {
+      const { eventId } = await response.json();
+      setEvents([...events, { ...newEvent, _id: eventId }]);
+    }
+  };
+
+  const handleDeleteEvent = (eventToDelete) => {
+    // TODO: Implement API call to delete event
+    setEvents(events.filter(event => event !== eventToDelete));
+  };
+
+  const handleUpdateEvent = (updatedEvent) => {
+    // TODO: Implement API call to update event
+    setEvents(events.map(event => event === selectedEvent ? updatedEvent : event));
+    setSelectedEvent(null);
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2">
-        <Card>
-          <CardContent className="p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              modifiers={{ studyDay: studyDays }}
-              modifiersClassNames={{
-                studyDay: "bg-purple-500 text-white",
-              }}
-              className="rounded-md border"
-            />
+        <Card className='mb-4'>
+          <CardContent className='p-4'>
+            <h3 className='text-lg font-semibold mb-2'>Add New Study Session</h3>
+            <div className='flex flex-col space-y-2'>
+              <Input
+                type='text'
+                placeholder='Title'
+                value={newEvent.title}
+                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+              />
+              <div className='flex space-x-2'>
+                <DatePicker
+                  selected={newEvent.start}
+                  onChange={(start) => setNewEvent({ ...newEvent, start: start as Date })}
+                  showTimeSelect
+                  dateFormat='Pp'
+                  className='w-full'
+                />
+                <DatePicker
+                  selected={newEvent.end}
+                  onChange={(end) => setNewEvent({ ...newEvent, end: end as Date })}
+                  showTimeSelect
+                  dateFormat='Pp'
+                  className='w-full'
+                />
+              </div>
+              <Button onClick={handleAddEvent}>Add Event</Button>
+            </div>
           </CardContent>
         </Card>
+
+        <Calendar
+          localizer={localizer}
+          events={events}
+          startAccessor='start'
+          endAccessor='end'
+          style={{ height: 500 }}
+          onSelectEvent={event => setSelectedEvent(event)}
+          view={view}
+          onView={setView}
+          date={date}
+          onNavigate={setDate}
+          components={{
+            toolbar: CustomToolbar,
+          }}
+        />
       </div>
       <div>
         <h2 className="text-lg font-semibold mb-4">Upcoming Study Sessions</h2>
         <div className="space-y-4">
-          {studySessions.map((session, index) => (
+          {events.map((event, index) => (
             <Card key={index}>
               <CardHeader>
-                <CardTitle>{session.title}</CardTitle>
+                <CardTitle>{event.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>{session.date.toLocaleDateString()}</p>
-                <p>{session.timeframe}</p>
+                <p>{`${format(event.start, 'P')} ${format(event.start, 'p')} - ${format(event.end, 'p')}`}</p>
+                <div className="flex space-x-2 mt-2">
+                  <Button onClick={() => setSelectedEvent(event)} className="bg-yellow-600">Edit</Button>
+                  <Button onClick={() => handleDeleteEvent(event)} className="bg-red-600">Delete</Button>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {selectedEvent && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <Card className="w-1/3">
+              <CardHeader>
+                <CardTitle>Edit Study Session</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='flex flex-col space-y-2'>
+                  <Input
+                    type='text'
+                    placeholder='Title'
+                    value={selectedEvent.title}
+                    onChange={(e) => setSelectedEvent({ ...selectedEvent, title: e.target.value })}
+                  />
+                  <div className='flex space-x-2'>
+                    <DatePicker
+                      selected={selectedEvent.start}
+                      onChange={(start) => setSelectedEvent({ ...selectedEvent, start: start as Date })}
+                      showTimeSelect
+                      dateFormat='Pp'
+                      className='w-full'
+                    />
+                    <DatePicker
+                      selected={selectedEvent.end}
+                      onChange={(end) => setSelectedEvent({ ...selectedEvent, end: end as Date })}
+                      showTimeSelect
+                      dateFormat='Pp'
+                      className='w-full'
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={() => handleUpdateEvent(selectedEvent)}>Update</Button>
+                    <Button onClick={() => setSelectedEvent(null)}>Cancel</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }

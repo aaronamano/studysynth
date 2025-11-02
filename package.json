@@ -50,6 +50,7 @@
     "fs": "0.0.1-security",
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^4.0.0",
     "katex": "^0.16.22",
     "lucide-react": "^0.509.0",
     "mongodb": "^6.18.0",

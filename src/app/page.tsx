@@ -7,7 +7,7 @@ import { FileText, User, Bookmark, CalendarIcon } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import StudyGuideGenerator from "@/components/study-guide-generator"
-import { StudyCalendar } from "@/components/study-calendar"
+import { CalendarView } from "@/components/calendar-view"
 
 
 export default function Home() {
@@ -126,7 +126,7 @@ export default function Home() {
 
             {/* Calendar tab content */}
             <TabsContent value="calendar" className="mt-6">
-              <StudyCalendar />
+              <CalendarView />
             </TabsContent>
           </Tabs>
         </div>
