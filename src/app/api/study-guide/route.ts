@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-const pdf = require('pdf-parse');
+import pdf from 'pdf-parse-new';
+import fs from 'fs';
+import path from 'path';
 
 interface MediaPreferences {
   videos: boolean;
@@ -31,8 +33,16 @@ export async function POST(req: NextRequest) {
     let topics = '';
     if (pdf_file) {
       const fileBuffer = Buffer.from(await pdf_file.arrayBuffer());
-      const data = await pdf(fileBuffer);
+      const tempDir = path.join(process.cwd(), 'temp');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir);
+      }
+      const tempFilePath = path.join(tempDir, pdf_file.name);
+      fs.writeFileSync(tempFilePath, fileBuffer);
+      const dataBuffer = fs.readFileSync(tempFilePath);
+      const data = await pdf(dataBuffer);
       topics = data.text;
+      fs.unlinkSync(tempFilePath);
     }
 
     const prompt = `Generate a detailed study guide for the following topics:
