@@ -157,6 +157,20 @@ export function CalendarView() {
     }
   };
 
+  const eventStyleGetter = (event, start, end, isSelected) => {
+    const style = {
+        backgroundColor: '#8B5CF6',
+        borderRadius: '5px',
+        opacity: 0.8,
+        color: 'white',
+        border: '0px',
+        display: 'block'
+    };
+    return {
+        style: style
+    };
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2">
@@ -186,7 +200,7 @@ export function CalendarView() {
                   className='w-full'
                 />
               </div>
-              <Button onClick={handleAddEvent}>Add Event</Button>
+              <Button onClick={handleAddEvent} className="bg-purple-600">Add Event</Button>
             </div>
           </CardContent>
         </Card>
@@ -205,6 +219,7 @@ export function CalendarView() {
           components={{
             toolbar: CustomToolbar,
           }}
+          eventPropGetter={eventStyleGetter}
         />
       </div>
       <div>
@@ -227,7 +242,7 @@ export function CalendarView() {
         </div>
 
         {selectedEvent && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
             <Card className="w-1/3">
               <CardHeader>
                 <CardTitle>Edit Study Session</CardTitle>
