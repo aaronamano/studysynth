@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import { format } from 'date-fns/format';
 import { parse } from 'date-fns/parse';
@@ -24,19 +24,6 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const initialEvents = [
-  {
-    title: 'Quantum Physics Midterm Prep',
-    start: new Date(2025, 10, 15, 9, 0, 0),
-    end: new Date(2025, 10, 15, 11, 0, 0),
-  },
-  {
-    title: 'Organic Chemistry Final Review',
-    start: new Date(2025, 10, 22, 13, 0, 0),
-    end: new Date(2025, 10, 22, 15, 0, 0),
-  },
-];
-
 import { jwtDecode } from "jwt-decode";
 
 const CustomToolbar = ({ label, onNavigate, onView }) => {
@@ -59,11 +46,45 @@ const CustomToolbar = ({ label, onNavigate, onView }) => {
 };
 
 export function CalendarView() {
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useState([]);
   const [newEvent, setNewEvent] = useState({ title: '', start: new Date(), end: new Date() });
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [view, setView] = useState(Views.MONTH);
   const [date, setDate] = useState(new Date());
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/calendar/events', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const formattedEvents = data.map(event => ({
+            ...event,
+            start: new Date(event.start),
+            end: new Date(event.end),
+          }));
+          setEvents(formattedEvents);
+        } else {
+          console.error('Failed to fetch events');
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   const handleAddEvent = async () => {
     const token = localStorage.getItem('token');
@@ -92,15 +113,48 @@ export function CalendarView() {
     }
   };
 
-  const handleDeleteEvent = (eventToDelete) => {
-    // TODO: Implement API call to delete event
-    setEvents(events.filter(event => event !== eventToDelete));
+  const handleDeleteEvent = async (eventToDelete) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const response = await fetch(`/api/calendar/events?eventId=${eventToDelete._id}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+
+    if (response.ok) {
+        setEvents(events.filter(event => event._id !== eventToDelete._id));
+    } else {
+        console.error("Failed to delete event");
+    }
   };
 
-  const handleUpdateEvent = (updatedEvent) => {
-    // TODO: Implement API call to update event
-    setEvents(events.map(event => event === selectedEvent ? updatedEvent : event));
-    setSelectedEvent(null);
+  const handleUpdateEvent = async (updatedEvent) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const response = await fetch('/api/calendar/events', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+            _id: updatedEvent._id,
+            title: updatedEvent.title,
+            startDate: updatedEvent.start,
+            endDate: updatedEvent.end,
+        }),
+    });
+
+    if (response.ok) {
+        setEvents(events.map(event => event._id === updatedEvent._id ? updatedEvent : event));
+        setSelectedEvent(null);
+    } else {
+        console.error("Failed to update event");
+    }
   };
 
   return (

@@ -18,6 +18,41 @@ async function getUserIdFromToken(token: string): Promise<string | null> {
   }
 }
 
+export async function GET(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json({ message: 'Authorization header missing' }, { status: 401 });
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return NextResponse.json({ message: 'Token missing' }, { status: 401 });
+    }
+
+    const userId = await getUserIdFromToken(token);
+    if (!userId) {
+      return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
+    }
+
+    const client = await clientPromise;
+    const db = client.db('studysynth');
+    const calendarEvents = db.collection('calendarEvents');
+
+    const events = await calendarEvents.find({ userId: new ObjectId(userId) }).toArray();
+
+    const formattedEvents = events.map(event => ({
+      ...event,
+      start: event.startDate,
+      end: event.endDate,
+    }));
+
+    return NextResponse.json(formattedEvents, { status: 200 });
+  } catch (e: any) {
+    return NextResponse.json({ error: `Failed to get events: ${e.message}` }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization');
@@ -57,3 +92,88 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Failed to add event: ${e.message}` }, { status: 500 });
   }
 }
+
+export async function PUT(req: NextRequest) {
+    try {
+      const authHeader = req.headers.get('authorization');
+      if (!authHeader) {
+        return NextResponse.json({ message: 'Authorization header missing' }, { status: 401 });
+      }
+  
+      const token = authHeader.split(' ')[1];
+      if (!token) {
+        return NextResponse.json({ message: 'Token missing' }, { status: 401 });
+      }
+  
+      const userId = await getUserIdFromToken(token);
+      if (!userId) {
+        return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
+      }
+  
+      const { _id, title, startDate, endDate } = await req.json();
+  
+      if (!_id || !title || !startDate || !endDate) {
+        return NextResponse.json({ error: 'Missing required fields for update' }, { status: 400 });
+      }
+  
+      const client = await clientPromise;
+      const db = client.db('studysynth');
+      const calendarEvents = db.collection('calendarEvents');
+  
+      const result = await calendarEvents.updateOne(
+        { _id: new ObjectId(_id), userId: new ObjectId(userId) },
+        { $set: { title, startDate: new Date(startDate), endDate: new Date(endDate) } }
+      );
+  
+      if (result.matchedCount === 0) {
+          return NextResponse.json({ error: 'Event not found or user not authorized' }, { status: 404 });
+      }
+  
+      return NextResponse.json({ message: 'Event updated successfully' }, { status: 200 });
+    } catch (e: any) {
+      return NextResponse.json({ error: `Failed to update event: ${e.message}` }, { status: 500 });
+    }
+  }
+  
+  export async function DELETE(req: NextRequest) {
+      try {
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader) {
+          return NextResponse.json({ message: 'Authorization header missing' }, { status: 401 });
+        }
+    
+        const token = authHeader.split(' ')[1];
+        if (!token) {
+          return NextResponse.json({ message: 'Token missing' }, { status: 401 });
+        }
+    
+        const userId = await getUserIdFromToken(token);
+        if (!userId) {
+          return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
+        }
+    
+        const { searchParams } = new URL(req.url);
+        const eventId = searchParams.get('eventId');
+    
+        if (!eventId) {
+          return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
+        }
+    
+        const client = await clientPromise;
+        const db = client.db('studysynth');
+        const calendarEvents = db.collection('calendarEvents');
+    
+        const result = await calendarEvents.deleteOne({
+          _id: new ObjectId(eventId),
+          userId: new ObjectId(userId),
+        });
+    
+        if (result.deletedCount === 0) {
+          return NextResponse.json({ error: 'Event not found or user not authorized' }, { status: 404 });
+        }
+    
+        return NextResponse.json({ message: 'Event deleted successfully' }, { status: 200 });
+      } catch (e: any) {
+        return NextResponse.json({ error: `Failed to delete event: ${e.message}` }, { status: 500 });
+      }
+    }
