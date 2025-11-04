@@ -1,22 +1,27 @@
-# Setup
+## Setup
 - under `studysynth\`, run `pnpm install`
 - then run `pnpm run dev` and click on `http://localhost:3000`
 
 ## API Routes
-### `/account/keys`
+`/account/keys`
 - GET, POST
-### `/study-guide`
+  
+`/study-guide`
 - POST
-### `/calendar/events`
+  
+`/calendar/events`
 - GET, POST, PUT, DELETE
-### `/history`
+  
+`/history`
 - GET, POST
-### `/auth`
+  
+`/auth`
 - POST `/auth/login`
 - POST `/auth/reset`
 - POST `/auth/signup`
 - GET `/auth/user`
-### `/ai-agent`
+  
+`/ai-agent`
 - POST `/ai-agent`
 
 ## Routes
