@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
+import { Calendar, dateFnsLocalizer, Views, View } from 'react-big-calendar';
 import { format } from 'date-fns/format';
 import { parse } from 'date-fns/parse';
 import { startOfWeek } from 'date-fns/startOfWeek';
@@ -45,46 +45,59 @@ const CustomToolbar = ({ label, onNavigate, onView }) => {
   );
 };
 
+// Define the Event type
+interface Event {
+  _id?: string;
+  title: string;
+  start: Date;
+  end: Date;
+  description?: string;
+}
+
 export function CalendarView() {
-  const [events, setEvents] = useState([]);
-  const [newEvent, setNewEvent] = useState({ title: '', start: new Date(), end: new Date() });
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [view, setView] = useState(Views.MONTH);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [newEvent, setNewEvent] = useState<Event>({ title: '', start: new Date(), end: new Date() });
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
 
+  // Move fetchEvents outside useEffect
+  const fetchEvents = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return;
+    }
+    try {
+      const response = await fetch('/api/calendar/events', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const formattedEvents = data.map((event: any) => ({
+          ...event,
+          start: new Date(event.start),
+          end: new Date(event.end),
+        }));
+        setEvents(formattedEvents);
+      } else {
+        console.error('Failed to fetch events');
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchEvents = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/calendar/events', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const formattedEvents = data.map(event => ({
-            ...event,
-            start: new Date(event.start),
-            end: new Date(event.end),
-          }));
-          setEvents(formattedEvents);
-        } else {
-          console.error('Failed to fetch events');
-        }
-      } catch (error) {
-        console.error('Error fetching events:', error);
-      }
-    };
-
     fetchEvents();
   }, []);
+
+  // Add a refresh button handler
+  const handleRefresh = () => {
+    fetchEvents();
+  };
 
   const handleAddEvent = async () => {
     const token = localStorage.getItem('token');
@@ -113,7 +126,7 @@ export function CalendarView() {
     }
   };
 
-  const handleDeleteEvent = async (eventToDelete) => {
+  const handleDeleteEvent = async (eventToDelete: Event) => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -131,7 +144,7 @@ export function CalendarView() {
     }
   };
 
-  const handleUpdateEvent = async (updatedEvent) => {
+  const handleUpdateEvent = async (updatedEvent: Event) => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -157,7 +170,7 @@ export function CalendarView() {
     }
   };
 
-  const eventStyleGetter = (event, start, end, isSelected) => {
+  const eventStyleGetter = (event: Event, start: Date, end: Date, isSelected: boolean) => {
     const style = {
         backgroundColor: '#8B5CF6',
         borderRadius: '5px',
@@ -213,7 +226,7 @@ export function CalendarView() {
           style={{ height: 500 }}
           onSelectEvent={event => setSelectedEvent(event)}
           view={view}
-          onView={setView}
+          onView={(view) => setView(view)}
           date={date}
           onNavigate={setDate}
           components={{

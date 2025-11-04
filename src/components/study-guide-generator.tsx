@@ -81,12 +81,8 @@ export default function StudyGuideGenerator() {
       }
       formData.append("constraints", constraints);
       formData.append("perplexity_api_key", perplexityApiKey);
-
-      // strengths and weaknesses as arrays (JSON string)
       formData.append("strengths", JSON.stringify(strengths));
       formData.append("weaknesses", JSON.stringify(weaknesses));
-
-      // Use lifted mediaPreferences state
       formData.append("mediaPreferences", JSON.stringify(mediaPreferences));
       formData.append("studyPlan", JSON.stringify(studyPlan));
 
@@ -104,6 +100,47 @@ export default function StudyGuideGenerator() {
 
       const data = await studyGuideResponse.json();
       setStudyGuide(data.study_guide);
+
+      // --- AI Agent Integration ---
+      // Compose the prompt (could be the constraints, or the generated study guide, or both)
+      const agentPrompt = constraints || data.study_guide || "";
+      if (agentPrompt) {
+        const aiAgentRes = await fetch('/api/ai-agent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: agentPrompt, perplexity_api_key: perplexityApiKey }),
+        });
+        if (aiAgentRes.ok) {
+          const { event } = await aiAgentRes.json();
+          if (event && event.title && event.start && event.end) {
+            // Save event to calendar
+            const token = localStorage.getItem('token');
+            if (token) {
+              const calendarRes = await fetch('/api/calendar/events', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  title: event.title,
+                  startDate: event.start,
+                  endDate: event.end,
+                  description: event.description || '',
+                }),
+              });
+              if (calendarRes.ok) {
+                toast.success('Calendar event created!', { description: event.title });
+              } else {
+                toast.error('Failed to save calendar event.');
+              }
+            }
+          }
+        } else {
+          toast.error('AI agent failed to suggest a calendar event.');
+        }
+      }
+      // --- End AI Agent Integration ---
 
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
