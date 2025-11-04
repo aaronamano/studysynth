@@ -11,6 +11,8 @@ import DatePicker from 'react-datepicker';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import type { Event, CustomToolbarProps } from '@/lib/types';
+import { jwtDecode } from "jwt-decode";
 
 const locales = {
   'en-US': enUS,
@@ -24,9 +26,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-import { jwtDecode } from "jwt-decode";
-
-const CustomToolbar = ({ label, onNavigate, onView }) => {
+const CustomToolbar = ({ label, onNavigate, onView }: CustomToolbarProps) => {
   return (
     <div className="rbc-toolbar">
       <span className="rbc-btn-group">
@@ -44,15 +44,6 @@ const CustomToolbar = ({ label, onNavigate, onView }) => {
     </div>
   );
 };
-
-// Define the Event type
-interface Event {
-  _id?: string;
-  title: string;
-  start: Date;
-  end: Date;
-  description?: string;
-}
 
 export function CalendarView() {
   const [events, setEvents] = useState<Event[]>([]);

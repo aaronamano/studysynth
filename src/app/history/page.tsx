@@ -9,12 +9,7 @@ import { ArrowLeft, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
-
-interface StudyGuideHistory {
-  _id: string;
-  response: string;
-  createdAt: string;
-}
+import type { StudyGuideHistory } from "@/lib/types"
 
 export default function HistoryPage() {
   const [history, setHistory] = useState<StudyGuideHistory[]>([]);

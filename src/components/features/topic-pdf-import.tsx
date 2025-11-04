@@ -5,11 +5,7 @@
 import { Label } from "@/components/ui/label"
 import { Info } from "lucide-react"
 import { useRef } from "react"
-
-interface TopicTextareaProps {
-  value: File | null
-  onChange: (value: File | null) => void
-}
+import type { TopicTextareaProps } from "@/lib/types"
 
 export default function TopicPdfImport({ value, onChange }: TopicTextareaProps) {
   const inputRef = useRef<HTMLInputElement>(null)

@@ -3,18 +3,7 @@ import OpenAI from 'openai';
 import pdf from 'pdf-parse-new';
 import fs from 'fs';
 import path from 'path';
-
-interface MediaPreferences {
-  videos: boolean;
-  diagrams: boolean;
-  readings: boolean;
-  summaries: boolean;
-}
-
-interface StudyPlan {
-  intensity: string;
-  learningStyle: string;
-}
+import type { MediaPreferences, StudyPlan } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
   try {

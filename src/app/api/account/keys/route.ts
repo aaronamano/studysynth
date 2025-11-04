@@ -3,16 +3,11 @@ import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import NcryptJs from 'ncrypt-js';
 import jwt from 'jsonwebtoken';
+import type { DecodedToken } from '@/lib/types';
 
 // replace secretKey with an env variable for production. secretKey is the password key that encrypts and decrypts the API keys.
 const secretKey = process.env.SECRET_KEY as string;
 const ncrypt = new NcryptJs(secretKey);
-
-interface DecodedToken {
-  userId: string;
-  iat: number;
-  exp: number;
-}
 
 async function getUserFromToken(token: string) {
   let decodedToken: DecodedToken;

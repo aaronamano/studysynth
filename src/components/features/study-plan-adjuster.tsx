@@ -5,14 +5,7 @@
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-interface StudyPlanAdjusterProps {
-  studyPlan: {
-    intensity: string;
-    learningStyle: string;
-  };
-  setStudyPlan: (plan: { intensity: string; learningStyle: string }) => void;
-}
+import type { StudyPlanAdjusterProps } from "@/lib/types"
 
 export default function StudyPlanAdjuster({
   studyPlan,

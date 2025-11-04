@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import jwt from 'jsonwebtoken';
-
-interface DecodedToken {
-  userId: string;
-  iat: number;
-  exp: number;
-}
+import type { DecodedToken } from '@/lib/types';
 
 async function getUserIdFromToken(token: string): Promise<string | null> {
   try {

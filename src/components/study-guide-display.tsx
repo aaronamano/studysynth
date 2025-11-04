@@ -9,12 +9,7 @@ import { toast } from "sonner"
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 import { useState, useEffect } from "react";
-
-// Props interface for the StudyGuideDisplay component
-interface StudyGuideDisplayProps {
-  studyGuide: string | null;
-  isGenerating: boolean;
-}
+import type { StudyGuideDisplayProps } from "@/lib/types";
 
 // Main component for displaying the study guide
 export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGuideDisplayProps) {

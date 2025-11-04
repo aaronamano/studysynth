@@ -7,13 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PlusCircle, X } from "lucide-react"
-
-interface TopicInputProps {
-  items: string[]
-  setItems: React.Dispatch<React.SetStateAction<string[]>>
-  placeholder: string
-  label: string
-}
+import type { TopicInputProps } from "@/lib/types"
 
 export default function TopicInput({ items, setItems, placeholder, label }: TopicInputProps) {
   
