@@ -11,6 +11,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.2.1(react-hook-form@7.61.1(react@19.1.1))
+      '@perplexity-ai/perplexity_ai':
+        specifier: ^0.16.0
+        version: 0.16.0
       '@radix-ui/react-accordion':
         specifier: ^1.2.10
         version: 1.2.11(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -578,6 +581,9 @@ packages:
 
   '@paralleldrive/cuid2@2.3.1':
     resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
+
+  '@perplexity-ai/perplexity_ai@0.16.0':
+    resolution: {integrity: sha512-VF6UHAhYl9MyPtvmsz7QmXCWZTj0RbixdMDYPxIAzqsD42saN/Tsie5qdsjJ+/c5JQiweh9CdBlhl5Qq7ofhLA==}
 
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
@@ -3515,6 +3521,8 @@ snapshots:
   '@paralleldrive/cuid2@2.3.1':
     dependencies:
       '@noble/hashes': 1.8.0
+
+  '@perplexity-ai/perplexity_ai@0.16.0': {}
 
   '@popperjs/core@2.11.8': {}
 

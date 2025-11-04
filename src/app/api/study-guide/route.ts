@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
 import pdf from 'pdf-parse-new';
 import fs from 'fs';
 import path from 'path';
 import type { MediaPreferences, StudyPlan } from '@/lib/types';
+import Perplexity from '@perplexity-ai/perplexity_ai';
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,10 +58,7 @@ Requirements for resources:
 
 Format the response as a markdown document with clear sections and headers.`;
 
-    const client = new OpenAI({
-      apiKey: perplexity_api_key,
-      baseURL: 'https://api.perplexity.ai',
-    });
+    const client = new Perplexity({ apiKey: perplexity_api_key });
 
     const response = await client.chat.completions.create({
       model: 'sonar-pro',
@@ -75,7 +72,7 @@ Format the response as a markdown document with clear sections and headers.`;
           role: 'user',
           content: prompt,
         },
-      ],
+      ]
     });
 
     const study_guide_content = response.choices[0].message.content;
