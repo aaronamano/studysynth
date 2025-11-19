@@ -15,6 +15,35 @@ import type { Event, CustomToolbarProps } from '@/lib/types';
 import { jwtDecode } from "jwt-decode";
 import { safeLocalStorage } from "@/lib/storage";
 
+// Utility function to parse and render links in text
+const parseLinksInText = (text: string) => {
+  if (!text) return text;
+  
+  // Regex to match http:// or https:// URLs
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  
+  const parts = text.split(urlRegex);
+  
+  return parts.map((part, index) => {
+    // Check if this part is a URL
+    if (part.match(urlRegex)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-purple-600 hover:text-purple-800 hover:underline underline"
+          onClick={(e) => e.stopPropagation()} // Prevent event selection when clicking link
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
+
 const locales = {
   'en-US': enUS,
 };
@@ -48,7 +77,7 @@ const CustomToolbar = ({ label, onNavigate, onView }: CustomToolbarProps) => {
 
 export function CalendarView() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [newEvent, setNewEvent] = useState<Event>({ title: '', start: new Date(), end: new Date() });
+  const [newEvent, setNewEvent] = useState<Event>({ title: '', start: new Date(), end: new Date(), description: '' });
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
@@ -109,7 +138,8 @@ export function CalendarView() {
       body: JSON.stringify({ 
         ...newEvent, 
         startDate: newEvent.start, 
-        endDate: newEvent.end 
+        endDate: newEvent.end,
+        description: newEvent.description
       }),
     });
     if (response.ok) {
@@ -151,6 +181,7 @@ export function CalendarView() {
             title: updatedEvent.title,
             startDate: updatedEvent.start,
             endDate: updatedEvent.end,
+            description: updatedEvent.description || '',
         }),
     });
 
@@ -176,6 +207,19 @@ export function CalendarView() {
     };
   };
 
+  const CustomEvent = ({ event }: { event: Event }) => {
+    return (
+      <div className="rbc-event-content">
+        <div className="font-semibold text-xs">{event.title}</div>
+        {event.description && (
+          <div className="text-xs opacity-90 mt-1 truncate">
+            {parseLinksInText(event.description)}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2">
@@ -189,6 +233,22 @@ export function CalendarView() {
                 value={newEvent.title}
                 onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
               />
+              <div className="space-y-2">
+                <Input
+                  type='text'
+                  placeholder='Description (optional)'
+                  value={newEvent.description || ''}
+                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                />
+                {newEvent.description && (
+                  <div className="text-xs text-gray-600 p-2 bg-gray-50 rounded border">
+                    <strong>Preview:</strong>
+                    <div className="mt-1 whitespace-pre-wrap">
+                      {parseLinksInText(newEvent.description)}
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className='flex space-x-2'>
                 <DatePicker
                   selected={newEvent.start}
@@ -223,6 +283,7 @@ export function CalendarView() {
           onNavigate={setDate}
           components={{
             toolbar: CustomToolbar,
+            event: CustomEvent,
           }}
           eventPropGetter={eventStyleGetter}
         />
@@ -237,6 +298,11 @@ export function CalendarView() {
               </CardHeader>
               <CardContent>
                 <p>{`${format(event.start, 'P')} ${format(event.start, 'p')} - ${format(event.end, 'p')}`}</p>
+                {event.description && (
+                  <div className="text-sm text-gray-600 mt-2 italic whitespace-pre-wrap">
+                    {parseLinksInText(event.description)}
+                  </div>
+                )}
                 <div className="flex space-x-2 mt-2">
                   <Button onClick={() => setSelectedEvent(event)} className="bg-yellow-600">Edit</Button>
                   <Button onClick={() => handleDeleteEvent(event)} className="bg-red-600">Delete</Button>
@@ -260,6 +326,22 @@ export function CalendarView() {
                     value={selectedEvent.title}
                     onChange={(e) => setSelectedEvent({ ...selectedEvent, title: e.target.value })}
                   />
+                  <div className="space-y-2">
+                    <Input
+                      type='text'
+                      placeholder='Description (optional)'
+                      value={selectedEvent.description || ''}
+                      onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })}
+                    />
+                    {selectedEvent.description && (
+                      <div className="text-xs text-gray-600 p-2 bg-gray-50 rounded border">
+                        <strong>Preview:</strong>
+                        <div className="mt-1 whitespace-pre-wrap">
+                          {parseLinksInText(selectedEvent.description)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <div className='flex space-x-2'>
                     <DatePicker
                       selected={selectedEvent.start}

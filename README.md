@@ -73,7 +73,8 @@
     userId: ObjectId(), // user's id
     startDate: Date(), // start date
     endDate: Date(), // end date
-    title: string | "",
+    title: String | "",
+    description: String | ""
 }
 ```
 

@@ -72,3 +72,32 @@ export interface CustomToolbarProps {
   onNavigate: (action: 'PREV' | 'NEXT' | 'TODAY') => void;
   onView: (view: "month" | "week" | "day" | "agenda") => void;
 }
+
+// api/ai-agent
+export interface StudyPlanData {
+  strengths: string[];
+  weaknesses: string[];
+  mediaPreferences: {
+    videos: boolean;
+    diagrams: boolean;
+    readings: boolean;
+    summaries: boolean;
+  };
+  studyPlan: {
+    intensity: string;
+    learningStyle: string;
+  };
+}
+
+export interface CalendarEvent {
+  startDate: Date;
+  endDate: Date;
+  title: string;
+  description: string;
+}
+
+// events-display.tsx
+export interface EventsDisplayProps {
+  events: CalendarEvent[]
+  isGenerating: boolean
+}

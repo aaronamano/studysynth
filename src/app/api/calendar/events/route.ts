@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
     }
 
-    const { startDate, endDate, title } = await req.json();
+    const { startDate, endDate, title, description } = await req.json();
 
     if (!userId || !startDate || !endDate || !title) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       title,
+      description: description || '',
     });
 
     return NextResponse.json({ eventId: result.insertedId }, { status: 201 });
@@ -105,7 +106,7 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
       }
   
-      const { _id, title, startDate, endDate } = await req.json();
+      const { _id, title, startDate, endDate, description } = await req.json();
   
       if (!_id || !title || !startDate || !endDate) {
         return NextResponse.json({ error: 'Missing required fields for update' }, { status: 400 });
@@ -117,7 +118,7 @@ export async function PUT(req: NextRequest) {
   
       const result = await calendarEvents.updateOne(
         { _id: new ObjectId(_id), userId: new ObjectId(userId) },
-        { $set: { title, startDate: new Date(startDate), endDate: new Date(endDate) } }
+        { $set: { title, startDate: new Date(startDate), endDate: new Date(endDate), description: description || '' } }
       );
   
       if (result.matchedCount === 0) {

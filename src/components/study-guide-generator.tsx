@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react"
 import MediaPreferences from "./features/media-preferences"
 import StudyPlanAdjuster from "./features/study-plan-adjuster"
 import StudyGuideDisplay from "./study-guide-display"
+import EventsDisplay from "./events-display"
 import TopicInput from "./features/topic-input" // Input for strengths/weaknesses
 import TopicPdfImport from "./features/topic-pdf-import" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
@@ -21,6 +22,7 @@ export default function StudyGuideGenerator() {
   // State variables for form fields and UI state
   const [isGenerating, setIsGenerating] = useState(false) // Loading state
   const [studyGuide, setStudyGuide] = useState<string | null>(null) // Generated guide
+  const [events, setEvents] = useState<any[]>([]) // Generated calendar events
   const [pdfFile, setPdfFile] = useState<File | null>(null) // PDF file input
   const [constraints, setConstraints] = useState("") // Constraints input
   const [strengths, setStrengths] = useState([""]) // List of strengths
@@ -68,6 +70,7 @@ export default function StudyGuideGenerator() {
   const handleGenerateStudyGuide = async () => {
     setIsGenerating(true);
     setStudyGuide(null); // Reset the study guide content
+    setEvents([]); // Reset events
 
     try {
       const perplexityApiKey = await getPerplexityApiKey();
@@ -75,71 +78,74 @@ export default function StudyGuideGenerator() {
         setIsGenerating(false);
         return;
       }
-      // Prepare FormData for FastAPI endpoint
-      const formData = new FormData();
-      if (pdfFile) {
-        formData.append("pdf_file", pdfFile);
-      }
-      formData.append("constraints", constraints);
-      formData.append("perplexity_api_key", perplexityApiKey);
-      formData.append("strengths", JSON.stringify(strengths));
-      formData.append("weaknesses", JSON.stringify(weaknesses));
-      formData.append("mediaPreferences", JSON.stringify(mediaPreferences));
-      formData.append("studyPlan", JSON.stringify(studyPlan));
-
-      // Correct: use formData for multipart/form-data
-      const studyGuideResponse = await fetch('/api/study-guide', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!studyGuideResponse.ok) {
-        const errorText = await studyGuideResponse.text();
-        toast.error("Failed to generate study guide.", { description: errorText });
-        throw new Error(`Failed to generate study guide: ${errorText}`);
-      }
-
-      const data = await studyGuideResponse.json();
-      setStudyGuide(data.study_guide);
 
       // --- AI Agent Integration ---
-      // Compose the prompt (could be the constraints, or the generated study guide, or both)
-      const agentPrompt = constraints || data.study_guide || "";
-      if (agentPrompt) {
-        const aiAgentRes = await fetch('/api/ai-agent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: agentPrompt, perplexity_api_key: perplexityApiKey }),
-        });
-        if (aiAgentRes.ok) {
-          const { event } = await aiAgentRes.json();
-          if (event && event.title && event.start && event.end) {
-            // Save event to calendar
-            const token = safeLocalStorage.getItem('token');
-            if (token) {
-              const calendarRes = await fetch('/api/calendar/events', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                  title: event.title,
-                  startDate: event.start,
-                  endDate: event.end,
-                  description: event.description || '',
-                }),
-              });
-              if (calendarRes.ok) {
-                toast.success('Calendar event created!', { description: event.title });
-              } else {
-                toast.error('Failed to save calendar event.');
-              }
+      // Prepare study data for the agent
+      const studyDataForAgent = {
+        strengths,
+        weaknesses,
+        mediaPreferences,
+        studyPlan
+      };
+      
+      const agentPrompt = constraints || "Generate a comprehensive study plan";
+      const aiAgentRes = await fetch('/api/ai-agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          prompt: agentPrompt, 
+          perplexity_api_key: perplexityApiKey,
+          studyData: studyDataForAgent
+        }),
+      });
+      
+      if (aiAgentRes.ok) {
+        const { studyGuide, events: generatedEvents } = await aiAgentRes.json();
+        
+        // Set the study guide
+        setStudyGuide(studyGuide);
+        
+        // Set the events and save to calendar
+        setEvents(generatedEvents || []);
+        const token = safeLocalStorage.getItem('token');
+        
+        if (token && generatedEvents && generatedEvents.length > 0) {
+          // Save all events to calendar
+          const savePromises = generatedEvents.map((event: any) => 
+            fetch('/api/calendar/events', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                title: event.title,
+                startDate: event.startDate,
+                endDate: event.endDate,
+                description: event.description || '',
+              }),
+            })
+          );
+          
+          try {
+            const results = await Promise.allSettled(savePromises);
+            const successful = results.filter(r => r.status === 'fulfilled').length;
+            const failed = results.filter(r => r.status === 'rejected').length;
+            
+            if (successful > 0) {
+              toast.success(`Created ${successful} study event${successful > 1 ? 's' : ''} in your calendar!`);
             }
+            if (failed > 0) {
+              toast.error(`Failed to save ${failed} event${failed > 1 ? 's' : ''}.`);
+            }
+          } catch (error) {
+            toast.error('Error saving calendar events.');
           }
-        } else {
-          toast.error('AI agent failed to suggest a calendar event.');
+        } else if (!generatedEvents || generatedEvents.length === 0) {
+          toast.warning('No calendar events were generated.');
         }
+      } else {
+        toast.error('AI agent failed to generate study plan.');
       }
       // --- End AI Agent Integration ---
 
@@ -237,19 +243,20 @@ export default function StudyGuideGenerator() {
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating Study Guide...
+                  Generating Complete Study Plan...
                 </>
               ) : (
-                "Create Study Guide"
+                "Generate Complete Study Plan"
               )}
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Right Column: Study Guide Display */}
-      <div>
+      {/* Right Column: Results Display */}
+      <div className="space-y-6">
         <StudyGuideDisplay studyGuide={studyGuide} isGenerating={isGenerating} />
+        <EventsDisplay events={events} isGenerating={isGenerating} />
       </div>
     </div>
   )
