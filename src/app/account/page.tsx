@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import Link from "next/link"
 import { ArrowLeft, Loader2 } from "lucide-react"
+import { safeLocalStorage } from "@/lib/storage"
 
 export default function AccountPage() {
   const [perplexityApiKey, setPerplexityApiKey] = useState("")
@@ -17,7 +18,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     setIsMounted(true)
-    const token = localStorage.getItem("token")
+    const token = safeLocalStorage.getItem("token")
     if (token) {
       fetch("/api/account/keys", {
         headers: {
@@ -42,7 +43,7 @@ export default function AccountPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const token = localStorage.getItem("token")
+    const token = safeLocalStorage.getItem("token")
     if (!token) {
       return
     }

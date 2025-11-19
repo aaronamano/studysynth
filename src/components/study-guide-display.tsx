@@ -10,6 +10,7 @@ import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 import { useState, useEffect } from "react";
 import type { StudyGuideDisplayProps } from "@/lib/types";
+import { safeLocalStorage } from "@/lib/storage";
 
 // Main component for displaying the study guide
 export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGuideDisplayProps) {
@@ -63,7 +64,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
       return;
     }
 
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
     if (!token) {
       toast.error("You must be logged in to save a study guide.");
       return;

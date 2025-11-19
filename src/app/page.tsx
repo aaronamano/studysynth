@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import StudyGuideGenerator from "@/components/study-guide-generator"
 import { CalendarView } from "@/components/calendar-view"
+import { safeLocalStorage } from "@/lib/storage"
 
 
 export default function Home() {
@@ -19,7 +20,7 @@ export default function Home() {
 
   useEffect(() => {
     setIsMounted(true)
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
     if (token) {
       setIsLoggedIn(true);
       // Fetch user's first name from an API endpoint
@@ -38,7 +39,7 @@ export default function Home() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token")
+    safeLocalStorage.removeItem("token")
     setIsLoggedIn(false)
     setFirstName("")
     router.push("/")

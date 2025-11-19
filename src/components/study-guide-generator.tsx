@@ -15,6 +15,7 @@ import StudyGuideDisplay from "./study-guide-display"
 import TopicInput from "./features/topic-input" // Input for strengths/weaknesses
 import TopicPdfImport from "./features/topic-pdf-import" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
+import { safeLocalStorage } from "@/lib/storage"
 
 export default function StudyGuideGenerator() {
   // State variables for form fields and UI state
@@ -36,7 +37,7 @@ export default function StudyGuideGenerator() {
   });
 
   const getPerplexityApiKey = async () => {
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
     if (!token) {
       toast.error("You must be logged in to generate a study guide.");
       return null;
@@ -114,7 +115,7 @@ export default function StudyGuideGenerator() {
           const { event } = await aiAgentRes.json();
           if (event && event.title && event.start && event.end) {
             // Save event to calendar
-            const token = localStorage.getItem('token');
+            const token = safeLocalStorage.getItem('token');
             if (token) {
               const calendarRes = await fetch('/api/calendar/events', {
                 method: 'POST',

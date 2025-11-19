@@ -13,6 +13,7 @@ import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import type { Event, CustomToolbarProps } from '@/lib/types';
 import { jwtDecode } from "jwt-decode";
+import { safeLocalStorage } from "@/lib/storage";
 
 const locales = {
   'en-US': enUS,
@@ -54,7 +55,7 @@ export function CalendarView() {
 
   // Move fetchEvents outside useEffect
   const fetchEvents = async () => {
-    const token = localStorage.getItem('token');
+    const token = safeLocalStorage.getItem('token');
     if (!token) {
       return;
     }
@@ -91,7 +92,7 @@ export function CalendarView() {
   };
 
   const handleAddEvent = async () => {
-    const token = localStorage.getItem('token');
+    const token = safeLocalStorage.getItem('token');
     if (!token) {
       // Handle case where user is not logged in
       return;
@@ -118,7 +119,7 @@ export function CalendarView() {
   };
 
   const handleDeleteEvent = async (eventToDelete: Event) => {
-    const token = localStorage.getItem('token');
+    const token = safeLocalStorage.getItem('token');
     if (!token) return;
 
     const response = await fetch(`/api/calendar/events?eventId=${eventToDelete._id}`, {
@@ -136,7 +137,7 @@ export function CalendarView() {
   };
 
   const handleUpdateEvent = async (updatedEvent: Event) => {
-    const token = localStorage.getItem('token');
+    const token = safeLocalStorage.getItem('token');
     if (!token) return;
 
     const response = await fetch('/api/calendar/events', {

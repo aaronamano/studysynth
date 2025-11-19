@@ -10,13 +10,14 @@ import { toast } from "sonner"
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 import type { StudyGuideHistory } from "@/lib/types"
+import { safeLocalStorage } from "@/lib/storage"
 
 export default function HistoryPage() {
   const [history, setHistory] = useState<StudyGuideHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
     if (token) {
       fetch("/api/history", {
         headers: {

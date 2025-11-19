@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { safeLocalStorage } from "@/lib/storage"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -30,8 +31,8 @@ export default function LoginPage() {
 
       if (res.ok) {
         const data = await res.json();
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userId", data.userId);
+        safeLocalStorage.setItem("token", data.token);
+        safeLocalStorage.setItem("userId", data.userId);
         router.push("/");
       } else {
         const data = await res.json()
