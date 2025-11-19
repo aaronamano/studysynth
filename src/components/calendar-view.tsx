@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import type { Event, CustomToolbarProps } from '@/lib/types';
 import { jwtDecode } from "jwt-decode";
 import { safeLocalStorage } from "@/lib/storage";
+import { useCalendarEvents } from '@/hooks/use-calendar-events';
 
 // Utility function to parse and render links in text
 const parseLinksInText = (text: string) => {
@@ -76,49 +77,11 @@ const CustomToolbar = ({ label, onNavigate, onView }: CustomToolbarProps) => {
 };
 
 export function CalendarView() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const { events, loading, error, refetch, invalidateCache } = useCalendarEvents();
   const [newEvent, setNewEvent] = useState<Event>({ title: '', start: new Date(), end: new Date(), description: '' });
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
-
-  // Move fetchEvents outside useEffect
-  const fetchEvents = async () => {
-    const token = safeLocalStorage.getItem('token');
-    if (!token) {
-      return;
-    }
-    try {
-      const response = await fetch('/api/calendar/events', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const formattedEvents = data.map((event: any) => ({
-          ...event,
-          start: new Date(event.start),
-          end: new Date(event.end),
-        }));
-        setEvents(formattedEvents);
-      } else {
-        console.error('Failed to fetch events');
-      }
-    } catch (error) {
-      console.error('Error fetching events:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  // Add a refresh button handler
-  const handleRefresh = () => {
-    fetchEvents();
-  };
 
   const handleAddEvent = async () => {
     const token = safeLocalStorage.getItem('token');
@@ -144,7 +107,7 @@ export function CalendarView() {
     });
     if (response.ok) {
       const { eventId } = await response.json();
-      setEvents([...events, { ...newEvent, _id: eventId }]);
+      invalidateCache();
     }
   };
 
@@ -160,7 +123,7 @@ export function CalendarView() {
     });
 
     if (response.ok) {
-        setEvents(events.filter(event => event._id !== eventToDelete._id));
+        invalidateCache();
     } else {
         console.error("Failed to delete event");
     }
@@ -186,7 +149,7 @@ export function CalendarView() {
     });
 
     if (response.ok) {
-        setEvents(events.map(event => event._id === updatedEvent._id ? updatedEvent : event));
+        invalidateCache();
         setSelectedEvent(null);
     } else {
         console.error("Failed to update event");
