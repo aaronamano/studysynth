@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
       email,
       password: hashedPassword,
       perplexityKey: '',
-      openaiKey: '',
     };
 
     await accounts.insertOne(newUser);

@@ -42,9 +42,8 @@ export async function GET(req: NextRequest) {
     }
 
     const decryptedPerplexityKey = user.perplexityKey ? ncrypt.decrypt(user.perplexityKey) : '';
-    const decryptedOpenaiKey = user.openaiKey ? ncrypt.decrypt(user.openaiKey) : '';
 
-    return NextResponse.json({ perplexityKey: decryptedPerplexityKey, openaiKey: decryptedOpenaiKey }, { status: 200 });
+    return NextResponse.json({ perplexityKey: decryptedPerplexityKey }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
@@ -68,10 +67,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'User not found or invalid token' }, { status: 404 });
     }
 
-    const { perplexityApiKey, openaiApiKey } = await req.json();
+    const { perplexityApiKey } = await req.json();
 
     const encryptedPerplexityKey = perplexityApiKey ? ncrypt.encrypt(perplexityApiKey) : '';
-    const encryptedOpenaiKey = openaiApiKey ? ncrypt.encrypt(openaiApiKey) : '';
 
     const client = await clientPromise;
     const db = client.db('studysynth');
@@ -79,7 +77,7 @@ export async function POST(req: NextRequest) {
 
     await accounts.updateOne(
       { _id: user._id },
-      { $set: { perplexityKey: encryptedPerplexityKey, openaiKey: encryptedOpenaiKey } }
+      { $set: { perplexityKey: encryptedPerplexityKey } }
     );
 
     return NextResponse.json({ message: 'API keys updated successfully' }, { status: 200 });

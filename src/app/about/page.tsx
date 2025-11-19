@@ -35,7 +35,7 @@ export default function AboutPage() {
             <li><span className="font-semibold">Personalized Study Plans:</span> Generate study plans with online resources.</li>
             <li><span className="font-semibold">Practice Problems:</span> Hone your skills with a wide range of practice questions to acheive mastery.</li>
             <li><span className="font-semibold">Mock Exams:</span> Simulate exam conditions and test your knowledge with custom-generated mock exams.</li>
-            <li><span className="font-semibold">API Key Integration:</span> Insert your own Perplexity API and OpenAI API keys.</li>
+            <li><span className="font-semibold">API Key Integration:</span> Insert your own Perplexity API key.</li>
             <li><span className="font-semibold">Save Study Plans:</span> Save generated study plans to refer to and look back at if needed.</li>
           </ul>
 

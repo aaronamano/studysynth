@@ -27,7 +27,7 @@
 ## Routes
 - `/`: default route for studysynth. this is the main page where users interact with the core features
 - `/about`: about page which talks about studysynth
-- `/account`: page where user can manage their own account by inputting perplexity and openai api keys
+- `/account`: page where user can manage their own account by inputting perplexity api key
 - `/login`: login page for users to login
 - `/reset`: page for users to reset their own password
 - `/signup`: signup page for users to create an account
@@ -54,7 +54,6 @@
     name: string, // e.g. Tim Cheese
     password: string, // doesn't show actual password but encrypted version of it
     perplexityKey: string = "", // not actual key but encrypted version; initally empty string cuz no key registered yet
-    openaiKey: string = "" // not actual key but encrypted version; initally empty string cuz no key registered yet
 
 }
 ```

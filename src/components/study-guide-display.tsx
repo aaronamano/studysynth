@@ -15,10 +15,44 @@ import { safeLocalStorage } from "@/lib/storage";
 // Main component for displaying the study guide
 export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGuideDisplayProps) {
   const [isSaved, setIsSaved] = useState(false);
+  const [loadingState, setLoadingState] = useState(0);
+
+  // Loading states that will cycle through
+  const loadingStates = [
+    "Cooking up your study guide...",
+    "We're also making your personalized study plan...",
+    "Prove my mitsake, that 6 + 7 = 13...",
+    "Did you know that Earth isn't flat...",
+    "What do you call an introverted fish? SelFISH...",
+    "Don't worry, you'll get it soon. Please wait...",
+  ];
 
   useEffect(() => {
     setIsSaved(false);
   }, [studyGuide]);
+
+  useEffect(() => {
+    let loadingInterval: NodeJS.Timeout;
+
+    if (isGenerating) {
+      setLoadingState(0);
+      // Start loading state progression
+      loadingInterval = setInterval(() => {
+        setLoadingState(prev => {
+          const next = (prev + 1) % loadingStates.length;
+          return next;
+        });
+      }, 5000); // Change state every 5 seconds
+    } else {
+      setLoadingState(0);
+    }
+
+    return () => {
+      if (loadingInterval) {
+        clearInterval(loadingInterval);
+      }
+    };
+  }, [isGenerating]);
 
   const renderFormattedText = (text: string) => {
     const regex = /.*\[(.*?)].*\((.*?)\)|\*\*(.*?)\*\*|\\\((.*?)\\\)/g;
@@ -122,9 +156,9 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
           {isGenerating && !studyGuide && (
             <div className="flex flex-col items-center justify-center p-10">
               <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
-              <p className="mt-4 text-lg font-medium text-purple-700">Generating your personalized study guide...</p>
+              <p className="mt-4 text-lg font-medium text-purple-700">{loadingStates[loadingState]}</p>
               <p className="text-sm text-muted-foreground mt-2">
-                This may take a moment as we tailor the content to your preferences
+                This may take a moment as we tailor content to your preferences
               </p>
             </div>
           )}

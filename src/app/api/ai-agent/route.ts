@@ -1,18 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
 import type { CalendarEvent } from '@/lib/types';
 import type { StudyPlanData } from '@/lib/types';
 
 class StudyAgent {
-  private client: OpenAI;
   private perplexityApiKey: string;
 
   constructor(apiKey: string) {
-    this.client = new OpenAI({
-      apiKey: apiKey,
-      baseURL: 'https://api.perplexity.ai',
-    });
     this.perplexityApiKey = apiKey;
+  }
+
+  private async makeRequest(messages: any[]) {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.perplexityApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'sonar-pro',
+        messages,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Perplexity API error: ${response.status}`);
+    }
+
+    return response.json();
   }
 
   async create_study_guide(prompt: string, studyData?: StudyPlanData): Promise<string> {
@@ -27,24 +41,21 @@ class StudyAgent {
     
     Create a structured, actionable study guide that helps the user achieve their learning goals effectively.`;
 
-    const response = await this.client.chat.completions.create({
-      model: 'sonar-pro',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { 
-          role: 'user', 
-          content: `Create a study guide for: ${prompt}\n\n${
-            studyData ? `
-            User Context:
-            - Strengths: ${studyData.strengths.join(', ')}
-            - Weaknesses: ${studyData.weaknesses.join(', ')}
-            - Media Preferences: ${JSON.stringify(studyData.mediaPreferences)}
-            - Study Plan: ${JSON.stringify(studyData.studyPlan)}
-            ` : ''
-          }`
-        },
-      ],
-    });
+    const response = await this.makeRequest([
+      { role: 'system', content: systemPrompt },
+      { 
+        role: 'user', 
+        content: `Create a study guide for: ${prompt}\n\n${
+          studyData ? `
+          User Context:
+          - Strengths: ${studyData.strengths.join(', ')}
+          - Weaknesses: ${studyData.weaknesses.join(', ')}
+          - Media Preferences: ${JSON.stringify(studyData.mediaPreferences)}
+          - Study Plan: ${JSON.stringify(studyData.studyPlan)}
+          ` : ''
+        }`
+      },
+    ]);
 
     return response.choices[0].message.content || '';
   }
@@ -68,22 +79,19 @@ class StudyAgent {
     Format each resource as: "[TOPIC]: [Resource description] [URL]"
     Example: "Calculus Derivatives: Khan Academy video on basic derivatives https://www.khanacademy.org/math/calculus-1"`;
 
-    const response = await this.client.chat.completions.create({
-      model: 'sonar-pro',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { 
-          role: 'user', 
-          content: `Find resources for this study guide: ${studyGuide}\n\n${
-            mediaPreferences ? `Media preferences: ${JSON.stringify(mediaPreferences)}` : ''
-          }`
-        },
-      ],
-    });
+    const response = await this.makeRequest([
+      { role: 'system', content: systemPrompt },
+      { 
+        role: 'user', 
+        content: `Find resources for this study guide: ${studyGuide}\n\n${
+          mediaPreferences ? `Media preferences: ${JSON.stringify(mediaPreferences)}` : ''
+        }`
+      },
+    ]);
 
     const content = response.choices[0].message.content || '';
     // Extract URLs and resource information
-    const resources = content.split('\n').filter(line => line.trim().length > 0);
+    const resources = content.split('\n').filter((line: string) => line.trim().length > 0);
     return resources;
   }
 
@@ -122,14 +130,12 @@ class StudyAgent {
       }
     ]`;
 
-    const response = await this.client.chat.completions.create({
-      model: 'sonar-pro',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { 
-          role: 'user', 
-          content: `Create calendar events for:
-          
+    const response = await this.makeRequest([
+      { role: 'system', content: systemPrompt },
+      { 
+        role: 'user', 
+        content: `Create calendar events for:
+        
 STUDY GUIDE:
 ${studyGuide}
 
@@ -147,9 +153,8 @@ USER CONTEXT:
 ` : ''}
 
 IMPORTANT: Match specific resources to each calendar event based on topic relevance. Include the most relevant resources in each event's description.`
-        },
-      ],
-    });
+      },
+    ]);
 
     const content = response.choices[0].message.content || '[]';
     const match = content.match(/\[[\s\S]*\]/);

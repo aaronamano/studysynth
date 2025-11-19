@@ -12,7 +12,6 @@ import { safeLocalStorage } from "@/lib/storage"
 
 export default function AccountPage() {
   const [perplexityApiKey, setPerplexityApiKey] = useState("")
-  const [openaiApiKey, setOpenaiApiKey] = useState("")
   const [isMounted, setIsMounted] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
 
@@ -30,16 +29,13 @@ export default function AccountPage() {
           if (data.perplexityKey) {
             setPerplexityApiKey(data.perplexityKey)
           }
-          if (data.openaiKey) {
-            setOpenaiApiKey(data.openaiKey)
-          }
         })
     }
   }, [])
 
   useEffect(() => {
     setIsSaved(false)
-  }, [perplexityApiKey, openaiApiKey])
+  }, [perplexityApiKey])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,7 +51,7 @@ export default function AccountPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ perplexityApiKey, openaiApiKey }),
+        body: JSON.stringify({ perplexityApiKey }),
       })
 
       if (res.ok) {
@@ -86,7 +82,7 @@ export default function AccountPage() {
         <CardHeader>
           <CardTitle>API Keys</CardTitle>
           <CardDescription>
-            Add your Perplexity and OpenAI API keys to personalize your experience.
+            Add your Perplexity API key to personalize your experience.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -100,15 +96,7 @@ export default function AccountPage() {
                 onChange={(e) => setPerplexityApiKey(e.target.value)}
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="openai-api-key">OpenAI API Key</Label>
-              <Input
-                id="openai-api-key"
-                type="password"
-                value={openaiApiKey}
-                onChange={(e) => setOpenaiApiKey(e.target.value)}
-              />
-            </div>
+
             {isSaved && <p className="text-green-600 text-sm">API key saved.</p>}
           </CardContent>
           
