@@ -1,6 +1,12 @@
 ## Setup and Testing
 - under `studysynth\`, run `pnpm install`
 - then run `pnpm run dev` and click on `http://localhost:3000`
+- Make sure to have your environment variables for testing by creating a `.env` file under `studysynth\`
+```text
+MONGODB_URI=<mongodb-uri>
+SECRET_KEY=<your-secret-key>
+JWT_SECRET=<your-jwt-secret>
+```
 
 ## Contributing
 make sure to create your own branch before comitting
