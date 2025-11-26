@@ -1,28 +1,43 @@
-## Setup
+## Setup and Testing
 - under `studysynth\`, run `pnpm install`
 - then run `pnpm run dev` and click on `http://localhost:3000`
 
+## Contributing
+make sure to create your own branch before comitting
+1. run `git checkout -b <branch-name>`
+2. run `git push -u origin <branch-name>`
+3. create a pull request
+4. write your commit messages as so
+```text
+<issue-number>/<commit-type>: <issue-description>
+
+<commit-description>
+```
+for example
+```text
+#30/feat: chatbot interface
+
+created a chatbot with Perplexity API
+```
+you can refer to https://github.com/pvdlg/conventional-commit-types
+
+
+
 ## API Routes
-`/account/keys`
-- GET, POST
+- `/account/keys`: GET, POST
+- `/study-guide`: POST
   
-`/study-guide`
-- POST
+- `/calendar/events`: GET, POST, PUT, DELETE
   
-`/calendar/events`
-- GET, POST, PUT, DELETE
+- `/history`: GET, POST
   
-`/history`
-- GET, POST
+- `/auth`:
+  - `/auth/login`: POST
+  - `/auth/reset`: POST
+  - `/auth/signup`: POST
+  - `/auth/user`: POST
   
-`/auth`
-- POST `/auth/login`
-- POST `/auth/reset`
-- POST `/auth/signup`
-- GET `/auth/user`
-  
-`/ai-agent`
-- POST `/ai-agent`
+- `/ai-agent`: POST
 
 ## Routes
 - `/`: default route for studysynth. this is the main page where users interact with the core features
@@ -51,9 +66,9 @@
 ```typescript
 {
     _id: ObjectId(),
-    name: string, // e.g. Tim Cheese
-    password: string, // doesn't show actual password but encrypted version of it
-    perplexityKey: string = "", // not actual key but encrypted version; initally empty string cuz no key registered yet
+    name: String, // e.g. Tim Cheese
+    password: String, // doesn't show actual password but encrypted version of it
+    perplexityKey: String = "", // not actual key but encrypted version; initally empty string cuz no key registered yet
 
 }
 ```
@@ -62,7 +77,7 @@
 {
     _id: ObjectId(),
     profileId: ObjectId(), // get the id of an existing user
-    response: string | {} // usually return the API response in json or a string
+    response: String | {} // usually return the API response in json or a string
 }
 ```
 ### Calendar Event collection schema
