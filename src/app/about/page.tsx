@@ -22,21 +22,14 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md">
           <h2 className="text-3xl font-semibold text-purple-800 mb-4">What is StudySynth?</h2>
           <p className="text-gray-700 mb-6">
-            StudySynth leverages artificial intelligence to generate customizable study plans, practice problems, or mock exams tailored to your unique needs and learning style. Using Perplexity AI, it streamlines the process of retrieving accessible resources, that are usually hidden, and gives them to you.
-          </p>
-
-          <h2 className="text-3xl font-semibold text-purple-800 mb-4">Mission</h2>
-          <p className="text-gray-700 mb-6">
-            My mission is to make studying more efficient for everyone. I believe that learning is valuable and that resources should be accessible, and not gatekeeped from us.
+            StudySynth leverages Perplexity AI to generate customizable study guides and study plans tailored to your needs and preferences to make studying underwhelming and more organized.
           </p>
 
           <h2 className="text-3xl font-semibold text-purple-800 mb-4">Key Features</h2>
           <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
-            <li><span className="font-semibold">Personalized Study Plans:</span> Generate study plans with online resources.</li>
-            <li><span className="font-semibold">Practice Problems:</span> Hone your skills with a wide range of practice questions to acheive mastery.</li>
-            <li><span className="font-semibold">Mock Exams:</span> Simulate exam conditions and test your knowledge with custom-generated mock exams.</li>
+            <li><span className="font-semibold">Calendar Event Study Plan:</span> Generate recommended study plans with online resources onto your calendar.</li>
+            <li><span className="font-semibold">Study Guide History:</span> Save generated study guides to refer to if needed.</li>
             <li><span className="font-semibold">API Key Integration:</span> Insert your own Perplexity API key.</li>
-            <li><span className="font-semibold">Save Study Plans:</span> Save generated study plans to refer to and look back at if needed.</li>
           </ul>
 
           <div className="text-center mt-8">

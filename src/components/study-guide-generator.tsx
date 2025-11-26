@@ -246,7 +246,7 @@ export default function StudyGuideGenerator() {
                   Generating Complete Study Plan...
                 </>
               ) : (
-                "Generate Complete Study Plan"
+                "Generate"
               )}
             </Button>
           </CardContent>
