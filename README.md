@@ -12,8 +12,7 @@ JWT_SECRET=<your-jwt-secret>
 make sure to create your own branch before comitting
 1. run `git checkout -b <branch-name>`
 2. run `git push -u origin <branch-name>`
-3. create a pull request
-4. write your commit messages as so
+3. write your commit messages as so
 ```text
 <issue-number>/<commit-type>: <issue-description>
 
@@ -26,6 +25,7 @@ for example
 created a chatbot with Perplexity API
 ```
 you can refer to https://github.com/pvdlg/conventional-commit-types
+4. create a pull request
 
 
 
