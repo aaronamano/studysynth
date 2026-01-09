@@ -18,12 +18,12 @@ export default function TopicPdfImport({ value, onChange }: TopicTextareaProps) 
   return (
     <div className="space-y-2">
       <div className="flex items-start justify-between">
-        <Label htmlFor="topics-pdf" className="text-base">
+        <Label htmlFor="topics-pdf" className="text-base text-purple-200">
           Import topics and concepts from PDF
         </Label>
         <div className="flex items-center text-xs text-muted-foreground">
           <Info className="h-3 w-3 mr-1" />
-          <span>Upload a PDF to extract topics</span>
+          <span className="text-purple-500">Upload a PDF to extract topics</span>
         </div>
       </div>
 
@@ -32,17 +32,17 @@ export default function TopicPdfImport({ value, onChange }: TopicTextareaProps) 
         id="topics-pdf"
         type="file"
         accept="application/pdf"
-        className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+        className="block w-full text-sm text-purple-400 file:mr-4 file:py-2 file:px-4 file:rounded file:text-sm file:font-semibold file:bg-black/60 file:border file:border-purple-500/30 file:text-purple-300 hover:file:bg-purple-900/40 file:shadow-md file:shadow-purple-600/10"
         onChange={handleFileChange}
       />
 
       {value && (
-        <div className="mt-2 p-2 border rounded bg-muted text-xs max-h-48 overflow-auto whitespace-pre-wrap">
+        <div className="mt-2 p-2 border border-purple-500/30 rounded bg-black/40 text-purple-300 text-xs max-h-48 overflow-auto whitespace-pre-wrap">
           {value.name}
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-purple-500">
         Please upload a PDF file, preferably 5 pages max.
       </p>
     </div>

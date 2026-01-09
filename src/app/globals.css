@@ -129,3 +129,91 @@
   --rdp-accent-color: #8B5CF6;
   --rdp-background-color: #F3E8FF;
 }
+
+/* Dark mode styles for react-big-calendar */
+.rbc-calendar {
+  background-color: transparent !important;
+}
+
+.rbc-month-view, .rbc-time-view, .rbc-agenda-view {
+  background-color: transparent !important;
+}
+
+.rbc-month-row, .rbc-day-bg, .rbc-day-slot {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  border-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.rbc-header {
+  background-color: rgba(139, 92, 246, 0.1) !important;
+  border-color: rgba(139, 92, 246, 0.2) !important;
+  color: #c084fc !important;
+}
+
+.rbc-day-bg + .rbc-day-bg {
+  border-left-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.rbc-month-view .rbc-day-bg:hover {
+  background-color: rgba(139, 92, 246, 0.15) !important;
+}
+
+.rbc-off-range-bg {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.rbc-today {
+  background-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.rbc-toolbar {
+  background-color: transparent !important;
+  border-bottom-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.rbc-toolbar .rbc-btn-group button {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+  color: #c084fc !important;
+}
+
+.rbc-toolbar .rbc-btn-group button:hover {
+  background-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+.rbc-toolbar .rbc-toolbar-label {
+  color: #e9d5ff !important;
+}
+
+.rbc-event {
+  border: none !important;
+}
+
+.rbc-show-more {
+  background-color: rgba(139, 92, 246, 0.2) !important;
+  color: #c084fc !important;
+}
+
+.rbc-month-view, .rbc-time-view {
+  border-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.rbc-day-slot .rbc-time-slot {
+  border-top-color: rgba(139, 92, 246, 0.1) !important;
+}
+
+.rbc-time-content > * > * + * {
+  border-top-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.rbc-time-header {
+  border-bottom-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.rbc-time-header-content {
+  border-right-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.rbc-header {
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2) !important;
+}

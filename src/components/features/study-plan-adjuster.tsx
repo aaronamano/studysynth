@@ -27,15 +27,15 @@ export default function StudyPlanAdjuster({
         <Label>Study Intensity</Label>
         <RadioGroup value={studyPlan.intensity} onValueChange={handleIntensityChange} className="flex space-x-2">
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="light" id="light" className="border-purple-300 text-purple-600" />
+            <RadioGroupItem value="light" id="light" className="border-purple-500/30 text-purple-400" />
             <Label htmlFor="light">Light</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="balanced" id="balanced" className="border-purple-300 text-purple-600" />
+            <RadioGroupItem value="balanced" id="balanced" className="border-purple-500/30 text-purple-400" />
             <Label htmlFor="balanced">Balanced</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="intensive" id="intensive" className="border-purple-300 text-purple-600" />
+            <RadioGroupItem value="intensive" id="intensive" className="border-purple-500/30 text-purple-400" />
             <Label htmlFor="intensive">Intensive</Label>
           </div>
         </RadioGroup>
@@ -44,7 +44,7 @@ export default function StudyPlanAdjuster({
       <div className="space-y-2">
         <Label>Learning Style Priority</Label>
         <Select value={studyPlan.learningStyle} onValueChange={handleLearningStyleChange}>
-          <SelectTrigger className="border-purple-200 focus:ring-purple-500">
+          <SelectTrigger className="border-purple-500/30 focus:ring-purple-500/30">
             <SelectValue placeholder="Select learning style" />
           </SelectTrigger>
           <SelectContent>

@@ -35,7 +35,7 @@ const parseLinksInText = (text: string) => {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-purple-600 hover:text-purple-800 hover:underline underline"
+          className="text-purple-400 hover:text-purple-300 hover:underline underline"
           onClick={(e) => e.stopPropagation()} // Prevent event selection when clicking link
         >
           {part}
@@ -164,20 +164,21 @@ export function CalendarView() {
     }
   };
 
-  const eventStyleGetter = (event: Event, start: Date, end: Date, isSelected: boolean) => {
+const eventStyleGetter = (event: Event, start: Date, end: Date, isSelected: boolean) => {
     const isGoogleEvent = (event as any).isGoogleEvent;
     const style = {
         backgroundColor: isGoogleEvent ? '#4285F4' : '#8B5CF6',
         borderRadius: '5px',
         opacity: 0.8,
         color: 'white',
-        border: '0px',
-        display: 'block'
+        border: '1px solid rgba(139, 92, 246, 0.3)',
+        display: 'block',
+        boxShadow: '0 2px 4px rgba(139, 92, 246, 0.2)'
     };
     return {
         style: style
     };
-  };
+};
 
   const CustomEvent = ({ event }: { event: Event }) => {
     const isGoogleEvent = (event as any).isGoogleEvent;
@@ -222,7 +223,7 @@ export function CalendarView() {
                   onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                 />
                 {newEvent.description && (
-                  <div className="text-xs text-gray-600 p-2 bg-gray-50 rounded border">
+                  <div className="text-xs text-purple-400 p-2 bg-black/40 rounded border border-purple-500/20">
                     <strong>Preview:</strong>
                     <div className="mt-1 whitespace-pre-wrap">
                       {parseLinksInText(newEvent.description)}
@@ -236,14 +237,14 @@ export function CalendarView() {
                   onChange={(start) => setNewEvent({ ...newEvent, start: start as Date })}
                   showTimeSelect
                   dateFormat='Pp'
-                  className='w-full'
+                  className='w-full bg-black/60 border-purple-500/30 text-purple-200 placeholder:text-purple-500'
                 />
                 <DatePicker
                   selected={newEvent.end}
                   onChange={(end) => setNewEvent({ ...newEvent, end: end as Date })}
                   showTimeSelect
                   dateFormat='Pp'
-                  className='w-full'
+                  className='w-full bg-black/60 border-purple-500/30 text-purple-200 placeholder:text-purple-500'
                 />
               </div>
               <div className="flex items-center space-x-2">
@@ -253,9 +254,9 @@ export function CalendarView() {
                       type="checkbox"
                       checked={syncToGoogle}
                       onChange={(e) => setSyncToGoogle(e.target.checked)}
-                      className="rounded"
+                      className="rounded border-purple-500/30 bg-black/60 text-purple-600 focus:ring-purple-500/30"
                     />
-                    <span>Sync to Google Calendar</span>
+                    <span className="text-purple-300">Sync to Google Calendar</span>
                   </label>
                 )}
                 <Button onClick={handleAddEvent} className="bg-purple-600">Add Event</Button>
@@ -283,7 +284,7 @@ export function CalendarView() {
         />
       </div>
       <div>
-        <h2 className="text-lg font-semibold mb-4">Upcoming Study Sessions</h2>
+        <h2 className="text-lg font-semibold text-purple-300 mb-4">Upcoming Study Sessions</h2>
         <div className="space-y-4">
           {events.map((event, index) => (
             <Card key={index}>
@@ -293,13 +294,13 @@ export function CalendarView() {
               <CardContent>
                 <p>{`${format(event.start, 'P')} ${format(event.start, 'p')} - ${format(event.end, 'p')}`}</p>
                 {event.description && (
-                  <div className="text-sm text-gray-600 mt-2 italic whitespace-pre-wrap">
+                  <div className="text-sm text-purple-400 mt-2 italic whitespace-pre-wrap">
                     {parseLinksInText(event.description)}
                   </div>
                 )}
                 <div className="flex space-x-2 mt-2">
-                  <Button onClick={() => setSelectedEvent(event)} className="bg-yellow-600">Edit</Button>
-                  <Button onClick={() => handleDeleteEvent(event)} className="bg-red-600">Delete</Button>
+                  <Button onClick={() => setSelectedEvent(event)} className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700">Edit</Button>
+                  <Button onClick={() => handleDeleteEvent(event)} className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700">Delete</Button>
                 </div>
               </CardContent>
             </Card>
@@ -328,7 +329,7 @@ export function CalendarView() {
                       onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })}
                     />
                     {selectedEvent.description && (
-                      <div className="text-xs text-gray-600 p-2 bg-gray-50 rounded border">
+                      <div className="text-xs text-purple-400 p-2 bg-black/40 rounded border border-purple-500/20">
                         <strong>Preview:</strong>
                         <div className="mt-1 whitespace-pre-wrap">
                           {parseLinksInText(selectedEvent.description)}
@@ -342,14 +343,14 @@ export function CalendarView() {
                       onChange={(start) => setSelectedEvent({ ...selectedEvent, start: start as Date })}
                       showTimeSelect
                       dateFormat='Pp'
-                      className='w-full'
+                      className='w-full bg-black/60 border-purple-500/30 text-purple-200 placeholder:text-purple-500'
                     />
                     <DatePicker
                       selected={selectedEvent.end}
                       onChange={(end) => setSelectedEvent({ ...selectedEvent, end: end as Date })}
                       showTimeSelect
                       dateFormat='Pp'
-                      className='w-full'
+                      className='w-full bg-black/60 border-purple-500/30 text-purple-200 placeholder:text-purple-500'
                     />
                   </div>
                   <div className="flex space-x-2">

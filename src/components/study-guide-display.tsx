@@ -71,7 +71,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
       // Check which group was matched and add the corresponding JSX element
       if (match[1] !== undefined && match[2] !== undefined) { // Markdown Link
         parts.push(
-          <a key={key} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-800 hover:underline">
+          <a key={key} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 hover:underline">
             {match[1]}
           </a>
         );
@@ -135,29 +135,29 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     <div className="space-y-4">
       {/* Header with title and action buttons */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Your Study Guide</h2>
+        <h2 className="text-2xl font-bold text-purple-200">Your Study Guide</h2>
         <Button
           variant="outline"
           size="sm"
           onClick={handleSaveStudyGuide}
           disabled={!studyGuide || isGenerating}
-          className="border-purple-200 hover:bg-purple-50 hover:text-purple-700"
+          className="border-purple-500/30 hover:bg-purple-900/40 hover:text-purple-300"
         >
           <Save className="h-4 w-4 mr-2" />
           Save
         </Button>
       </div>
 
-      {isSaved &&  <p className="text-green-600">Study guide succesfully saved.</p> }
+      {isSaved &&  <p className="text-green-400">Study guide succesfully saved.</p> }
 
       {/* Render study guide content directly */}
       <Card className="h-full">
         <CardContent className="p-6">
           {isGenerating && !studyGuide && (
             <div className="flex flex-col items-center justify-center p-10">
-              <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
-              <p className="mt-4 text-lg font-medium text-purple-700">{loadingStates[loadingState]}</p>
-              <p className="text-sm text-muted-foreground mt-2">
+              <Loader2 className="h-10 w-10 animate-spin text-purple-400" />
+              <p className="mt-4 text-lg font-medium text-purple-300">{loadingStates[loadingState]}</p>
+              <p className="text-sm text-purple-500 mt-2">
                 This may take a moment as we tailor content to your preferences
               </p>
             </div>
@@ -167,25 +167,25 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
               {studyGuide.split("\n").map((line, index) => {
                 if (line.startsWith("# ")) {
                   return (
-                    <h1 key={index} className="text-2xl font-bold mt-0 mb-4">
+                    <h1 key={index} className="text-2xl font-bold mt-0 mb-4 text-purple-200">
                       {renderFormattedText(line.substring(2))}
                     </h1>
                   )
                 } else if (line.startsWith("## ")) {
                   return (
-                    <h2 key={index} className="text-xl font-semibold mt-6 mb-3">
+                    <h2 key={index} className="text-xl font-semibold mt-6 mb-3 text-purple-300">
                       {renderFormattedText(line.substring(3))}
                     </h2>
                   )
                 } else if (line.startsWith("### ")) {
                   return (
-                    <h3 key={index} className="text-lg font-semibold mt-4 mb-2">
+                    <h3 key={index} className="text-lg font-semibold mt-4 mb-2 text-purple-400">
                       {renderFormattedText(line.substring(4))}
                     </h3>
                   )
                 } else if (line.startsWith("#### ")) {
                   return (
-                    <h4 key={index} className="text-base font-semibold mt-4 mb-2">
+                    <h4 key={index} className="text-base font-semibold mt-4 mb-2 text-purple-400">
                       {renderFormattedText(line.substring(5))}
                     </h4>
                   )
@@ -205,7 +205,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                   )
                 } else {
                   return (
-                    <p key={index} className="mb-4">
+                    <p key={index} className="mb-4 text-purple-300">
                       {renderFormattedText(line)}
                     </p>
                   )
@@ -215,9 +215,9 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
           )}
           {!isGenerating && !studyGuide && (
             <div className="flex flex-col items-center justify-center p-10">
-              <p className="mt-4 text-lg font-medium text-purple-700">No study guide generated yet</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Fill out the form and click "Create Study Guide" to generate your personalized study materials
+              <p className="mt-4 text-lg font-medium text-purple-300">No study guide generated yet</p>
+<p className="text-sm text-purple-500 mt-2">
+                Fill out form and click "Create Study Guide" to generate your personalized study materials
               </p>
             </div>
           )}

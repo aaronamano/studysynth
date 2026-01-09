@@ -46,16 +46,19 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
-      <div className="container mx-auto px-4 py-6">
+    <main className="min-h-screen bg-black relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-800/10 rounded-full blur-3xl"></div>
+      <div className="container mx-auto px-4 py-6 relative z-10">
         <header className="mb-8 py-8 relative">
           <div className="absolute top-8 right-0 flex items-center space-x-4">
             {isMounted && isLoggedIn ? (
               <>
-                <p className="text-lg font-medium text-purple-600">Welcome {firstName}, glad to have you here. Now time to lock tf in!</p>
+                <p className="text-lg font-medium text-purple-400">Welcome {firstName}, glad to have you here. Now time to lock tf in!</p>
                 <Link href="/history" passHref>
                   <Button
-                    className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                    className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
                   >
                     <Bookmark className="h-5 w-5" />
                     <div className="text-sm">
@@ -65,14 +68,14 @@ export default function Home() {
                 </Link>
                 <Button
                   onClick={handleLogout}
-                  className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                  className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
                 >
                   Logout
                 </Button>
                 <Link href="/account" passHref>
                   <Button
                     size="icon"
-                    className="px-3 py-3 border border-transparent text-base font-medium rounded-4xl text-white bg-purple-600 hover:bg-purple-700"
+                    className="px-3 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
                   >
                     <User className="h-6 w-6" />
                   </Button>
@@ -81,14 +84,14 @@ export default function Home() {
             ) : isMounted && (
               <>
                 <Link href="/about" passHref>
-                  <Button className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
+                  <Button className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20">
                     About StudySynth
                   </Button>
                 </Link>
                 <Link href="/login" passHref>
                   <Button
                     size="icon"
-                    className="px-3 py-3 border border-transparent text-base font-medium rounded-4xl text-white bg-purple-600 hover:bg-purple-700"
+                    className="px-3 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
                   >
                     <User className="h-6 w-6" />
                   </Button>
@@ -100,11 +103,11 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-purple-100">
+            <TabsList className="grid w-full grid-cols-2 bg-black/50 border border-purple-500/20 backdrop-blur-md shadow-lg shadow-purple-500/5">
               {/* Create Study Guide tab */}
               <TabsTrigger
                 value="create-study-guide"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-800 data-[state=active]:text-white text-purple-500 hover:text-purple-300"
               >
                 <FileText className="mr-2 h-4 w-4" />
                 Study Guide
@@ -113,7 +116,7 @@ export default function Home() {
               {/* Calendar tab */}
               <TabsTrigger
                 value="calendar"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-800 data-[state=active]:text-white text-purple-500 hover:text-purple-300"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 Calendar

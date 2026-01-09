@@ -183,7 +183,7 @@ export default function StudyGuideGenerator() {
           <CardContent className="space-y-6">
             {/* pdf input */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
+              <h2 className="text-xl font-semibold mb-4 text-purple-300">Topics & Concepts</h2>
               <TopicPdfImport value={pdfFile} onChange={setPdfFile} />
             </div>
 
@@ -191,7 +191,7 @@ export default function StudyGuideGenerator() {
 
             {/* Constraints input */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-purple-700">Constraints & Requirements</h2>
+              <h2 className="text-xl font-semibold mb-4 text-purple-300">Constraints & Requirements</h2>
               <Label htmlFor="constraints">Study Constraints</Label>
               <Textarea
                 id="constraints"
@@ -206,7 +206,7 @@ export default function StudyGuideGenerator() {
 
             {/* Media preferences checkboxes */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-purple-700">Media Preferences</h2>
+              <h2 className="text-xl font-semibold mb-4 text-purple-300">Media Preferences</h2>
               <MediaPreferences
                 preferences={mediaPreferences}
                 setPreferences={setMediaPreferences}
@@ -217,7 +217,7 @@ export default function StudyGuideGenerator() {
 
             {/* Strengths and weaknesses input */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-purple-700">Strengths & Weaknesses</h2>
+              <h2 className="text-xl font-semibold mb-4 text-purple-300">Strengths & Weaknesses</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <TopicInput
@@ -242,7 +242,7 @@ export default function StudyGuideGenerator() {
 
             {/* Study plan preferences (duration, intensity, etc.) */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-purple-700">Study Plan Preferences</h2>
+              <h2 className="text-xl font-semibold mb-4 text-purple-300">Study Plan Preferences</h2>
               <StudyPlanAdjuster
                 studyPlan={studyPlan}
                 setStudyPlan={setStudyPlan}
