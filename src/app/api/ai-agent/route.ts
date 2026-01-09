@@ -76,8 +76,9 @@ class StudyAgent {
     - Provide working URLs when available
     - Focus on up-to-date, accessible resources
     
-    Format each resource as: "[TOPIC]: [Resource description] [URL]"
-    Example: "Calculus Derivatives: Khan Academy video on basic derivatives https://www.khanacademy.org/math/calculus-1"`;
+    Format each resource as: "[Resource description] [URL]"
+    Example: "Khan Academy video on basic derivatives https://www.khanacademy.org/math/calculus-1"
+    Make sure URLs are complete and start with http:// or https://`;
 
     const response = await this.makeRequest([
       { role: 'system', content: systemPrompt },
@@ -117,8 +118,10 @@ class StudyAgent {
     RESOURCE MATCHING INSTRUCTIONS:
     - Analyze each resource and determine which study topic it best matches
     - Include 2-4 most relevant resources in each event's description
-    - Format resources clearly with URLs if available
+    - Extract ONLY the raw HTTP/HTTPS URLs from resources (no descriptions, no formatting)
+    - Format each resource as just the raw URL on a new line
     - Prioritize resources that match the event's specific topic
+    - Do NOT include resource titles, descriptions, or any formatting around URLs
     
     Return ONLY a JSON array with this exact structure:
     [
@@ -126,7 +129,7 @@ class StudyAgent {
         "startDate": "YYYY-MM-DDTHH:mm:ss.sssZ",
         "endDate": "YYYY-MM-DDTHH:mm:ss.sssZ", 
         "title": "Study Topic Name",
-        "description": "Detailed description of what to study including:\n\nTopic Overview: [brief overview]\n\nKey Concepts: [main concepts to cover]\n\nRecommended Resources:\n- [Resource 1 with URL]\n- [Resource 2 with URL]\n- [Resource 3 with URL]"
+        "description": "Detailed description of what to study including:\n\nTopic Overview: [brief overview]\n\nKey Concepts: [main concepts to cover]\n\nRecommended Resources:\nhttps://example.com/resource1\nhttps://example.com/resource2\nhttps://example.com/resource3"
       }
     ]`;
 

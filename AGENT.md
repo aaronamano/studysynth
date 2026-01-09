@@ -101,4 +101,24 @@ The agent is called via POST request to `/api/ai-agent` with:
 }
 ```
 
-Returns an array of calendar events ready to be saved to the user's calendar.
+Returns an array of calendar events ready to be saved to the user's calendar with automatic Google Calendar sync when connected.
+
+## Google Calendar Integration
+
+The agent automatically attempts to sync generated events to Google Calendar when:
+
+1. **User has connected their Google Calendar account** through the Google Calendar Integration component
+2. **Sync is enabled** (automatically set to true for agent-generated events)
+3. **Valid OAuth tokens** are available
+
+### Sync Behavior:
+- Events are saved to local database first
+- If Google Calendar is connected, events are automatically pushed to Google Calendar
+- Users receive feedback on how many events were synced to Google Calendar
+- Failed sync doesn't prevent local event creation
+- Events include full study guide information and resources in descriptions
+
+### Error Handling:
+- Google Calendar sync failures are logged but don't stop event creation
+- Users get notified of both successful local saves and Google Calendar sync status
+- Graceful degradation when Google Calendar is not connected

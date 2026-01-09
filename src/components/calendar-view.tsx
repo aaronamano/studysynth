@@ -15,6 +15,7 @@ import type { Event, CustomToolbarProps } from '@/lib/types';
 import { jwtDecode } from "jwt-decode";
 import { safeLocalStorage } from "@/lib/storage";
 import { useCalendarEvents } from '@/hooks/use-calendar-events';
+import { GoogleCalendarIntegration } from './google-calendar-integration';
 
 // Utility function to parse and render links in text
 const parseLinksInText = (text: string) => {
@@ -82,6 +83,8 @@ export function CalendarView() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
+  const [isGoogleConnected, setIsGoogleConnected] = useState<boolean>(false);
+  const [syncToGoogle, setSyncToGoogle] = useState<boolean>(false);
 
   const handleAddEvent = async () => {
     const token = safeLocalStorage.getItem('token');
@@ -92,7 +95,7 @@ export function CalendarView() {
     const decodedToken: { userId: string } = jwtDecode(token);
     const userId = decodedToken.userId;
 
-    const response = await fetch('/api/calendar/events', {
+    const response = await fetch('/api/calendar/sync-events', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -102,12 +105,17 @@ export function CalendarView() {
         ...newEvent, 
         startDate: newEvent.start, 
         endDate: newEvent.end,
-        description: newEvent.description
+        description: newEvent.description,
+        syncToGoogle: isGoogleConnected && syncToGoogle
       }),
     });
     if (response.ok) {
-      const { eventId } = await response.json();
+      const { eventId, googleEventId, googleError } = await response.json();
       invalidateCache();
+      
+      if (googleError) {
+        console.warn('Google Calendar sync warning:', googleError);
+      }
     }
   };
 
@@ -157,8 +165,9 @@ export function CalendarView() {
   };
 
   const eventStyleGetter = (event: Event, start: Date, end: Date, isSelected: boolean) => {
+    const isGoogleEvent = (event as any).isGoogleEvent;
     const style = {
-        backgroundColor: '#8B5CF6',
+        backgroundColor: isGoogleEvent ? '#4285F4' : '#8B5CF6',
         borderRadius: '5px',
         opacity: 0.8,
         color: 'white',
@@ -171,9 +180,15 @@ export function CalendarView() {
   };
 
   const CustomEvent = ({ event }: { event: Event }) => {
+    const isGoogleEvent = (event as any).isGoogleEvent;
     return (
       <div className="rbc-event-content">
-        <div className="font-semibold text-xs">{event.title}</div>
+        <div className="font-semibold text-xs flex items-center gap-1">
+          {isGoogleEvent && (
+            <span className="text-blue-200">G</span>
+          )}
+          {event.title}
+        </div>
         {event.description && (
           <div className="text-xs opacity-90 mt-1 truncate">
             {parseLinksInText(event.description)}
@@ -186,6 +201,9 @@ export function CalendarView() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2">
+        <GoogleCalendarIntegration 
+          onConnectionChange={setIsGoogleConnected}
+        />
         <Card className='mb-4'>
           <CardContent className='p-4'>
             <h3 className='text-lg font-semibold mb-2'>Add New Study Session</h3>
@@ -228,7 +246,20 @@ export function CalendarView() {
                   className='w-full'
                 />
               </div>
-              <Button onClick={handleAddEvent} className="bg-purple-600">Add Event</Button>
+              <div className="flex items-center space-x-2">
+                {isGoogleConnected && (
+                  <label className="flex items-center space-x-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={syncToGoogle}
+                      onChange={(e) => setSyncToGoogle(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span>Sync to Google Calendar</span>
+                  </label>
+                )}
+                <Button onClick={handleAddEvent} className="bg-purple-600">Add Event</Button>
+              </div>
             </div>
           </CardContent>
         </Card>

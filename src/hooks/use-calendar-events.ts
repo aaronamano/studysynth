@@ -50,7 +50,7 @@ export function useCalendarEvents() {
 
     try {
       setLoading(true);
-      const response = await fetch('/api/calendar/events', {
+      const response = await fetch('/api/calendar/sync-events', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

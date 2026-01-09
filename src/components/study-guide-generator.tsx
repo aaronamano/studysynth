@@ -110,9 +110,9 @@ export default function StudyGuideGenerator() {
         const token = safeLocalStorage.getItem('token');
         
         if (token && generatedEvents && generatedEvents.length > 0) {
-          // Save all events to calendar
+          // Save all events to calendar with Google Calendar sync if available
           const savePromises = generatedEvents.map((event: any) => 
-            fetch('/api/calendar/events', {
+            fetch('/api/calendar/sync-events', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -123,17 +123,34 @@ export default function StudyGuideGenerator() {
                 startDate: event.startDate,
                 endDate: event.endDate,
                 description: event.description || '',
+                syncToGoogle: true, // Automatically try to sync to Google Calendar
               }),
             })
           );
           
           try {
             const results = await Promise.allSettled(savePromises);
-            const successful = results.filter(r => r.status === 'fulfilled').length;
-            const failed = results.filter(r => r.status === 'rejected').length;
+            let successful = 0;
+            let googleSynced = 0;
+            let failed = 0;
+            
+            for (const result of results) {
+              if (result.status === 'fulfilled') {
+                successful++;
+                if (result.value?.googleEventId) {
+                  googleSynced++;
+                }
+              } else {
+                failed++;
+              }
+            }
             
             if (successful > 0) {
-              toast.success(`Created ${successful} study event${successful > 1 ? 's' : ''} in your calendar!`);
+              let message = `Created ${successful} study event${successful > 1 ? 's' : ''} in your calendar!`;
+              if (googleSynced > 0) {
+                message += ` (${googleSynced} synced to Google Calendar)`;
+              }
+              toast.success(message);
             }
             if (failed > 0) {
               toast.error(`Failed to save ${failed} event${failed > 1 ? 's' : ''}.`);
