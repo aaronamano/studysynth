@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
@@ -9,39 +9,16 @@ import { ArrowLeft, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
-import type { StudyGuideHistory } from "@/lib/types"
-import { safeLocalStorage } from "@/lib/storage"
+import { useHistory, type HistoryItem } from "@/hooks/use-history"
 
 export default function HistoryPage() {
-  const [history, setHistory] = useState<StudyGuideHistory[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { history, loading, error } = useHistory();
 
   useEffect(() => {
-    const token = safeLocalStorage.getItem("token");
-    if (token) {
-      fetch("/api/history", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("Failed to fetch history");
-          }
-          return res.json();
-        })
-        .then((data) => {
-          setHistory(data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          toast.error(error.message || "Could not load study history.");
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
+    if (error) {
+      toast.error(error || "Could not load study history.");
     }
-  }, []);
+  }, [error]);
 
   const renderFormattedText = (text: string) => {
     const regex = /\[(.*?)\]\((.*?)\)|\*\*(.*?)\*\*|\\\((.*?)\\\)/g;
@@ -104,7 +81,7 @@ export default function HistoryPage() {
         ) : history.length > 0 ? (
           <div className="gap-6">
             <Accordion type="single" collapsible className="w-full grid gap-6">
-              {history.map((item) => (
+              {history.map((item: HistoryItem) => (
                 <Card key={item._id} className="gap-6 bg-black/60 backdrop-blur-md border-purple-500/20 shadow-lg shadow-purple-500/5">
                   <AccordionItem value={item._id} className="mx-6">
                     <AccordionTrigger className="text-purple-100 hover:text-purple-200">
@@ -114,7 +91,7 @@ export default function HistoryPage() {
                     </AccordionTrigger>
                     <AccordionContent className="text-purple-200">
                       <CardContent className="prose max-w-none text-purple-200">
-                        {item.response.split("\n").map((line, index) => {
+                        {item.response.split("\n").map((line: string, index: number) => {
                           if (line.startsWith("# ")) {
                             return <h1 key={index} className="text-2xl font-bold mt-0 mb-4 text-purple-100">{renderFormattedText(line.substring(2))}</h1>
                           } else if (line.startsWith("## ")) {

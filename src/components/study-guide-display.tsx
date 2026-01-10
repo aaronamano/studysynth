@@ -10,12 +10,13 @@ import 'katex/dist/katex.min.css';
 import { InlineMath } from 'react-katex';
 import { useState, useEffect } from "react";
 import type { StudyGuideDisplayProps } from "@/lib/types";
-import { safeLocalStorage } from "@/lib/storage";
+import { useHistory } from "@/hooks/use-history";
 
 // Main component for displaying the study guide
 export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGuideDisplayProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [loadingState, setLoadingState] = useState(0);
+  const { saveHistory } = useHistory();
 
   // Loading states that will cycle through
   const loadingStates = [
@@ -98,28 +99,12 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
       return;
     }
 
-    const token = safeLocalStorage.getItem("token");
-    if (!token) {
-      toast.error("You must be logged in to save a study guide.");
-      return;
-    }
-
     try {
-      const res = await fetch("/api/history", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ studyGuide }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to save study guide.");
+      const result = await saveHistory(studyGuide);
+      if (result) {
+        toast.success("Study guide saved successfully!");
+        setIsSaved(true);
       }
-
-      toast.success("Study guide saved successfully!");
-      setIsSaved(true);
     } catch (error) {
       const message = error instanceof Error ? error.message : "An unknown error occurred";
       toast.error("Failed to save study guide", {

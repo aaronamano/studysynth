@@ -1,19 +1,7 @@
 import { google } from 'googleapis';
 import { getUserGoogleCalendarTokens } from './google-calendar-tokens';
+import type { GoogleCalendarEvent } from './types';
 
-export interface GoogleCalendarEvent {
-  id?: string;
-  summary: string;
-  description?: string;
-  start: {
-    dateTime?: string;
-    date?: string;
-  };
-  end: {
-    dateTime?: string;
-    date?: string;
-  };
-}
 
 export async function getGoogleCalendarClient(userId: string) {
   const tokens = await getUserGoogleCalendarTokens(userId);
@@ -36,7 +24,7 @@ export async function getGoogleCalendarEvents(
   try {
     const calendar = await getGoogleCalendarClient(userId);
 
-    const params: any = {
+    const params: Record<string, unknown> = {
       calendarId,
       singleEvents: true,
       orderBy: 'startTime'
@@ -47,7 +35,7 @@ export async function getGoogleCalendarEvents(
 
     const response = await calendar.events.list(params);
     return response.data.items || [];
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching Google Calendar events:', error);
     throw new Error('Failed to fetch Google Calendar events');
   }
@@ -83,7 +71,7 @@ export async function createGoogleCalendarEvent(
     });
 
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating Google Calendar event:', error);
     throw new Error('Failed to create Google Calendar event');
   }
@@ -121,7 +109,7 @@ export async function updateGoogleCalendarEvent(
     });
 
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating Google Calendar event:', error);
     throw new Error('Failed to update Google Calendar event');
   }
@@ -141,7 +129,7 @@ export async function deleteGoogleCalendarEvent(
     });
 
     return true;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting Google Calendar event:', error);
     throw new Error('Failed to delete Google Calendar event');
   }

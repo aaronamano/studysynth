@@ -1,11 +1,6 @@
 import clientPromise from './mongodb';
 import { ObjectId } from 'mongodb';
-
-export interface GoogleCalendarTokens {
-  access_token: string;
-  refresh_token?: string;
-  expiry_date?: number;
-}
+import type { GoogleCalendarTokens } from './types';
 
 export interface UserGoogleCalendar {
   userId: ObjectId;

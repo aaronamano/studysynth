@@ -5,20 +5,7 @@ import jwt from 'jsonwebtoken';
 import { isUserGoogleCalendarConnected, getUserGoogleCalendarTokens } from '@/lib/google-calendar-tokens';
 import { getCalendarClient } from '@/lib/google-calendar';
 import type { DecodedToken } from '@/lib/types';
-
-interface GoogleCalendarEvent {
-  id?: string | null;
-  summary?: string | null;
-  start?: {
-    dateTime?: string | null;
-    date?: string | null;
-  } | null;
-  end?: {
-    dateTime?: string | null;
-    date?: string | null;
-  } | null;
-  description?: string | null;
-}
+import { calendar_v3 } from 'googleapis';
 
 async function getUserIdFromToken(token: string): Promise<string | null> {
   try {
@@ -74,7 +61,7 @@ export async function GET(req: NextRequest) {
             timeMin: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
           });
           
-          googleEvents = (response.data.items || []).map((event: GoogleCalendarEvent) => ({
+          googleEvents = (response.data.items || []).map((event: calendar_v3.Schema$Event) => ({
             id: event.id || '',
             title: event.summary || '',
             start: event.start?.dateTime || event.start?.date || '',

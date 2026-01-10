@@ -96,8 +96,32 @@ export interface CalendarEvent {
   description: string;
 }
 
+export interface GoogleCalendarEvent {
+  id?: string;
+  summary?: string;
+  start?: {
+    dateTime?: string;
+    date?: string;
+  };
+  end?: {
+    dateTime?: string;
+    date?: string;
+  };
+  description?: string;
+}
+
 // events-display.tsx
 export interface EventsDisplayProps {
   events: CalendarEvent[]
   isGenerating: boolean
+}
+
+export interface GoogleCalendarIntegrationProps {
+  onConnectionChange?: (isConnected: boolean) => void;
+}
+
+export interface GoogleCalendarTokens {
+  access_token: string;
+  refresh_token?: string;
+  expiry_date?: number;
 }

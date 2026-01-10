@@ -1,37 +1,18 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
+import { useGoogleCalendarStatus } from '@/hooks/use-google-calendar-status';
 import { safeLocalStorage } from '@/lib/storage';
-
-interface GoogleCalendarIntegrationProps {
-  onConnectionChange?: (isConnected: boolean) => void;
-}
+import type { GoogleCalendarIntegrationProps } from '@/lib/types';
 
 export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendarIntegrationProps) {
-  const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { isConnected, loading: statusLoading, disconnect } = useGoogleCalendarStatus();
 
-  const checkConnectionStatus = async () => {
-    try {
-      const token = safeLocalStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch('/api/google-calendar/status', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setIsConnected(data.isConnected);
-        onConnectionChange?.(data.isConnected);
-      }
-    } catch (error) {
-      console.error('Error checking Google Calendar connection:', error);
-    }
+  const checkConnectionStatus = () => {
+    onConnectionChange?.(isConnected);
   };
 
   const handleConnect = async () => {
@@ -98,27 +79,14 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
       setIsLoading(true);
       setError(null);
 
-      const token = safeLocalStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch('/api/google-calendar/status', {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        setIsConnected(false);
+      const success = await disconnect();
+      if (success) {
         onConnectionChange?.(false);
         // Trigger a storage event to notify other components to refresh
         window.dispatchEvent(new StorageEvent('storage', {
           key: 'googleCalendarDisconnected',
           newValue: 'true'
         }));
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to disconnect Google Calendar');
       }
     } catch {
       setError('An error occurred while disconnecting Google Calendar');
@@ -129,7 +97,7 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
 
   useEffect(() => {
     checkConnectionStatus();
-  }, []);
+  }, [isConnected]);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -187,10 +155,10 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
         {!isConnected ? (
           <Button
             onClick={handleConnect}
-            disabled={isLoading}
+            disabled={isLoading || statusLoading}
             className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm px-4 py-2 h-8"
           >
-            {isLoading ? 'Connecting...' : 'Connect'}
+            {isLoading ? 'Connecting...' : (statusLoading ? 'Loading...' : 'Connect')}
           </Button>
         ) : (
           <Button
