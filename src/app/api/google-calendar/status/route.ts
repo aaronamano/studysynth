@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { isUserGoogleCalendarConnected, disconnectUserGoogleCalendar } from '@/lib/google-calendar-tokens';
 import type { DecodedToken } from '@/lib/types';
+import { MongoClient, Db } from 'mongodb';
 
 async function getUserIdFromToken(token: string): Promise<string | null> {
   try {
@@ -69,8 +70,25 @@ export async function DELETE(req: NextRequest) {
       }, { status: 500 });
     }
 
+    // Remove googleEventId from all user's calendar events to unsync them
+    try {
+      const client = new MongoClient(process.env.MONGODB_URI as string);
+      await client.connect();
+      const db: Db = client.db();
+      
+      await db.collection('calendarEvents').updateMany(
+        { userId },
+        { $unset: { googleEventId: "" } }
+      );
+      
+      await client.close();
+    } catch (dbError) {
+      console.error('Failed to unsync events:', dbError);
+      // Continue with response even if unsyncing fails
+    }
+
     return NextResponse.json({ 
-      message: 'Google Calendar disconnected successfully'
+      message: 'Google Calendar disconnected successfully and events unsynced'
     }, { status: 200 });
 
   } catch (error: unknown) {

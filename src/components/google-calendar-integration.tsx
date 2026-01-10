@@ -111,6 +111,11 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
       if (response.ok) {
         setIsConnected(false);
         onConnectionChange?.(false);
+        // Trigger a storage event to notify other components to refresh
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'googleCalendarDisconnected',
+          newValue: 'true'
+        }));
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to disconnect Google Calendar');

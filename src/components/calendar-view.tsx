@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, dateFnsLocalizer, Views, View } from 'react-big-calendar';
 import { format } from 'date-fns/format';
 import { parse } from 'date-fns/parse';
@@ -85,6 +85,18 @@ export function CalendarView() {
   const [date, setDate] = useState(new Date());
   const [isGoogleConnected, setIsGoogleConnected] = useState<boolean>(false);
   const [syncToGoogle, setSyncToGoogle] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'googleCalendarDisconnected' && e.newValue === 'true') {
+        // Refresh events to show unsynced state
+        invalidateCache();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [invalidateCache]);
 
   const handleAddEvent = async () => {
     const token = safeLocalStorage.getItem('token');
