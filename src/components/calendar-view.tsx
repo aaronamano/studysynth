@@ -134,7 +134,8 @@ export function CalendarView() {
     const token = safeLocalStorage.getItem('token');
     if (!token) return;
 
-    const response = await fetch(`/api/calendar/events?eventId=${eventToDelete._id}`, {
+    const isGoogleEvent = (eventToDelete as { isGoogleEvent?: boolean }).isGoogleEvent;
+    const response = await fetch(`/api/calendar/sync-events?eventId=${eventToDelete._id}&syncToGoogle=${isGoogleEvent}`, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -152,7 +153,8 @@ export function CalendarView() {
     const token = safeLocalStorage.getItem('token');
     if (!token) return;
 
-    const response = await fetch('/api/calendar/events', {
+    const isGoogleEvent = (updatedEvent as { isGoogleEvent?: boolean }).isGoogleEvent;
+    const response = await fetch('/api/calendar/sync-events', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -164,6 +166,7 @@ export function CalendarView() {
             startDate: updatedEvent.start,
             endDate: updatedEvent.end,
             description: updatedEvent.description || '',
+            syncToGoogle: isGoogleEvent,
         }),
     });
 
