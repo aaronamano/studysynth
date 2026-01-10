@@ -1,4 +1,4 @@
-import clientPromise from '@/lib/mongodb';
+import clientPromise from './mongodb';
 import { ObjectId } from 'mongodb';
 
 export interface GoogleCalendarTokens {

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import jwt from 'jsonwebtoken';
-import { isUserGoogleCalendarConnected, getUserGoogleCalendarTokens } from '../../../../../lib/google-calendar-tokens';
-import { getCalendarClient } from '../../../../../lib/google-calendar';
+import { isUserGoogleCalendarConnected, getUserGoogleCalendarTokens } from '@/lib/google-calendar-tokens';
+import { getCalendarClient } from '@/lib/google-calendar';
 import type { DecodedToken } from '@/lib/types';
 
 interface GoogleCalendarEvent {

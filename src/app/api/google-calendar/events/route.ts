@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { isUserGoogleCalendarConnected } from '../../../../../lib/google-calendar-tokens';
-import { getGoogleCalendarEvents, createGoogleCalendarEvent, updateGoogleCalendarEvent, deleteGoogleCalendarEvent } from '../../../../../lib/google-calendar-api';
+import { isUserGoogleCalendarConnected } from '@/lib/google-calendar-tokens';
+import { getGoogleCalendarEvents, createGoogleCalendarEvent, updateGoogleCalendarEvent, deleteGoogleCalendarEvent } from '@/lib/google-calendar-api';
 import type { DecodedToken } from '@/lib/types';
 
 async function getUserIdFromToken(token: string): Promise<string | null> {

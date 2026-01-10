@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { getGoogleAuthURL } from '../../../../../lib/google-calendar';
+import { getGoogleAuthURL } from '@/lib/google-calendar';
 import type { DecodedToken } from '@/lib/types';
 
 async function getUserIdFromToken(token: string): Promise<string | null> {
