@@ -33,6 +33,7 @@ export default function AboutPage() {
             <li><span className="font-semibold text-purple-100">Calendar Event Study Plan:</span> Generate recommended study plans with online resources onto your calendar.</li>
             <li><span className="font-semibold text-purple-100">Study Guide History:</span> Save generated study guides to refer to if needed.</li>
             <li><span className="font-semibold text-purple-100">API Key Integration:</span> Insert your own Perplexity API key.</li>
+            <li><span className="font-semibold text-purple-100">Google Calendar Integration:</span> Integrate and sync Google Calendar using your own Google account.</li>
           </ul>
 
           <div className="text-center mt-8">

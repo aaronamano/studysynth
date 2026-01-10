@@ -112,11 +112,18 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
     <div className="relative flex items-center justify-between p-4 bg-black/60 border border-purple-500/20 rounded-lg backdrop-blur-md">
       <div className="flex items-center space-x-3">
         <div className="flex items-center justify-center w-10 h-10 bg-white rounded-lg">
-          <svg className="w-6 h-6" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          <svg className="w-8 h-8" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path d="m13 13h22v22h-22z" fill="#fff"/>
+            <path d="m25.68 20.92 1.008 1.44 1.584-1.152v8.352h1.728v-10.944h-1.44z" fill="#1e88e5"/>
+            <path d="m22.943 23.745c.625-.574 1.013-1.37 1.013-2.249 0-1.747-1.533-3.168-3.417-3.168-1.602 0-2.972 1.009-3.33 2.453l1.657.421c.165-.664.868-1.146 1.673-1.146.942 0 1.709.646 1.709 1.44s-.767 1.44-1.709 1.44h-.997v1.728h.997c1.081 0 1.993.751 1.993 1.64 0 .904-.866 1.64-1.931 1.64-.962 0-1.784-.61-1.914-1.418l-1.687.276c.262 1.636 1.81 2.87 3.6 2.87 2.007 0 3.64-1.511 3.64-3.368-0-1.023-.504-1.941-1.297-2.559z" fill="#1e88e5"/>
+            <path d="m34 42h-20l-1-4 1-4h20l1 4z" fill="#fbc02d"/>
+            <path d="m38 35 4-1v-20l-4-1-4 1v20z" fill="#4caf50"/>
+            <path d="m34 14 1-4-1-4h-25c-1.657 0-3 1.343-3 3v25l4 1 4-1v-20z" fill="#1e88e5"/>
+            <path d="m34 34v8l8-8z" fill="#e53935"/>
+            <g fill="#1565c0">
+              <path d="m39 6h-5v8h8v-5c0-1.657-1.343-3-3-3z"/>
+              <path d="m9 42h5v-8h-8v5c0 1.657 1.343 3 3 3z"/>
+            </g>
           </svg>
         </div>
         <div>
