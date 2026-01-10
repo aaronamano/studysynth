@@ -42,7 +42,7 @@ export function useCalendarEvents() {
             setLoading(false);
             return;
           }
-        } catch (e) {
+        } catch {
           // Invalid cache, proceed with fetch
         }
       }
@@ -59,7 +59,7 @@ export function useCalendarEvents() {
       
       if (response.ok) {
         const data = await response.json();
-        const formattedEvents = data.map((event: any) => ({
+        const formattedEvents = data.map((event: { _id?: string; title: string; start: string; end: string; description?: string }) => ({
           ...event,
           start: new Date(event.start),
           end: new Date(event.end),
@@ -82,7 +82,7 @@ export function useCalendarEvents() {
       } else {
         setError('Failed to fetch events');
       }
-    } catch (error) {
+    } catch {
       setError('Error fetching events');
     } finally {
       setLoading(false);

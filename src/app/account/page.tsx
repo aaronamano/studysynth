@@ -58,9 +58,10 @@ export default function AccountPage() {
         toast.success("API keys updated successfully!")
         setIsSaved(true)
       } else {
-        const data = await res.json()
+        await res.json()
       }
-    } catch (error) {
+    } catch {
+      //
     }
   }
 

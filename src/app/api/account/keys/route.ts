@@ -13,7 +13,7 @@ async function getUserFromToken(token: string) {
   let decodedToken: DecodedToken;
   try {
     decodedToken = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
-  } catch (error) {
+  } catch {
     return null;
   }
 
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     const decryptedPerplexityKey = user.perplexityKey ? ncrypt.decrypt(user.perplexityKey) : '';
 
     return NextResponse.json({ perplexityKey: decryptedPerplexityKey }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     );
 
     return NextResponse.json({ message: 'API keys updated successfully' }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }

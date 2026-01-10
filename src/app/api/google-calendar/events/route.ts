@@ -8,7 +8,7 @@ async function getUserIdFromToken(token: string): Promise<string | null> {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
     return decoded.userId;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -57,9 +57,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(formattedEvents, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json({ 
-      error: `Failed to fetch Google Calendar events: ${error.message}` 
+      error: `Failed to fetch Google Calendar events: ${err.message}` 
     }, { status: 500 });
   }
 }
@@ -108,9 +109,10 @@ export async function POST(req: NextRequest) {
       message: 'Google Calendar event created successfully'
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json({ 
-      error: `Failed to create Google Calendar event: ${error.message}` 
+      error: `Failed to create Google Calendar event: ${err.message}` 
     }, { status: 500 });
   }
 }
@@ -159,9 +161,10 @@ export async function PUT(req: NextRequest) {
       message: 'Google Calendar event updated successfully'
     }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json({ 
-      error: `Failed to update Google Calendar event: ${error.message}` 
+      error: `Failed to update Google Calendar event: ${err.message}` 
     }, { status: 500 });
   }
 }
@@ -205,9 +208,10 @@ export async function DELETE(req: NextRequest) {
       message: 'Google Calendar event deleted successfully'
     }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json({ 
-      error: `Failed to delete Google Calendar event: ${error.message}` 
+      error: `Failed to delete Google Calendar event: ${err.message}` 
     }, { status: 500 });
   }
 }

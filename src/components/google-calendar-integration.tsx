@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { safeLocalStorage } from '@/lib/storage';
 
 interface GoogleCalendarIntegrationProps {
@@ -59,7 +58,7 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
         const errorData = await response.json();
         setError(errorData.error || 'Failed to connect Google Calendar');
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred while connecting to Google Calendar');
     } finally {
       setIsLoading(false);
@@ -88,7 +87,7 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
         const errorData = await response.json();
         setError(errorData.error || 'Failed to disconnect Google Calendar');
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred while disconnecting Google Calendar');
     } finally {
       setIsLoading(false);

@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { getGoogleAuthURL, oauth2Client } from '../../../../../lib/google-calendar';
-import { saveUserGoogleCalendarTokens } from '../../../../../lib/google-calendar-tokens';
+import { getGoogleAuthURL } from '../../../../../lib/google-calendar';
 import type { DecodedToken } from '@/lib/types';
 
 async function getUserIdFromToken(token: string): Promise<string | null> {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
     return decoded.userId;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -37,9 +36,10 @@ export async function GET(req: NextRequest) {
       message: 'Google Calendar authorization URL generated successfully'
     }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json({ 
-      error: `Failed to generate auth URL: ${error.message}` 
+      error: `Failed to generate auth URL: ${err.message}` 
     }, { status: 500 });
   }
 }

@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { BookOpen } from "lucide-react"
 
 export default function AboutPage() {
   const router = useRouter()

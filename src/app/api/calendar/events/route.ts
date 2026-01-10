@@ -8,7 +8,7 @@ async function getUserIdFromToken(token: string): Promise<string | null> {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
     return decoded.userId;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -43,8 +43,9 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json(formattedEvents, { status: 200 });
-  } catch (e: any) {
-    return NextResponse.json({ error: `Failed to get events: ${e.message}` }, { status: 500 });
+  } catch (e: unknown) {
+    const error = e as Error;
+    return NextResponse.json({ error: `Failed to get events: ${error.message}` }, { status: 500 });
   }
 }
 
@@ -84,8 +85,9 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ eventId: result.insertedId }, { status: 201 });
-  } catch (e: any) {
-    return NextResponse.json({ error: `Failed to add event: ${e.message}` }, { status: 500 });
+  } catch (e: unknown) {
+    const error = e as Error;
+    return NextResponse.json({ error: `Failed to add event: ${error.message}` }, { status: 500 });
   }
 }
 
@@ -126,8 +128,9 @@ export async function PUT(req: NextRequest) {
       }
   
       return NextResponse.json({ message: 'Event updated successfully' }, { status: 200 });
-    } catch (e: any) {
-      return NextResponse.json({ error: `Failed to update event: ${e.message}` }, { status: 500 });
+    } catch (e: unknown) {
+      const error = e as Error;
+      return NextResponse.json({ error: `Failed to update event: ${error.message}` }, { status: 500 });
     }
   }
   
@@ -169,7 +172,8 @@ export async function PUT(req: NextRequest) {
         }
     
         return NextResponse.json({ message: 'Event deleted successfully' }, { status: 200 });
-      } catch (e: any) {
-        return NextResponse.json({ error: `Failed to delete event: ${e.message}` }, { status: 500 });
+      } catch (e: unknown) {
+        const error = e as Error;
+        return NextResponse.json({ error: `Failed to delete event: ${error.message}` }, { status: 500 });
       }
     }

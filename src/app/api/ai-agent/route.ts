@@ -9,7 +9,7 @@ class StudyAgent {
     this.perplexityApiKey = apiKey;
   }
 
-  private async makeRequest(messages: any[]) {
+  private async makeRequest(messages: { role: string; content: string }[]) {
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
@@ -60,7 +60,7 @@ class StudyAgent {
     return response.choices[0].message.content || '';
   }
 
-  async find_resources(studyGuide: string, mediaPreferences?: any): Promise<string[]> {
+  async find_resources(studyGuide: string, mediaPreferences?: Record<string, unknown>): Promise<string[]> {
     const systemPrompt = `You are a research assistant that finds high-quality educational resources.
     
     Based on the study guide provided, search for relevant resources including:
@@ -164,13 +164,13 @@ IMPORTANT: Match specific resources to each calendar event based on topic releva
     
     try {
       const events = match ? JSON.parse(match[0]) : [];
-      return events.map((event: any) => ({
+      return events.map((event: { startDate: string; endDate: string; title?: string; description?: string }) => ({
         startDate: new Date(event.startDate),
         endDate: new Date(event.endDate),
         title: event.title || '',
         description: event.description || ''
       }));
-    } catch (e) {
+    } catch {
       console.error('Failed to parse calendar events:', content);
       return [];
     }
@@ -204,8 +204,9 @@ export async function POST(req: NextRequest) {
     const result = await agent.execute_workflow(prompt, studyData);
 
     return NextResponse.json(result);
-  } catch (e: any) {
-    console.error('AI Agent Error:', e);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error('AI Agent Error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

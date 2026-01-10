@@ -38,7 +38,7 @@ export default function ResetPasswordPage() {
         const data = await res.json()
         setError(data.message || "Something went wrong")
       }
-    } catch (error) {
+    } catch {
       setError("Something went wrong")
     }
   }

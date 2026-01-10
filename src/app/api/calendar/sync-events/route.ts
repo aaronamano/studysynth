@@ -6,11 +6,25 @@ import { isUserGoogleCalendarConnected, getUserGoogleCalendarTokens } from '../.
 import { getCalendarClient } from '../../../../../lib/google-calendar';
 import type { DecodedToken } from '@/lib/types';
 
+interface GoogleCalendarEvent {
+  id?: string | null;
+  summary?: string | null;
+  start?: {
+    dateTime?: string | null;
+    date?: string | null;
+  } | null;
+  end?: {
+    dateTime?: string | null;
+    date?: string | null;
+  } | null;
+  description?: string | null;
+}
+
 async function getUserIdFromToken(token: string): Promise<string | null> {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
     return decoded.userId;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -46,7 +60,7 @@ export async function GET(req: NextRequest) {
     }));
 
     const isGoogleConnected = await isUserGoogleCalendarConnected(userId);
-    let googleEvents: any[] = [];
+    let googleEvents: { id: string; title: string; start: string; end: string; description?: string; isGoogleEvent: boolean }[] = [];
 
     if (isGoogleConnected) {
       try {
@@ -60,12 +74,12 @@ export async function GET(req: NextRequest) {
             timeMin: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
           });
           
-          googleEvents = (response.data.items || []).map((event: any) => ({
-            id: event.id,
-            title: event.summary,
-            start: event.start?.dateTime || event.start?.date,
-            end: event.end?.dateTime || event.end?.date,
-            description: event.description,
+          googleEvents = (response.data.items || []).map((event: GoogleCalendarEvent) => ({
+            id: event.id || '',
+            title: event.summary || '',
+            start: event.start?.dateTime || event.start?.date || '',
+            end: event.end?.dateTime || event.end?.date || '',
+            description: event.description || undefined,
             isGoogleEvent: true
           }));
         }
@@ -77,8 +91,9 @@ export async function GET(req: NextRequest) {
     const allEvents = [...formattedLocalEvents, ...googleEvents];
 
     return NextResponse.json(allEvents, { status: 200 });
-  } catch (e: any) {
-    return NextResponse.json({ error: `Failed to get events: ${e.message}` }, { status: 500 });
+  } catch (e: unknown) {
+    const error = e as Error;
+    return NextResponse.json({ error: `Failed to get events: ${error.message}` }, { status: 500 });
   }
 }
 
@@ -151,8 +166,9 @@ export async function POST(req: NextRequest) {
         } else {
           googleError = 'Google Calendar is not connected';
         }
-      } catch (error: any) {
-        googleError = `Failed to sync to Google Calendar: ${error.message}`;
+      } catch (error: unknown) {
+        const err = error as Error;
+        googleError = `Failed to sync to Google Calendar: ${err.message}`;
       }
     }
 
@@ -161,7 +177,8 @@ export async function POST(req: NextRequest) {
       googleEventId,
       googleError
     }, { status: 201 });
-  } catch (e: any) {
-    return NextResponse.json({ error: `Failed to add event: ${e.message}` }, { status: 500 });
+  } catch (e: unknown) {
+    const error = e as Error;
+    return NextResponse.json({ error: `Failed to add event: ${error.message}` }, { status: 500 });
   }
 }

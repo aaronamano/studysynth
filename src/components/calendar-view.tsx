@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Calendar, dateFnsLocalizer, Views, View } from 'react-big-calendar';
 import { format } from 'date-fns/format';
 import { parse } from 'date-fns/parse';
@@ -78,7 +78,7 @@ const CustomToolbar = ({ label, onNavigate, onView }: CustomToolbarProps) => {
 };
 
 export function CalendarView() {
-  const { events, loading, error, refetch, invalidateCache } = useCalendarEvents();
+  const { events, invalidateCache } = useCalendarEvents();
   const [newEvent, setNewEvent] = useState<Event>({ title: '', start: new Date(), end: new Date(), description: '' });
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [view, setView] = useState<View>(Views.MONTH);
@@ -92,8 +92,7 @@ export function CalendarView() {
       // Handle case where user is not logged in
       return;
     }
-    const decodedToken: { userId: string } = jwtDecode(token);
-    const userId = decodedToken.userId;
+    jwtDecode(token);
 
     const response = await fetch('/api/calendar/sync-events', {
       method: 'POST',
@@ -110,7 +109,7 @@ export function CalendarView() {
       }),
     });
     if (response.ok) {
-      const { eventId, googleEventId, googleError } = await response.json();
+      const { googleError } = await response.json();
       invalidateCache();
       
       if (googleError) {
@@ -164,8 +163,8 @@ export function CalendarView() {
     }
   };
 
-const eventStyleGetter = (event: Event, start: Date, end: Date, isSelected: boolean) => {
-    const isGoogleEvent = (event as any).isGoogleEvent;
+const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: boolean) => {
+    const isGoogleEvent = (event as { isGoogleEvent?: boolean }).isGoogleEvent;
     const style = {
         backgroundColor: isGoogleEvent ? '#4285F4' : '#8B5CF6',
         borderRadius: '5px',
@@ -181,7 +180,7 @@ const eventStyleGetter = (event: Event, start: Date, end: Date, isSelected: bool
 };
 
   const CustomEvent = ({ event }: { event: Event }) => {
-    const isGoogleEvent = (event as any).isGoogleEvent;
+    const isGoogleEvent = (event as { isGoogleEvent?: boolean }).isGoogleEvent;
     return (
       <div className="rbc-event-content">
         <div className="font-semibold text-xs flex items-center gap-1">

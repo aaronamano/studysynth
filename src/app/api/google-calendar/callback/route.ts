@@ -8,7 +8,7 @@ async function getUserIdFromToken(token: string): Promise<string | null> {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
     return decoded.userId;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -57,10 +57,11 @@ export async function GET(req: NextRequest) {
       success: true
     }, { status: 200 });
 
-  } catch (error: any) {
-    console.error('Google Calendar OAuth callback error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Google Calendar OAuth callback error:', err);
     return NextResponse.json({ 
-      error: `Failed to connect Google Calendar: ${error.message}` 
+      error: `Failed to connect Google Calendar: ${err.message}` 
     }, { status: 500 });
   }
 }

@@ -14,6 +14,7 @@ import StudyPlanAdjuster from "./features/study-plan-adjuster"
 import StudyGuideDisplay from "./study-guide-display"
 import EventsDisplay from "./events-display"
 import TopicInput from "./features/topic-input" // Input for strengths/weaknesses
+import { CalendarEvent } from "@/lib/types"
 import TopicPdfImport from "./features/topic-pdf-import" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
 import { safeLocalStorage } from "@/lib/storage"
@@ -22,7 +23,7 @@ export default function StudyGuideGenerator() {
   // State variables for form fields and UI state
   const [isGenerating, setIsGenerating] = useState(false) // Loading state
   const [studyGuide, setStudyGuide] = useState<string | null>(null) // Generated guide
-  const [events, setEvents] = useState<any[]>([]) // Generated calendar events
+  const [events, setEvents] = useState<CalendarEvent[]>([]) // Generated calendar events
   const [pdfFile, setPdfFile] = useState<File | null>(null) // PDF file input
   const [constraints, setConstraints] = useState("") // Constraints input
   const [strengths, setStrengths] = useState([""]) // List of strengths
@@ -59,8 +60,7 @@ export default function StudyGuideGenerator() {
 
       const data = await res.json();
       return data.perplexityKey;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    } catch {
       return null;
     }
   };
@@ -111,7 +111,7 @@ export default function StudyGuideGenerator() {
         
         if (token && generatedEvents && generatedEvents.length > 0) {
           // Save all events to calendar with Google Calendar sync if available
-          const savePromises = generatedEvents.map((event: any) => 
+          const savePromises = generatedEvents.map((event: { title: string; startDate: string; endDate: string; description?: string }) => 
             fetch('/api/calendar/sync-events', {
               method: 'POST',
               headers: {
@@ -155,7 +155,7 @@ export default function StudyGuideGenerator() {
             if (failed > 0) {
               toast.error(`Failed to save ${failed} event${failed > 1 ? 's' : ''}.`);
             }
-          } catch (error) {
+          } catch {
             toast.error('Error saving calendar events.');
           }
         } else if (!generatedEvents || generatedEvents.length === 0) {
