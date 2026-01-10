@@ -34,6 +34,13 @@ export default function Home() {
             setFirstName(data.firstName);
           }
         });
+      
+      // Check if we should redirect to calendar tab
+      const redirectToCalendar = safeLocalStorage.getItem('redirect_to_calendar');
+      if (redirectToCalendar === 'true') {
+        setActiveTab('calendar');
+        safeLocalStorage.removeItem('redirect_to_calendar');
+      }
     }
   }, []);
 

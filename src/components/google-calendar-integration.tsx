@@ -53,14 +53,42 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
 
       if (response.ok) {
         const data = await response.json();
-        window.open(data.authUrl, '_blank', 'width=500,height=600');
+        const popup = window.open(data.authUrl, '_blank', 'width=500,height=600');
+        
+        // Check if popup was blocked or failed to open
+        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+          setError('Popup was blocked. Please allow popups and try again.');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Set up monitoring for popup closure
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            setIsLoading(false);
+            // Check connection status to update button state
+            setTimeout(() => checkConnectionStatus(), 1000);
+          }
+        }, 1000);
+        
+        // Fallback timeout
+        setTimeout(() => {
+          clearInterval(checkClosed);
+          if (!popup.closed) {
+            popup.close();
+            setError('Connection timed out. Please try again.');
+            setIsLoading(false);
+          }
+        }, 30000);
+        
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to connect Google Calendar');
+        setIsLoading(false);
       }
     } catch {
       setError('An error occurred while connecting to Google Calendar');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -103,8 +131,20 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
       checkConnectionStatus();
     };
 
+    // Listen for Google Calendar connection messages from popup
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'GOOGLE_CALENDAR_CONNECTED' && event.data?.success) {
+        checkConnectionStatus();
+      }
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('message', handleMessage);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('message', handleMessage);
+    };
   }, []);
 
   return (

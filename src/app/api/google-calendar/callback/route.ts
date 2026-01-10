@@ -52,10 +52,40 @@ export async function GET(req: NextRequest) {
       }, { status: 500 });
     }
 
-    return NextResponse.json({ 
-      message: 'Google Calendar connected successfully',
-      success: true
-    }, { status: 200 });
+    // Create HTML response that closes popup and sets calendar tab
+    const htmlResponse = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Google Calendar Connected</title>
+          <script>
+            // Set localStorage flag to indicate calendar tab should be active
+            if (window.opener) {
+              window.opener.localStorage.setItem('redirect_to_calendar', 'true');
+              window.opener.postMessage({ 
+                type: 'GOOGLE_CALENDAR_CONNECTED',
+                success: true
+              }, '*');
+              window.close();
+            } else {
+              // If no opener (opened directly), set localStorage and reload
+              localStorage.setItem('redirect_to_calendar', 'true');
+              window.location.reload();
+            }
+          </script>
+        </head>
+        <body>
+          <p>Connecting Google Calendar... You will be redirected shortly.</p>
+        </body>
+      </html>
+    `;
+
+    return new NextResponse(htmlResponse, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html',
+      },
+    });
 
   } catch (error: unknown) {
     const err = error as Error;
