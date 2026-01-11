@@ -97,7 +97,7 @@ export default function Home() {
             </div>
           </header>
 
-          <div className="max-w-4xl mx-auto bg-black/60 border border-purple-500/20 p-8 rounded-xl shadow-lg shadow-purple-500/10 backdrop-blur-md">
+          <div className="max-w-4xl mx-auto bg-black/60 border border-purple-500/20 p-8 rounded-2xl shadow-lg shadow-purple-500/10 backdrop-blur-md">
             <h2 className="text-3xl font-semibold text-purple-300 mb-4">What is StudySynth?</h2>
             <p className="text-purple-200 mb-6">
               StudySynth leverages Perplexity AI to generate customizable study guides and study plans tailored to your needs and preferences to make studying underwhelming and more organized.
@@ -113,7 +113,7 @@ export default function Home() {
 
             <div className="text-center mt-8">
               <Link href="/login" passHref>
-                <Button className="inline-flex items-center px-6 py-3 border border-purple-500/30 text-base font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20">
+                <Button className="inline-flex items-center px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20">
                   Get Started
                 </Button>
               </Link>
@@ -136,7 +136,7 @@ export default function Home() {
             <p className="text-lg font-medium text-purple-400">Welcome {firstName}, glad to have you here. Now time to lock tf in!</p>
             <Link href="/history" passHref>
               <Button
-                className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
+                className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
               >
                 <Bookmark className="h-5 w-5" />
                 <div className="text-sm">
@@ -146,7 +146,7 @@ export default function Home() {
             </Link>
             <Button
               onClick={handleLogout}
-              className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
+              className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
             >
               Logout
             </Button>

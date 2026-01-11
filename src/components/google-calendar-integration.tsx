@@ -166,9 +166,9 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
   }, []);
 
   return (
-    <div className="relative flex items-center justify-between p-4 bg-black/60 border border-purple-500/20 rounded-lg backdrop-blur-md">
+    <div className="relative flex items-center justify-between p-4 bg-black/60 border border-purple-500/20 rounded-2xl backdrop-blur-md">
       <div className="flex items-center space-x-3">
-        <div className="flex items-center justify-center w-10 h-10 bg-white rounded-lg">
+        <div className="flex items-center justify-center w-10 h-10 bg-white rounded-xl">
           <svg className="w-8 h-8" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
             <path d="m13 13h22v22h-22z" fill="#fff"/>
             <path d="m25.68 20.92 1.008 1.44 1.584-1.152v8.352h1.728v-10.944h-1.44z" fill="#1e88e5"/>
@@ -201,7 +201,7 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
           <Button
             onClick={handleConnect}
             disabled={isLoading || statusLoading}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm px-4 py-2 h-8"
+            className="bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm px-4 py-2 h-8"
           >
             {isLoading ? 'Connecting...' : (statusLoading ? 'Loading...' : 'Connect')}
           </Button>
@@ -218,7 +218,7 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
       </div>
       
       {error && (
-        <div className="absolute top-full left-0 right-0 mt-2 text-xs text-red-400 bg-red-900/40 border border-red-500/30 p-2 rounded backdrop-blur-sm">
+        <div className="absolute top-full left-0 right-0 mt-2 text-xs text-red-400 bg-red-900/40 border border-red-500/30 p-2 rounded-xl backdrop-blur-sm">
           {error}
         </div>
       )}

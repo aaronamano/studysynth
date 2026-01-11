@@ -32,12 +32,12 @@ export default function TopicPdfImport({ value, onChange }: TopicTextareaProps) 
         id="topics-pdf"
         type="file"
         accept="application/pdf"
-        className="block w-full text-sm text-purple-400 file:mr-4 file:py-2 file:px-4 file:rounded file:text-sm file:font-semibold file:bg-black/60 file:border file:border-purple-500/30 file:text-purple-300 hover:file:bg-purple-900/40 file:shadow-md file:shadow-purple-600/10"
+        className="block w-full text-sm text-purple-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:text-sm file:font-semibold file:bg-black/60 file:border file:border-purple-500/30 file:text-purple-300 hover:file:bg-purple-900/40 file:shadow-md file:shadow-purple-600/10"
         onChange={handleFileChange}
       />
 
       {value && (
-        <div className="mt-2 p-2 border border-purple-500/30 rounded bg-black/40 text-purple-300 text-xs max-h-48 overflow-auto whitespace-pre-wrap">
+        <div className="mt-2 p-2 border border-purple-500/30 rounded-xl bg-black/40 text-purple-300 text-xs max-h-48 overflow-auto whitespace-pre-wrap">
           {value.name}
         </div>
       )}

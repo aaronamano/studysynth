@@ -254,7 +254,7 @@ export default function StudyGuideGenerator() {
             {/* Generate button */}
             <Button
               onClick={handleGenerateStudyGuide}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+              className="w-full px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20 transition-all duration-200 ease-in-out hover:scale-[1.02] hover:shadow-purple-500/25"
               size="lg"
             >
               {isGenerating ? (

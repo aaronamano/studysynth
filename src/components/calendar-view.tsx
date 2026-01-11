@@ -268,7 +268,7 @@ const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: b
                       type="checkbox"
                       checked={syncToGoogle}
                       onChange={(e) => setSyncToGoogle(e.target.checked)}
-                      className="rounded border-purple-500/30 bg-black/60 text-purple-600 focus:ring-purple-500/30"
+                      className="rounded-full border-purple-500/30 bg-black/60 text-purple-600 focus:ring-purple-500/30"
                     />
                     <span className="text-purple-300">Sync to Google Calendar</span>
                   </label>
@@ -313,8 +313,8 @@ const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: b
                   </div>
                 )}
                 <div className="flex space-x-2 mt-2">
-                  <Button onClick={() => setSelectedEvent(event)} className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700">Edit</Button>
-                  <Button onClick={() => handleDeleteEvent(event)} className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700">Delete</Button>
+                  <Button onClick={() => setSelectedEvent(event)} className="bg-linear-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700">Edit</Button>
+                  <Button onClick={() => handleDeleteEvent(event)} className="bg-linear-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700">Delete</Button>
                 </div>
               </CardContent>
             </Card>
