@@ -11,6 +11,7 @@ import DatePicker from 'react-datepicker';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import type { Event, CustomToolbarProps } from '@/lib/types';
 import { jwtDecode } from "jwt-decode";
 import { safeLocalStorage } from "@/lib/storage";
@@ -87,7 +88,7 @@ export function CalendarView() {
   const [syncToGoogle, setSyncToGoogle] = useState<boolean>(false);
 
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
+    const handleStorageChange = (e: globalThis.StorageEvent) => {
       if (e.key === 'googleCalendarDisconnected' && e.newValue === 'true') {
         // Refresh events to show unsynced state
         invalidateCache();
@@ -299,27 +300,67 @@ const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: b
       </div>
       <div>
         <h2 className="text-lg font-semibold text-purple-300 mb-4">Upcoming Study Sessions</h2>
-        <div className="space-y-4">
-          {events.map((event, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle>{event.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>{`${format(event.start, 'P')} ${format(event.start, 'p')} - ${format(event.end, 'p')}`}</p>
-                {event.description && (
-                  <div className="text-sm text-purple-400 mt-2 italic whitespace-pre-wrap">
-                    {parseLinksInText(event.description)}
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="upcoming-sessions" className="border-purple-500/30">
+            <AccordionTrigger className="text-purple-300 hover:text-purple-200 py-4">
+              <span className="flex items-center justify-between w-full">
+                <span>Study Sessions ({events.length})</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4">
+                {events.map((event, index) => (
+                  <Accordion key={index} type="single" collapsible className="w-full">
+                    <AccordionItem value={`event-${index}`} className="border-purple-500/30 bg-black/40">
+                      <AccordionTrigger className="text-purple-200 hover:text-purple-100 py-4 px-4 rounded-t-lg">
+                        <div className="flex items-center justify-between w-full pr-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{event.title}</span>
+                            <span className="text-purple-400 text-sm">{`${format(event.start, 'P')}`}</span>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <div className="space-y-3">
+                          <div className="text-purple-300 text-sm">
+                            <span className="font-medium">Time:</span> {`${format(event.start, 'P')} ${format(event.start, 'p')} - ${format(event.end, 'p')}`}
+                          </div>
+                          {event.description && (
+                            <div className="text-sm text-purple-400 italic whitespace-pre-wrap border-t border-purple-500/20 pt-3">
+                              <span className="font-medium not-italic text-purple-300">Description:</span>
+                              <div className="mt-1">
+                                {parseLinksInText(event.description)}
+                              </div>
+                            </div>
+                          )}
+                          <div className="flex space-x-2 pt-2 border-t border-purple-500/20">
+                            <Button 
+                              onClick={() => setSelectedEvent(event)} 
+                              className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-sm px-3 py-1"
+                            >
+                              Edit
+                            </Button>
+                            <Button 
+                              onClick={() => handleDeleteEvent(event)} 
+                              className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white text-sm px-3 py-1"
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                ))}
+                {events.length === 0 && (
+                  <div className="text-purple-400 text-center py-8 italic">
+                    No upcoming study sessions scheduled
                   </div>
                 )}
-                <div className="flex space-x-2 mt-2">
-                  <Button onClick={() => setSelectedEvent(event)} className="bg-linear-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700">Edit</Button>
-                  <Button onClick={() => handleDeleteEvent(event)} className="bg-linear-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700">Delete</Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         {selectedEvent && (
           <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
