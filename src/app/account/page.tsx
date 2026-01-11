@@ -68,7 +68,7 @@ export default function AccountPage() {
   if (!isMounted) {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-800/10 rounded-full blur-3xl"></div>
         <div className="flex items-center justify-center min-h-screen relative z-10">
@@ -80,7 +80,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
+      <div className="absolute inset-0 bg-linear-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-800/10 rounded-full blur-3xl"></div>
       <Link href="/" className="absolute top-4 left-4 z-20 flex items-center text-purple-300 hover:text-purple-200">

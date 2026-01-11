@@ -41,7 +41,7 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
         // Invalidate calendar events cache to refresh the UI
         invalidateEventsCache();
         // Trigger storage event to notify other components
-        window.dispatchEvent(new StorageEvent('storage', {
+        window.dispatchEvent(new globalThis.StorageEvent('storage', {
           key: 'googleCalendarConnected',
           newValue: 'true'
         }));
@@ -123,7 +123,7 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
       if (success) {
         onConnectionChange?.(false);
         // Trigger a storage event to notify other components to refresh
-        window.dispatchEvent(new StorageEvent('storage', {
+        window.dispatchEvent(new globalThis.StorageEvent('storage', {
           key: 'googleCalendarDisconnected',
           newValue: 'true'
         }));
@@ -145,7 +145,7 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
     };
 
     // Listen for Google Calendar connection messages from popup
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = (event: globalThis.MessageEvent) => {
       if (event.data?.type === 'GOOGLE_CALENDAR_CONNECTED' && event.data?.success) {
         // Force cache invalidation and immediate refresh
         setTimeout(() => {

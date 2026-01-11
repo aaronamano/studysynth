@@ -69,7 +69,7 @@ export default function Home() {
   if (!isMounted) {
     return (
       <main className="min-h-screen bg-black relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-800/10 rounded-full blur-3xl"></div>
         <div className="container mx-auto px-4 py-6 relative z-10 flex items-center justify-center min-h-screen">
@@ -82,13 +82,13 @@ export default function Home() {
   if (!isLoggedIn) {
     return (
       <main className="min-h-screen bg-black relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-800/10 rounded-full blur-3xl"></div>
         <div className="container mx-auto px-4 py-6 relative z-10">
           <header className="mb-8 text-center py-8">
             <div className="flex justify-center items-center mb-4">
-              <div className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 text-transparent bg-clip-text">
+              <div className="bg-linear-to-r from-purple-400 via-violet-400 to-indigo-400 text-transparent bg-clip-text">
                 <h1 className="text-5xl font-bold tracking-tight leading-tight">
                   StudySynth
                 </h1>
@@ -113,7 +113,7 @@ export default function Home() {
 
             <div className="text-center mt-8">
               <Link href="/login" passHref>
-                <Button className="inline-flex items-center px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20">
+                <Button className="inline-flex items-center px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20">
                   Get Started
                 </Button>
               </Link>
@@ -127,7 +127,7 @@ export default function Home() {
   // Authenticated user dashboard
   return (
     <main className="min-h-screen bg-black relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
+      <div className="absolute inset-0 bg-lienar-to-br from-purple-950/20 via-purple-900/10 to-transparent"></div>
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-800/10 rounded-full blur-3xl"></div>
       <div className="container mx-auto px-4 py-6 relative z-10">
@@ -136,7 +136,7 @@ export default function Home() {
             <p className="text-lg font-medium text-purple-400">Welcome {firstName}, glad to have you here. Now time to lock tf in!</p>
             <Link href="/history" passHref>
               <Button
-                className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
+                className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
               >
                 <Bookmark className="h-5 w-5" />
                 <div className="text-sm">
@@ -146,14 +146,14 @@ export default function Home() {
             </Link>
             <Button
               onClick={handleLogout}
-              className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
+              className="px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
             >
               Logout
             </Button>
             <Link href="/account" passHref>
               <Button
                 size="icon"
-                className="px-3 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
+                className="px-3 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20"
               >
                 <User className="h-6 w-6" />
               </Button>
@@ -166,7 +166,7 @@ export default function Home() {
             <TabsList className="grid w-full grid-cols-2 bg-black/50 border border-purple-500/20 backdrop-blur-md shadow-lg shadow-purple-500/5">
               <TabsTrigger
                 value="create-study-guide"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-800 data-[state=active]:text-white text-purple-500 hover:text-purple-300"
+                className="data-[state=active]:bg-linear-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-800 data-[state=active]:text-white text-purple-500 hover:text-purple-300"
               >
                 <FileText className="mr-2 h-4 w-4" />
                 Study Guide
@@ -174,7 +174,7 @@ export default function Home() {
 
               <TabsTrigger
                 value="calendar"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-800 data-[state=active]:text-white text-purple-500 hover:text-purple-300"
+                className="data-[state=active]:bg-linear-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-800 data-[state=active]:text-white text-purple-500 hover:text-purple-300"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 Calendar

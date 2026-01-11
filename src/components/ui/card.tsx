@@ -12,7 +12,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
       )}
       {...props}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-transparent to-purple-800/5 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-linear-to-br from-purple-600/5 via-transparent to-purple-800/5 pointer-events-none"></div>
       <div className="relative z-10 flex flex-col gap-6">
         {props.children}
       </div>

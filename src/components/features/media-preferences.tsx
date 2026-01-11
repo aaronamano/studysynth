@@ -16,7 +16,7 @@ export default function MediaPreferences({ preferences, setPreferences }: MediaP
             id="videos"
             checked={preferences.videos}
             onCheckedChange={checked => setPreferences({ ...preferences, videos: !!checked })}
-            className="border-purple-500/30 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-purple-600 data-[state=checked]:to-purple-700 data-[state=checked]:border-purple-400"
+            className="border-purple-500/30 data-[state=checked]:bg-linear-to-r data-[state=checked]:from-purple-600 data-[state=checked]:to-purple-700 data-[state=checked]:border-purple-400"
           />
           <div className="space-y-1 leading-none">
             <Label htmlFor="videos" className="flex items-center">
@@ -32,7 +32,7 @@ export default function MediaPreferences({ preferences, setPreferences }: MediaP
             id="diagrams"
             checked={preferences.diagrams}
             onCheckedChange={checked => setPreferences({ ...preferences, diagrams: !!checked })}
-            className="border-purple-500/30 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-purple-600 data-[state=checked]:to-purple-700 data-[state=checked]:border-purple-400"
+            className="border-purple-500/30 data-[state=checked]:bg-linear-to-r data-[state=checked]:from-purple-600 data-[state=checked]:to-purple-700 data-[state=checked]:border-purple-400"
           />
           <div className="space-y-1 leading-none">
             <Label htmlFor="diagrams" className="flex items-center">
@@ -48,7 +48,7 @@ export default function MediaPreferences({ preferences, setPreferences }: MediaP
             id="readings"
             checked={preferences.readings}
             onCheckedChange={checked => setPreferences({ ...preferences, readings: !!checked })}
-            className="border-purple-500/30 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-purple-600 data-[state=checked]:to-purple-700 data-[state=checked]:border-purple-400"
+            className="border-purple-500/30 data-[state=checked]:bg-linear-to-r data-[state=checked]:from-purple-600 data-[state=checked]:to-purple-700 data-[state=checked]:border-purple-400"
           />
           <div className="space-y-1 leading-none">
             <Label htmlFor="readings" className="flex items-center">
@@ -64,7 +64,7 @@ export default function MediaPreferences({ preferences, setPreferences }: MediaP
             id="summaries"
             checked={preferences.summaries}
             onCheckedChange={checked => setPreferences({ ...preferences, summaries: !!checked })}
-            className="border-purple-500/30 data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-purple-600 data-[state=checked]:to-purple-700 data-[state=checked]:border-purple-400"
+            className="border-purple-500/30 data-[state=checked]:bg-linear-to-r data-[state=checked]:from-purple-600 data-[state=checked]:to-purple-700 data-[state=checked]:border-purple-400"
           />
           <div className="space-y-1 leading-none">
             <Label htmlFor="summaries" className="flex items-center">

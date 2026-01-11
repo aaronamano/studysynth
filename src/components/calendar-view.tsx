@@ -336,13 +336,13 @@ const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: b
                           <div className="flex space-x-2 pt-2 border-t border-purple-500/20">
                             <Button 
                               onClick={() => setSelectedEvent(event)} 
-                              className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-sm px-3 py-1"
+                              className="bg-linear-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-sm px-3 py-1"
                             >
                               Edit
                             </Button>
                             <Button 
                               onClick={() => handleDeleteEvent(event)} 
-                              className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white text-sm px-3 py-1"
+                              className="bg-linear-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white text-sm px-3 py-1"
                             >
                               Delete
                             </Button>
