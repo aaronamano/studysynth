@@ -45,9 +45,23 @@ export default function Home() {
   }, []);
 
   const handleLogout = () => {
+    // Clear authentication data
     safeLocalStorage.removeItem("token")
+    
+    // Clear cache data
+    safeLocalStorage.removeItem("calendar_events_cache")
+    safeLocalStorage.removeItem("google_calendar_status_cache")
+    safeLocalStorage.removeItem("history_cache")
+    safeLocalStorage.removeItem("studysynth_history_cache")
+    
+    // Clear user data
+    safeLocalStorage.removeItem("userId")
+    
+    // Clear local state
     setIsLoggedIn(false)
     setFirstName("")
+    
+    // Redirect to home
     router.push("/")
   }
 

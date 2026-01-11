@@ -3,16 +3,52 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { useGoogleCalendarStatus } from '@/hooks/use-google-calendar-status';
+import { useCalendarEvents } from '@/hooks/use-calendar-events';
 import { safeLocalStorage } from '@/lib/storage';
 import type { GoogleCalendarIntegrationProps } from '@/lib/types';
 
 export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendarIntegrationProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { isConnected, loading: statusLoading, disconnect } = useGoogleCalendarStatus();
+  const { isConnected, loading: statusLoading, disconnect, refetch: refetchStatus } = useGoogleCalendarStatus();
+  const { invalidateCache: invalidateEventsCache } = useCalendarEvents();
 
-  const checkConnectionStatus = () => {
+  const checkConnectionStatus = (forceRefresh = false) => {
+    // Force cache invalidation if requested
+    if (forceRefresh) {
+      safeLocalStorage.removeItem('google_calendar_status_cache');
+      refetchStatus();
+    }
     onConnectionChange?.(isConnected);
+  };
+
+  const syncEventsAfterConnection = async () => {
+    try {
+      const token = safeLocalStorage.getItem('token');
+      if (!token) {
+        return;
+      }
+
+      // Call sync-events API to fetch and sync Google Calendar events
+      const response = await fetch('/api/calendar/sync-events', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        // Invalidate calendar events cache to refresh the UI
+        invalidateEventsCache();
+        // Trigger storage event to notify other components
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'googleCalendarConnected',
+          newValue: 'true'
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to sync events after Google Calendar connection:', error);
+    }
   };
 
   const handleConnect = async () => {
@@ -49,7 +85,11 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
             clearInterval(checkClosed);
             setIsLoading(false);
             // Check connection status to update button state
-            setTimeout(() => checkConnectionStatus(), 1000);
+            setTimeout(() => {
+              checkConnectionStatus(true);
+              // Attempt to sync events after connection
+              syncEventsAfterConnection();
+            }, 1500);
           }
         }, 1000);
         
@@ -107,7 +147,12 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
     // Listen for Google Calendar connection messages from popup
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'GOOGLE_CALENDAR_CONNECTED' && event.data?.success) {
-        checkConnectionStatus();
+        // Force cache invalidation and immediate refresh
+        setTimeout(() => {
+          checkConnectionStatus(true);
+          // After successful connection, sync events from Google Calendar
+          syncEventsAfterConnection();
+        }, 1500); // Increased delay to ensure database write is complete
       }
     };
 
