@@ -39,7 +39,8 @@ These are instructions you must consider everytime you run an operation:
     - if possible also create these types in `types.ts` and import them
       - do not use `import { interfaceType } from "@/types.ts"` ❌
       - use `import type { interfaceType } from "@/types.ts"` ✅
-4. **Checking Lint Errors** - check for potential errors using `pnpm run lint` and make sure to solve these issues. after you learned what mistakes happened and why make sure to document them as a new section in `AGENT.md`
+4. **Checking Lint Errors** - check for potential errors using `pnpm run lint` and make sure to solve these issues. after you learned what mistakes happened and why make sure to document them as a new section in a new markdown file under `docs/`
+5. **Checking Build** - check if the app is able to compile by running `pnpm run build`. if there's any issues, please fix them. After you learned what mistakes happened and why make sure to document them as a new section in a new markdown file under `docs/`
 
 # Tech Stack
 - Frontend: Next.js and Typescript
