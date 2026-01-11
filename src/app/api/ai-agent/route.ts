@@ -118,10 +118,11 @@ class StudyAgent {
     RESOURCE MATCHING INSTRUCTIONS:
     - Analyze each resource and determine which study topic it best matches
     - Include 2-4 most relevant resources in each event's description
-    - Extract ONLY the raw HTTP/HTTPS URLs from resources (no descriptions, no formatting)
-    - Format each resource as just the raw URL on a new line
+    - Extract both the description/title AND the raw HTTP/HTTPS URL from resources
+    - Format each resource as: "[resource description/title](raw url)"
+    - Ensure URLs start with http:// or https://
     - Prioritize resources that match the event's specific topic
-    - Do NOT include resource titles, descriptions, or any formatting around URLs
+    - Include both the resource description and the complete URL for each resource
     
     Return ONLY a JSON array with this exact structure:
     [
@@ -129,7 +130,7 @@ class StudyAgent {
         "startDate": "YYYY-MM-DDTHH:mm:ss.sssZ",
         "endDate": "YYYY-MM-DDTHH:mm:ss.sssZ", 
         "title": "Study Topic Name",
-        "description": "Detailed description of what to study including:\n\nTopic Overview: [brief overview]\n\nKey Concepts: [main concepts to cover]\n\nRecommended Resources:\nhttps://example.com/resource1\nhttps://example.com/resource2\nhttps://example.com/resource3"
+        "description": "Detailed description of what to study including:\n\nTopic Overview: [brief overview]\n\nKey Concepts: [main concepts to cover]\n\nRecommended Resources:\n[Khan Academy video on derivatives](https://www.khanacademy.org/math/calculus-1)\n[Interactive calculus tutorial](https://www.calculus.org/tutorial)\n[Practice problems worksheet](https://www.mathproblems.com/calculus)"
       }
     ]`;
 
