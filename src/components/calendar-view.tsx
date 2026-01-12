@@ -12,6 +12,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
+import { Checkbox } from './ui/checkbox';
 import type { Event, CustomToolbarProps } from '@/lib/types';
 import { jwtDecode } from "jwt-decode";
 import { safeLocalStorage } from "@/lib/storage";
@@ -86,6 +87,7 @@ export function CalendarView() {
   const [date, setDate] = useState(new Date());
   const [isGoogleConnected, setIsGoogleConnected] = useState<boolean>(false);
   const [syncToGoogle, setSyncToGoogle] = useState<boolean>(false);
+  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const handleStorageChange = (e: globalThis.StorageEvent) => {
@@ -176,6 +178,69 @@ export function CalendarView() {
         setSelectedEvent(null);
     } else {
         console.error("Failed to update event");
+    }
+  };
+
+  const handleEventSelection = (eventId: string, checked: boolean) => {
+    setSelectedEvents(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(eventId);
+      } else {
+        newSet.delete(eventId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    const localEventIds = events
+      .filter(event => !(event as { isGoogleEvent?: boolean }).isGoogleEvent)
+      .map(event => event._id!)
+      .filter(Boolean);
+    setSelectedEvents(new Set(localEventIds));
+  };
+
+  const handleClearSelection = () => {
+    setSelectedEvents(new Set());
+  };
+
+  const handleBatchDelete = async () => {
+    const token = safeLocalStorage.getItem('token');
+    if (!token) return;
+
+    if (selectedEvents.size === 0) {
+      return;
+    }
+
+    // Show confirmation dialog
+    const confirmed = window.confirm(`Are you sure you want to delete ${selectedEvents.size} selected event(s)? This action cannot be undone.`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const eventIds = Array.from(selectedEvents).join(',');
+      const response = await fetch(`/api/calendar/sync-events?eventIds=${eventIds}&syncToGoogle=true`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setSelectedEvents(new Set());
+        invalidateCache();
+        
+        if (result.googleErrors && result.googleErrors.length > 0) {
+          console.warn('Google Calendar sync warnings:', result.googleErrors);
+        }
+      } else {
+        console.error("Failed to delete events");
+      }
+    } catch (error) {
+      console.error("Error deleting events:", error);
     }
   };
 
@@ -308,18 +373,61 @@ const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: b
               </span>
             </AccordionTrigger>
             <AccordionContent>
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center justify-between p-2 bg-purple-900/20 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={events.filter(e => !(e as { isGoogleEvent?: boolean }).isGoogleEvent && e._id).length > 0 && 
+                              events.filter(e => !(e as { isGoogleEvent?: boolean }).isGoogleEvent && e._id).every(e => selectedEvents.has(e._id!))}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          handleSelectAll();
+                        } else {
+                          handleClearSelection();
+                        }
+                      }}
+                    />
+                    <span className="text-purple-300 text-sm">Select All</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-purple-400 text-sm">
+                      {selectedEvents.size} selected
+                    </div>
+                    {selectedEvents.size > 0 && (
+                      <Button 
+                        onClick={handleBatchDelete}
+                        className="bg-linear-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white text-sm px-3 py-1"
+                      >
+                        Delete Selected
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
               <div className="space-y-4">
-                {events.map((event, index) => (
-                  <Accordion key={index} type="single" collapsible className="w-full">
-                    <AccordionItem value={`event-${index}`} className="border-purple-500/30 bg-black/40">
-                      <AccordionTrigger className="text-purple-200 hover:text-purple-100 py-4 px-4 rounded-t-lg">
-                        <div className="flex items-center justify-between w-full pr-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{event.title}</span>
-                            <span className="text-purple-400 text-sm">{`${format(event.start, 'P')}`}</span>
+                {events.map((event, index) => {
+                  const isGoogleEvent = (event as { isGoogleEvent?: boolean }).isGoogleEvent;
+                  const eventId = event._id;
+                  const isSelectable = !isGoogleEvent && eventId;
+                  
+                  return (
+                    <Accordion key={index} type="single" collapsible className="w-full">
+                      <AccordionItem value={`event-${index}`} className="border-purple-500/30 bg-black/40">
+                        <AccordionTrigger className="text-purple-200 hover:text-purple-100 py-4 px-4 rounded-t-lg">
+                          <div className="flex items-center justify-between w-full pr-2">
+                            <div className="flex items-center gap-2">
+                              {isSelectable && (
+                                <Checkbox
+                                  checked={selectedEvents.has(eventId)}
+                                  onCheckedChange={(checked) => handleEventSelection(eventId, checked as boolean)}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              )}
+                              <span className="font-medium">{event.title}</span>
+                              <span className="text-purple-400 text-sm">{`${format(event.start, 'P')}`}</span>
+                            </div>
                           </div>
-                        </div>
-                      </AccordionTrigger>
+                        </AccordionTrigger>
                       <AccordionContent className="px-4 pb-4">
                         <div className="space-y-3">
                           <div className="text-purple-300 text-sm">
@@ -351,7 +459,8 @@ const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: b
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
-                ))}
+                  );
+                })}
                 {events.length === 0 && (
                   <div className="text-purple-400 text-center py-8 italic">
                     No upcoming study sessions scheduled

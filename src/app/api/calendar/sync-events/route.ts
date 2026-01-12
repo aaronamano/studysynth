@@ -397,8 +397,80 @@ export async function DELETE(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const eventId = searchParams.get('eventId');
+    const eventIds = searchParams.get('eventIds');
     const syncToGoogle = searchParams.get('syncToGoogle') === 'true';
 
+    // Check if this is a batch delete or single delete
+    if (eventIds) {
+      // Batch delete
+      const eventIdArray = eventIds.split(',').filter(id => id.trim());
+      
+      if (eventIdArray.length === 0) {
+        return NextResponse.json({ error: 'At least one event ID is required for batch delete' }, { status: 400 });
+      }
+
+      const client = await clientPromise;
+      const db = client.db('studysynth');
+      const calendarEvents = db.collection('calendarEvents');
+
+      // Get all events to check for Google sync
+      const existingEvents = await calendarEvents.find({
+        _id: { $in: eventIdArray.map(id => new ObjectId(id)) },
+        userId: new ObjectId(userId)
+      }).toArray();
+
+      let googleErrors: string[] = [];
+
+      // Delete from Google Calendar if sync is requested
+      if (syncToGoogle) {
+        try {
+          const isGoogleConnected = await isUserGoogleCalendarConnected(userId);
+          if (isGoogleConnected) {
+            const tokens = await getUserGoogleCalendarTokens(userId);
+            if (tokens) {
+              const calendar = getCalendarClient(tokens.access_token, tokens.refresh_token);
+              
+              for (const event of existingEvents) {
+                if (event.googleEventId) {
+                  try {
+                    await calendar.events.delete({
+                      calendarId: 'primary',
+                      eventId: event.googleEventId,
+                    });
+                  } catch (error: unknown) {
+                    const err = error as Error;
+                    googleErrors.push(`Failed to delete Google Calendar event "${event.title}": ${err.message}`);
+                  }
+                }
+              }
+            }
+          } else {
+            googleErrors.push('Google Calendar is not connected');
+          }
+        } catch (error: unknown) {
+          const err = error as Error;
+          googleErrors.push(`Failed to sync with Google Calendar: ${err.message}`);
+        }
+      }
+
+      // Delete local events using deleteMany
+      const result = await calendarEvents.deleteMany({
+        _id: { $in: eventIdArray.map(id => new ObjectId(id)) },
+        userId: new ObjectId(userId),
+      });
+
+      if (result.deletedCount === 0) {
+        return NextResponse.json({ error: 'No events found or user not authorized' }, { status: 404 });
+      }
+
+      return NextResponse.json({ 
+        message: `${result.deletedCount} event(s) deleted successfully`,
+        deletedCount: result.deletedCount,
+        googleErrors: googleErrors.length > 0 ? googleErrors : undefined
+      }, { status: 200 });
+    }
+
+    // Single event delete (existing logic)
     if (!eventId) {
       return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
     }
