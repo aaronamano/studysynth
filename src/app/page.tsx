@@ -15,6 +15,7 @@ export default function Home() {
   const [firstName, setFirstName] = useState("")
   const [isMounted, setIsMounted] = useState(false)
   const [activeTab, setActiveTab] = useState("create-study-guide")
+  const [calendarKey, setCalendarKey] = useState(0)
   const router = useRouter()
 
   useEffect(() => {
@@ -162,7 +163,13 @@ export default function Home() {
         </header>
 
         <div className="grid grid-cols-1 gap-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={(value) => {
+            setActiveTab(value);
+            if (value === 'calendar') {
+              // Force calendar to remount and fetch fresh data
+              setCalendarKey(prev => prev + 1);
+            }
+          }} className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-black/50 border border-purple-500/20 backdrop-blur-md shadow-lg shadow-purple-500/5">
               <TabsTrigger
                 value="create-study-guide"
@@ -186,7 +193,7 @@ export default function Home() {
             </TabsContent>
 
             <TabsContent value="calendar" className="mt-6">
-              <CalendarView />
+              <CalendarView key={calendarKey} />
             </TabsContent>
           </Tabs>
         </div>
