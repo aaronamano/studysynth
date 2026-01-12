@@ -18,6 +18,7 @@ import { CalendarEvent } from "@/lib/types"
 import TopicPdfImport from "./features/topic-pdf-import" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
 import { safeLocalStorage } from "@/lib/storage"
+import type { PdfFileWithContent } from "@/lib/types"
 
 export default function StudyGuideGenerator() {
   // State variables for form fields and UI state
@@ -88,7 +89,21 @@ export default function StudyGuideGenerator() {
         studyPlan
       };
       
-      const agentPrompt = constraints || "Generate a comprehensive study plan";
+      // Build comprehensive prompt with PDF content if available
+      let agentPrompt = constraints || "Generate a comprehensive study plan";
+      
+      if (pdfFile && (pdfFile as PdfFileWithContent).extractedContent) {
+        const pdfContent = (pdfFile as PdfFileWithContent).extractedContent;
+        agentPrompt = `
+PDF CONTENT TO STUDY:
+${pdfContent}
+
+USER REQUIREMENTS:
+${agentPrompt}
+
+IMPORTANT: Base the study guide specifically on the PDF content provided above. Focus on the key topics, concepts, and materials found in the PDF while considering the user's requirements.
+        `.trim();
+      }
       
       // Use fetch with streaming for SSE
       const response = await fetch('/api/ai-agent', {

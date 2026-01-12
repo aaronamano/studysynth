@@ -17,7 +17,7 @@ class StudyAgent {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'sonar-pro',
+        model: 'sonar-reasoning-pro',
         messages,
       }),
     });
@@ -27,6 +27,35 @@ class StudyAgent {
     }
 
     return response.json();
+  }
+
+  private async performSearch(query: string): Promise<Array<{ title: string; url: string; snippet: string; date?: string }>> {
+    try {
+      const response = await fetch('https://api.perplexity.ai/search', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.perplexityApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          max_results: 10,
+          search_type: 'news', // Focus on recent educational content
+          domain_filter: null, // Allow all domains for broader resources
+        }),
+      });
+
+      if (!response.ok) {
+        console.warn(`Search API error: ${response.status}, falling back to chat completions`);
+        return [];
+      }
+
+      const data = await response.json();
+      return data.results || [];
+    } catch (error) {
+      console.warn('Search API failed, falling back to chat completions:', error);
+      return [];
+    }
   }
 
   async create_study_guide(prompt: string, studyData?: StudyPlanData): Promise<string> {
@@ -61,38 +90,186 @@ class StudyAgent {
   }
 
   async find_resources(studyGuide: string, mediaPreferences?: Record<string, unknown>): Promise<string[]> {
-    const systemPrompt = `You are a research assistant that finds high-quality educational resources.
+    // First, try to extract key topics from the study guide
+    const topicExtractionPrompt = `Extract 5-7 key study topics from this study guide. Return only the topics, one per line, without numbering or extra text:\n\n${studyGuide}`;
     
-    Based on the study guide provided, search for relevant resources including:
-    - YouTube videos (preferably under 10 minutes when mentioned)
-    - Academic articles and papers
-    - Free online resources
-    - Interactive tutorials
+    const topicResponse = await this.makeRequest([
+      { role: 'user', content: topicExtractionPrompt }
+    ]);
+    
+    const topics = topicResponse.choices[0].message.content
+      ?.split('\n')
+      .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 0) || [];
+
+    const resources: string[] = [];
+    
+    // Search for each topic using the search API
+    for (const topic of topics) {
+      try {
+        // Create search queries based on media preferences
+        const searchQueries = this.createSearchQueries(topic, mediaPreferences);
+        
+        for (const query of searchQueries) {
+          const searchResults = await this.performSearch(query);
+          
+          for (const result of searchResults.slice(0, 2)) { // Take top 2 results per query
+            const resource = this.formatResource(result, topic);
+            if (resource && !resources.includes(resource)) {
+              resources.push(resource);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(`Failed to search for topic: ${topic}`, error);
+      }
+    }
+    
+    // If search didn't yield enough results, fall back to chat completion
+    if (resources.length < 5) {
+      const fallbackResources = await this.fallbackResourceSearch(studyGuide, mediaPreferences);
+      resources.push(...fallbackResources.filter(r => !resources.includes(r)));
+    }
+    
+    return resources.slice(0, 15); // Limit to 15 resources
+  }
+
+  private createSearchQueries(topic: string, mediaPreferences?: Record<string, unknown>): string[] {
+    const queries = [];
+    const baseQuery = `${topic} educational tutorial`;
+    
+    // Always start with general educational query
+    queries.push(baseQuery);
+    
+    // Add specific queries based on media preferences
+    if (mediaPreferences) {
+      const prefs = mediaPreferences as Record<string, boolean>;
+      
+      if (prefs.videos) {
+        queries.push(`${topic} YouTube tutorial explanation`);
+      }
+      
+      if (prefs.readings) {
+        queries.push(`${topic} article guide study notes`);
+      }
+      
+      if (prefs.diagrams) {
+        queries.push(`${topic} visual diagram infographic`);
+      }
+      
+      if (prefs.summaries) {
+        queries.push(`${topic} summary cheat sheet quick reference`);
+      }
+    } else {
+      // Default preferences if not specified
+      queries.push(`${topic} YouTube tutorial explanation`);
+      queries.push(`${topic} study guide notes`);
+    }
+    
+    return queries;
+  }
+
+  private formatResource(result: { title: string; url: string; snippet: string; date?: string }, _topic: string): string {
+    // Check if the URL is accessible (basic validation)
+    if (!result.url || !result.title) return '';
+    
+    // Clean up the title and snippet
+    const title = result.title.replace(/\s+/g, ' ').trim();
+    const snippet = result.snippet ? result.snippet.replace(/\s+/g, ' ').trim().substring(0, 150) : '';
+    
+    return `${title} - ${result.url}${snippet ? ` (${snippet})` : ''}`;
+  }
+
+  private cleanJsonString(jsonString: string): string {
+    return jsonString
+      // Remove common control characters that cause parsing issues
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001F]/g, '')
+      // Fix common JSON escaping issues with quotes in strings
+      .replace(/(\w+): "([^"]*?)"/g, (match, key, value) => {
+        // Escape any unescaped quotes within string values
+        const escapedValue = value.replace(/(?<!\\)"/g, '\\"');
+        return `${key}: "${escapedValue}"`;
+      })
+      // Fix malformed JSON with trailing commas
+      .replace(/,\s*}/g, '}')
+      .replace(/,\s*]/g, ']')
+      // Handle broken Unicode escapes
+      .replace(/\\u[0-9]{0,3}/g, (match) => {
+        if (match.length < 6) {
+          return '\\u0000'; // Invalid escape, replace with null character
+        }
+        return match;
+      })
+      .trim();
+  }
+
+  private extractEventsFromText(content: string): Array<{ startDate: Date; endDate: Date; title: string; description: string }> {
+    // Look for individual event-like objects in the text
+    const eventPattern = /{[\s\S]*?}/g;
+    const matches = content.match(eventPattern) || [];
+    const events = [];
+    
+    for (const match of matches) {
+      try {
+        // Try to extract basic fields from each event object
+        const titleMatch = match.match(/"title"\s*:\s*"([^"]+)"/);
+        const startMatch = match.match(/"startDate"\s*:\s*"([^"]+)"/);
+        const endMatch = match.match(/"endDate"\s*:\s*"([^"]+)"/);
+        const descMatch = match.match(/"description"\s*:\s*"([^"]*?)"/);
+        
+        if (titleMatch && startMatch && endMatch) {
+          events.push({
+            title: titleMatch[1],
+            startDate: new Date(startMatch[1]),
+            endDate: new Date(endMatch[1]),
+            description: descMatch ? descMatch[1] : ''
+          });
+        }
+      } catch {
+        // Continue to next match if this one fails
+      }
+    }
+    
+    return events;
+  }
+
+  private async fallbackResourceSearch(studyGuide: string, mediaPreferences?: Record<string, unknown>): Promise<string[]> {
+    const systemPrompt = `You are an expert at finding high-quality educational resources. Find relevant, up-to-date resources for given study guide.
+    
+    For each topic mentioned in the study guide, find:
+    - YouTube videos (preferably under 10 minutes)
+    - Educational articles and blog posts
+    - Free online courses or tutorials
     - Practice problems and exercises
+    - Interactive learning tools
     
-    ORGANIZATION REQUIREMENTS:
-    - Group resources by topic/concept when possible
-    - Include clear topic labels for each resource
-    - Provide working URLs when available
-    - Focus on up-to-date, accessible resources
+    Focus on resources that are:
+    - Free or have substantial free tiers
+    - From reputable educational sources
+    - Recently updated or still relevant
+    - Matching the user's media preferences if specified
     
-    Format each resource as: "[Resource description] [URL]"
-    Example: "Khan Academy video on basic derivatives https://www.khanacademy.org/math/calculus-1"
-    Make sure URLs are complete and start with http:// or https://`;
+    CRITICAL: Only include resources with working URLs. Avoid broken or inaccessible links.
+    
+    Return your response as a numbered list of resources with brief descriptions and working URLs.`;
 
     const response = await this.makeRequest([
       { role: 'system', content: systemPrompt },
-      { 
-        role: 'user', 
-        content: `Find resources for this study guide: ${studyGuide}\n\n${
-          mediaPreferences ? `Media preferences: ${JSON.stringify(mediaPreferences)}` : ''
-        }`
-      },
+      { role: 'user', content: `Find educational resources for this study guide:\n\n${studyGuide}\n\n${
+        mediaPreferences ? `Media preferences: ${JSON.stringify(mediaPreferences)}` : ''
+      }` },
     ]);
 
     const content = response.choices[0].message.content || '';
-    // Extract URLs and resource information
-    const resources = content.split('\n').filter((line: string) => line.trim().length > 0);
+    
+    // Parse the numbered list into an array
+    const resources = content
+      .split('\n')
+      .filter((line: string) => line.match(/^\d+\./))
+      .map((line: string) => line.replace(/^\d+\.\s*/, ''))
+      .filter((resource: string) => resource.length > 0 && resource.includes('http'));
+
     return resources;
   }
 
@@ -161,18 +338,48 @@ IMPORTANT: Match specific resources to each calendar event based on topic releva
     ]);
 
     const content = response.choices[0].message.content || '[]';
-    const match = content.match(/\[[\s\S]*\]/);
     
     try {
-      const events = match ? JSON.parse(match[0]) : [];
+      // First try to extract JSON from markdown code blocks
+      let jsonContent = content;
+      
+      // Remove markdown code block wrappers if present
+      const codeBlockMatch = content.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
+      if (codeBlockMatch) {
+        jsonContent = codeBlockMatch[1];
+      } else {
+        // Fallback to original regex if no code blocks
+        const match = content.match(/\[[\s\S]*\]/);
+        if (match) {
+          jsonContent = match[0];
+        }
+      }
+      
+      // Clean the JSON content to remove control characters and common issues
+      const cleanedJsonContent = this.cleanJsonString(jsonContent);
+      
+      const events = JSON.parse(cleanedJsonContent);
       return events.map((event: { startDate: string; endDate: string; title?: string; description?: string }) => ({
         startDate: new Date(event.startDate),
         endDate: new Date(event.endDate),
         title: event.title || '',
         description: event.description || ''
       }));
-    } catch {
+    } catch (error) {
       console.error('Failed to parse calendar events:', content);
+      console.error('Parse error:', error);
+      
+      // Try a more lenient approach - extract individual event objects
+      try {
+        const events = this.extractEventsFromText(content);
+        if (events.length > 0) {
+          console.log('Successfully extracted events using fallback method');
+          return events;
+        }
+      } catch (fallbackError) {
+        console.error('Fallback extraction also failed:', fallbackError);
+      }
+      
       return [];
     }
   }

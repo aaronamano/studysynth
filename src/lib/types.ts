@@ -8,6 +8,11 @@ export interface TopicTextareaProps {
   onChange: (value: File | null) => void
 }
 
+export interface PdfFileWithContent extends File {
+  extractedContent?: string;
+  pages?: number;
+}
+
 export interface TopicInputProps {
   items: string[]
   setItems: React.Dispatch<React.SetStateAction<string[]>>
