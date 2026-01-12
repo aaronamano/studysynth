@@ -87,6 +87,7 @@ export interface StudyPlanData {
     intensity: string;
     learningStyle: string;
   };
+  userToken?: string;
 }
 
 export interface CalendarEvent {

@@ -35,6 +35,10 @@ export default [
         clearTimeout: 'readonly',
         React: 'readonly',
         ReactNode: 'readonly',
+        Response: 'readonly',
+        TextEncoder: 'readonly',
+        TextDecoder: 'readonly',
+        ReadableStream: 'readonly',
       },
     },
     plugins: {

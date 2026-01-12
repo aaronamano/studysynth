@@ -17,22 +17,137 @@ async function getUserIdFromToken(token: string): Promise<string | null> {
 }
 
 export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const isStreaming = searchParams.get('stream') === 'true';
+
   try {
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
+      if (isStreaming) {
+        return new Response('data: {"error":"Authorization header missing"}\n\n', {
+          status: 401,
+          headers: { 'Content-Type': 'text/event-stream' }
+        });
+      }
       return NextResponse.json({ message: 'Authorization header missing' }, { status: 401 });
     }
 
     const token = authHeader.split(' ')[1];
     if (!token) {
+      if (isStreaming) {
+        return new Response('data: {"error":"Token missing"}\n\n', {
+          status: 401,
+          headers: { 'Content-Type': 'text/event-stream' }
+        });
+      }
       return NextResponse.json({ message: 'Token missing' }, { status: 401 });
     }
 
     const userId = await getUserIdFromToken(token);
     if (!userId) {
+      if (isStreaming) {
+        return new Response('data: {"error":"Invalid token"}\n\n', {
+          status: 401,
+          headers: { 'Content-Type': 'text/event-stream' }
+        });
+      }
       return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
     }
 
+    // If streaming is requested, return Server-Sent Events
+    if (isStreaming) {
+      const encoder = new TextEncoder();
+      const readableStream = new ReadableStream({
+        async start(controller) {
+          try {
+            const client = await clientPromise;
+            const db = client.db('studysynth');
+            const calendarEvents = db.collection('calendarEvents');
+
+            // Initial fetch
+            const localEvents = await calendarEvents.find({ userId: new ObjectId(userId) }).toArray();
+            const formattedLocalEvents = localEvents.map(event => ({
+              ...event,
+              start: event.startDate,
+              end: event.endDate,
+              isGoogleEvent: false
+            }));
+
+            const isGoogleConnected = await isUserGoogleCalendarConnected(userId);
+            let googleEvents: { id: string; title: string; start: string; end: string; description?: string; isGoogleEvent: boolean }[] = [];
+
+            if (isGoogleConnected) {
+              try {
+                const tokens = await getUserGoogleCalendarTokens(userId);
+                if (tokens) {
+                  const calendar = getCalendarClient(tokens.access_token, tokens.refresh_token);
+                  const response = await calendar.events.list({
+                    calendarId: 'primary',
+                    singleEvents: true,
+                    orderBy: 'startTime',
+                    timeMin: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+                  });
+                  
+                  googleEvents = (response.data.items || []).map((event: calendar_v3.Schema$Event) => ({
+                    id: event.id || '',
+                    title: event.summary || '',
+                    start: event.start?.dateTime || event.start?.date || '',
+                    end: event.end?.dateTime || event.end?.date || '',
+                    description: event.description || undefined,
+                    isGoogleEvent: true
+                  }));
+                }
+              } catch (error) {
+                console.error('Error fetching Google Calendar events:', error);
+              }
+            }
+
+            const allEvents = [...formattedLocalEvents, ...googleEvents];
+            
+            // Send initial data
+            const initialData = `data: ${JSON.stringify({ type: 'events', content: allEvents })}\n\n`;
+            controller.enqueue(encoder.encode(initialData));
+
+            // Set up a change stream to watch for calendar events updates
+            const changeStream = calendarEvents.watch([{ $match: { 'operationType': { $in: ['insert', 'update', 'delete'] } } }]);
+
+            for await (const change of changeStream) {
+              if (change.operationType !== 'invalidate') {
+                // Refetch events when changes occur
+                const updatedLocalEvents = await calendarEvents.find({ userId: new ObjectId(userId) }).toArray();
+                const updatedFormattedLocalEvents = updatedLocalEvents.map(event => ({
+                  ...event,
+                  start: event.startDate,
+                  end: event.endDate,
+                  isGoogleEvent: false
+                }));
+
+                const allUpdatedEvents = [...updatedFormattedLocalEvents, ...googleEvents];
+                const updateData = `data: ${JSON.stringify({ type: 'events', content: allUpdatedEvents })}\n\n`;
+                controller.enqueue(encoder.encode(updateData));
+              }
+            }
+          } catch (error) {
+            const errorData = `data: ${JSON.stringify({ 
+              type: 'error', 
+              content: error instanceof Error ? error.message : 'Unknown error' 
+            })}\n\n`;
+            controller.enqueue(encoder.encode(errorData));
+            controller.close();
+          }
+        }
+      });
+
+      return new Response(readableStream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
+    }
+
+    // Default non-streaming response
     const client = await clientPromise;
     const db = client.db('studysynth');
     const calendarEvents = db.collection('calendarEvents');
@@ -80,6 +195,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(allEvents, { status: 200 });
   } catch (e: unknown) {
     const error = e as Error;
+    if (isStreaming) {
+      return new Response(`data: {"error":"Failed to get events: ${error.message}"}\n\n`, {
+        status: 500,
+        headers: { 'Content-Type': 'text/event-stream' }
+      });
+    }
     return NextResponse.json({ error: `Failed to get events: ${error.message}` }, { status: 500 });
   }
 }

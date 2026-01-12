@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import type { CalendarEvent } from '@/lib/types';
 import type { StudyPlanData } from '@/lib/types';
 
@@ -177,18 +177,24 @@ IMPORTANT: Match specific resources to each calendar event based on topic releva
     }
   }
 
-  async execute_workflow(prompt: string, studyData?: StudyPlanData): Promise<{
+  async execute_workflow(prompt: string, studyData?: StudyPlanData, onProgress?: (data: { type: string; content: string; step?: number }) => void): Promise<{
     studyGuide: string;
     events: CalendarEvent[];
   }> {
     // Step 1: Create study guide
+    onProgress?.({ type: 'progress', content: 'Creating study guide...', step: 1 });
     const studyGuide = await this.create_study_guide(prompt, studyData);
+    onProgress?.({ type: 'study_guide', content: studyGuide, step: 1 });
     
     // Step 2: Find resources (for embedding in event descriptions)
+    onProgress?.({ type: 'progress', content: 'Finding educational resources...', step: 2 });
     const resources = await this.find_resources(studyGuide, studyData?.mediaPreferences);
+    onProgress?.({ type: 'resources', content: resources.join('\n'), step: 2 });
     
     // Step 3: Create calendar subevents with resource matching
+    onProgress?.({ type: 'progress', content: 'Creating calendar events...', step: 3 });
     const events = await this.create_calendar_subevents(studyGuide, resources, prompt, studyData);
+    onProgress?.({ type: 'events', content: JSON.stringify(events), step: 3 });
     
     return { studyGuide, events };
   }
@@ -196,18 +202,54 @@ IMPORTANT: Match specific resources to each calendar event based on topic releva
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt, perplexity_api_key, studyData } = await req.json();
+    const { prompt, perplexity_api_key, studyData, stream = false } = await req.json();
     if (!prompt || !perplexity_api_key) {
-      return NextResponse.json({ error: 'Missing prompt or API key' }, { status: 400 });
+      return Response.json({ error: 'Missing prompt or API key' }, { status: 400 });
     }
 
     const agent = new StudyAgent(perplexity_api_key);
-    const result = await agent.execute_workflow(prompt, studyData);
 
-    return NextResponse.json(result);
+    // If streaming is requested, return Server-Sent Events
+    if (stream) {
+      const encoder = new TextEncoder();
+      const readableStream = new ReadableStream({
+        async start(controller) {
+          try {
+            await agent.execute_workflow(prompt, studyData, (data) => {
+              const formattedData = `data: ${JSON.stringify(data)}\n\n`;
+              controller.enqueue(encoder.encode(formattedData));
+            });
+
+            // Send completion signal
+            const completionData = `data: ${JSON.stringify({ type: 'complete' })}\n\n`;
+            controller.enqueue(encoder.encode(completionData));
+            controller.close();
+          } catch (error) {
+            const errorData = `data: ${JSON.stringify({ 
+              type: 'error', 
+              content: error instanceof Error ? error.message : 'Unknown error' 
+            })}\n\n`;
+            controller.enqueue(encoder.encode(errorData));
+            controller.close();
+          }
+        }
+      });
+
+      return new Response(readableStream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
+    }
+
+    // Default non-streaming response
+    const result = await agent.execute_workflow(prompt, studyData);
+    return Response.json(result);
   } catch (e: unknown) {
     const error = e as Error;
     console.error('AI Agent Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: error.message }, { status: 500 });
   }
 }

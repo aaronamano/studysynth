@@ -79,7 +79,7 @@ export default function StudyGuideGenerator() {
         return;
       }
 
-      // --- AI Agent Integration ---
+      // --- AI Agent Integration with SSE ---
       // Prepare study data for the agent
       const studyDataForAgent = {
         strengths,
@@ -89,87 +89,141 @@ export default function StudyGuideGenerator() {
       };
       
       const agentPrompt = constraints || "Generate a comprehensive study plan";
-      const aiAgentRes = await fetch('/api/ai-agent', {
+      
+      // Use fetch with streaming for SSE
+      const response = await fetch('/api/ai-agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           prompt: agentPrompt, 
           perplexity_api_key: perplexityApiKey,
-          studyData: studyDataForAgent
+          studyData: studyDataForAgent,
+          stream: true
         }),
       });
-      
-      if (aiAgentRes.ok) {
-        const { studyGuide, events: generatedEvents } = await aiAgentRes.json();
-        
-        // Set the study guide
-        setStudyGuide(studyGuide);
-        
-        // Set the events and save to calendar
-        setEvents(generatedEvents || []);
-        const token = safeLocalStorage.getItem('token');
-        
-        if (token && generatedEvents && generatedEvents.length > 0) {
-          // Save all events to calendar with Google Calendar sync if available
-          const savePromises = generatedEvents.map((event: { title: string; startDate: string; endDate: string; description?: string }) => 
-            fetch('/api/calendar/sync-events', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                title: event.title,
-                startDate: event.startDate,
-                endDate: event.endDate,
-                description: event.description || '',
-                syncToGoogle: true, // Automatically try to sync to Google Calendar
-              }),
-            })
-          );
-          
-          try {
-            const results = await Promise.allSettled(savePromises);
-            let successful = 0;
-            let googleSynced = 0;
-            let failed = 0;
-            
-            for (const result of results) {
-              if (result.status === 'fulfilled') {
-                successful++;
-                if (result.value?.googleEventId) {
-                  googleSynced++;
-                }
-              } else {
-                failed++;
-              }
-            }
-            
-            if (successful > 0) {
-              let message = `Created ${successful} study event${successful > 1 ? 's' : ''} in your calendar!`;
-              if (googleSynced > 0) {
-                message += ` (${googleSynced} synced to Google Calendar)`;
-              }
-              toast.success(message);
-            }
-            if (failed > 0) {
-              toast.error(`Failed to save ${failed} event${failed > 1 ? 's' : ''}.`);
-            }
-          } catch {
-            toast.error('Error saving calendar events.');
-          }
-        } else if (!generatedEvents || generatedEvents.length === 0) {
-          toast.warning('No calendar events were generated.');
-        }
-      } else {
-        toast.error('AI agent failed to generate study plan.');
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      
+      if (!reader) {
+        throw new Error('Failed to get response reader');
+      }
+
+      let buffer = '';
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          setIsGenerating(false);
+          break;
+        }
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              switch (data.type) {
+                case 'progress':
+                  console.log('Progress:', data.content);
+                  break;
+                  
+                case 'study_guide':
+                  setStudyGuide(data.content);
+                  break;
+                  
+                case 'events': {
+                  const generatedEvents = JSON.parse(data.content);
+                  setEvents(generatedEvents || []);
+                  
+                  // Save events to calendar
+                  const token = safeLocalStorage.getItem('token');
+                  if (token && generatedEvents && generatedEvents.length > 0) {
+                    const savePromises = generatedEvents.map((event: { title: string; startDate: string; endDate: string; description?: string }) => 
+                      fetch('/api/calendar/sync-events', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                          title: event.title,
+                          startDate: event.startDate,
+                          endDate: event.endDate,
+                          description: event.description || '',
+                          syncToGoogle: true,
+                        }),
+                      })
+                    );
+                    
+                    try {
+                      const results = await Promise.allSettled(savePromises);
+                      let successful = 0;
+                      let googleSynced = 0;
+                      let failed = 0;
+                      
+                      for (const result of results) {
+                        if (result.status === 'fulfilled') {
+                          successful++;
+                          if (result.value?.googleEventId) {
+                            googleSynced++;
+                          }
+                        } else {
+                          failed++;
+                        }
+                      }
+                      
+                      if (successful > 0) {
+                        let message = `Created ${successful} study event${successful > 1 ? 's' : ''} in your calendar!`;
+                        if (googleSynced > 0) {
+                          message += ` (${googleSynced} synced to Google Calendar)`;
+                        }
+                        toast.success(message);
+                      }
+                      if (failed > 0) {
+                        toast.error(`Failed to save ${failed} event${failed > 1 ? 's' : ''}.`);
+                      }
+                    } catch {
+                      toast.error('Error saving calendar events.');
+                    }
+                  } else if (!generatedEvents || generatedEvents.length === 0) {
+                    toast.warning('No calendar events were generated.');
+                  }
+                  break;
+                }
+                  
+                case 'complete':
+                  setIsGenerating(false);
+                  toast.success('Study plan generation completed!');
+                  return; // Exit the function
+                  
+                case 'error':
+                  console.error('SSE Error:', data.content);
+                  toast.error('AI agent error: ' + data.content);
+                  setIsGenerating(false);
+                  return; // Exit the function
+              }
+            } catch (error) {
+              console.error('Error parsing SSE data:', error);
+            }
+          }
+        }
+      }
+
       // --- End AI Agent Integration ---
 
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
       toast.error("An error occurred while generating the study guide.", { description: message });
-    } finally {
       setIsGenerating(false);
     }
   }
