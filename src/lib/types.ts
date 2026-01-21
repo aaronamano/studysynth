@@ -4,8 +4,10 @@ export interface StudyGuideDisplayProps {
 }
 
 export interface TopicTextareaProps {
-  value: File | null
-  onChange: (value: File | null) => void
+  value: File | string | null
+  onChange: (value: File | string | null) => void
+  inputType: 'pdf' | 'text'
+  onInputTypeChange: (type: 'pdf' | 'text') => void
 }
 
 export interface PdfFileWithContent extends File {

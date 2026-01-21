@@ -15,7 +15,7 @@ import StudyGuideDisplay from "./study-guide-display"
 import EventsDisplay from "./events-display"
 import TopicInput from "./features/topic-input" // Input for strengths/weaknesses
 import { CalendarEvent } from "@/lib/types"
-import TopicPdfImport from "./features/topic-pdf-import" // Input for topics/concepts
+import TopicInputSelector from "./features/topic-input-selector" // Unified input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
 import { safeLocalStorage } from "@/lib/storage"
 import type { PdfFileWithContent } from "@/lib/types"
@@ -25,7 +25,8 @@ export default function StudyGuideGenerator() {
   const [isGenerating, setIsGenerating] = useState(false) // Loading state
   const [studyGuide, setStudyGuide] = useState<string | null>(null) // Generated guide
   const [events, setEvents] = useState<CalendarEvent[]>([]) // Generated calendar events
-  const [pdfFile, setPdfFile] = useState<File | null>(null) // PDF file input
+  const [topicContent, setTopicContent] = useState<File | string | null>(null) // Topic content (PDF file or text)
+  const [inputType, setInputType] = useState<'pdf' | 'text'>('pdf') // Input type selector
   const [constraints, setConstraints] = useState("") // Constraints input
   const [strengths, setStrengths] = useState([""]) // List of strengths
   const [weaknesses, setWeaknesses] = useState([""]) // List of weaknesses
@@ -92,16 +93,26 @@ export default function StudyGuideGenerator() {
       // Build comprehensive prompt with PDF content if available
       let agentPrompt = constraints || "Generate a comprehensive study plan";
       
-      if (pdfFile && (pdfFile as PdfFileWithContent).extractedContent) {
-        const pdfContent = (pdfFile as PdfFileWithContent).extractedContent;
+      let contentSource = '';
+      
+      if (inputType === 'pdf' && topicContent instanceof File && (topicContent as PdfFileWithContent).extractedContent) {
+        const pdfContent = (topicContent as PdfFileWithContent).extractedContent;
+        if (pdfContent) {
+          contentSource = pdfContent;
+        }
+      } else if (inputType === 'text' && typeof topicContent === 'string') {
+        contentSource = topicContent;
+      }
+      
+      if (contentSource) {
         agentPrompt = `
-PDF CONTENT TO STUDY:
-${pdfContent}
+CONTENT TO STUDY:
+${contentSource}
 
 USER REQUIREMENTS:
 ${agentPrompt}
 
-IMPORTANT: Base the study guide specifically on the PDF content provided above. Focus on the key topics, concepts, and materials found in the PDF while considering the user's requirements.
+IMPORTANT: Base the study guide specifically on the content provided above. Focus on the key topics, concepts, and materials found in the content while considering the user's requirements.
         `.trim();
       }
       
@@ -253,7 +264,12 @@ IMPORTANT: Base the study guide specifically on the PDF content provided above. 
             {/* pdf input */}
             <div>
               <h2 className="text-xl font-semibold mb-4 text-purple-300">Topics & Concepts</h2>
-              <TopicPdfImport value={pdfFile} onChange={setPdfFile} />
+              <TopicInputSelector 
+                value={topicContent} 
+                onChange={setTopicContent}
+                inputType={inputType}
+                onInputTypeChange={setInputType}
+              />
             </div>
 
             <Separator />

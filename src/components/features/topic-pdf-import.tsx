@@ -5,10 +5,10 @@
 import { Label } from "@/components/ui/label"
 import { Info, Loader2, FileText, CheckCircle } from "lucide-react"
 import { useRef, useState } from "react"
-import type { TopicTextareaProps, PdfFileWithContent } from "@/lib/types"
+import type { PdfFileWithContent } from "@/lib/types"
 import { toast } from "sonner"
 
-export default function TopicPdfImport({ value, onChange }: TopicTextareaProps) {
+export default function TopicPdfImport({ value, onChange }: { value: File | null, onChange: (value: File | null) => void }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isExtracting, setIsExtracting] = useState(false)
   const [extractionStatus, setExtractionStatus] = useState<'idle' | 'extracting' | 'success' | 'error'>('idle')
@@ -100,12 +100,12 @@ export default function TopicPdfImport({ value, onChange }: TopicTextareaProps) 
             ) : (
               <FileText className="h-3 w-3 text-purple-400" />
             )}
-            <span className="font-medium">{value.name}</span>
-            {(value as PdfFileWithContent).pages && (
+            <span className="font-medium">{value?.name}</span>
+            {(value as PdfFileWithContent)?.pages && (
               <span className="text-purple-400">({(value as PdfFileWithContent).pages} pages)</span>
             )}
           </div>
-          {(value as PdfFileWithContent).extractedContent && (
+          {(value as PdfFileWithContent)?.extractedContent && (
             <div className="mt-2 pt-2 border-t border-purple-500/20">
               <div className="text-purple-400 font-medium mb-1">Extracted Content Preview:</div>
               <div className="text-purple-300 whitespace-pre-wrap">
