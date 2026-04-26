@@ -263,7 +263,7 @@ IMPORTANT: Base the study guide specifically on the content provided above. Focu
           <CardContent className="space-y-6">
             {/* pdf input */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-purple-300">Topics & Concepts</h2>
+              <h2 className="text-xl font-semibold mb-4 text-amber-300 font-serif">Topics & Concepts</h2>
               <TopicInputSelector 
                 value={topicContent} 
                 onChange={setTopicContent}
@@ -276,7 +276,7 @@ IMPORTANT: Base the study guide specifically on the content provided above. Focu
 
             {/* Constraints input */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-purple-300">Constraints & Requirements</h2>
+              <h2 className="text-xl font-semibold mb-4 text-amber-300 font-serif">Constraints & Requirements</h2>
               <Label htmlFor="constraints">Study Constraints</Label>
               <Textarea
                 id="constraints"
@@ -291,7 +291,7 @@ IMPORTANT: Base the study guide specifically on the content provided above. Focu
 
             {/* Media preferences checkboxes */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-purple-300">Media Preferences</h2>
+              <h2 className="text-xl font-semibold mb-4 text-amber-300 font-serif">Media Preferences</h2>
               <MediaPreferences
                 preferences={mediaPreferences}
                 setPreferences={setMediaPreferences}
@@ -302,7 +302,7 @@ IMPORTANT: Base the study guide specifically on the content provided above. Focu
 
             {/* Strengths and weaknesses input */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-purple-300">Strengths & Weaknesses</h2>
+              <h2 className="text-xl font-semibold mb-4 text-amber-300 font-serif">Strengths & Weaknesses</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <TopicInput
@@ -327,7 +327,7 @@ IMPORTANT: Base the study guide specifically on the content provided above. Focu
 
             {/* Study plan preferences (duration, intensity, etc.) */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-purple-300">Study Plan Preferences</h2>
+              <h2 className="text-xl font-semibold mb-4 text-amber-300 font-serif">Study Plan Preferences</h2>
               <StudyPlanAdjuster
                 studyPlan={studyPlan}
                 setStudyPlan={setStudyPlan}
@@ -339,7 +339,7 @@ IMPORTANT: Base the study guide specifically on the content provided above. Focu
             {/* Generate button */}
             <Button
               onClick={handleGenerateStudyGuide}
-              className="w-full px-6 py-3 border border-purple-500/30 text-base font-medium rounded-full text-white bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg shadow-purple-500/20 transition-all duration-200 ease-in-out hover:scale-[1.02] hover:shadow-purple-500/25"
+              className="w-full px-6 py-3 border border-amber-600/30 text-base font-medium rounded-full text-amber-100 bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-500 hover:to-orange-600 shadow-lg shadow-amber-600/20 transition-all duration-200 ease-in-out hover:scale-[1.02] hover:shadow-amber-500/25"
               size="lg"
             >
               {isGenerating ? (

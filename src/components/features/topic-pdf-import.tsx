@@ -64,12 +64,12 @@ export default function TopicPdfImport({ value, onChange }: { value: File | null
   return (
     <div className="space-y-2">
       <div className="flex items-start justify-between">
-        <Label htmlFor="topics-pdf" className="text-base text-purple-200">
+        <Label htmlFor="topics-pdf" className="text-base text-amber-200 font-serif">
           Import topics and concepts from PDF
         </Label>
         <div className="flex items-center text-xs text-muted-foreground">
           <Info className="h-3 w-3 mr-1" />
-          <span className="text-purple-500">Upload a PDF to extract topics</span>
+          <span className="text-amber-400/60">Upload a PDF to extract topics</span>
         </div>
       </div>
 
@@ -78,13 +78,13 @@ export default function TopicPdfImport({ value, onChange }: { value: File | null
         id="topics-pdf"
         type="file"
         accept="application/pdf"
-        className="block w-full text-sm text-purple-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:text-sm file:font-semibold file:bg-black/60 file:border file:border-purple-500/30 file:text-purple-300 hover:file:bg-purple-900/40 file:shadow-md file:shadow-purple-600/10 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="block w-full text-sm text-amber-400/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:text-sm file:font-semibold file:bg-[#1a1815]/80 file:border file:border-amber-700/25 file:text-amber-200/80 hover:file:bg-amber-900/25 file:shadow-md file:shadow-amber-900/10 disabled:opacity-50 disabled:cursor-not-allowed"
         onChange={handleFileChange}
         disabled={isExtracting}
       />
 
       {isExtracting && (
-        <div className="mt-2 p-2 border border-purple-500/30 rounded-xl bg-black/40 text-purple-300 text-xs">
+        <div className="mt-2 p-2 border border-amber-800/20 rounded-xl bg-[#1a1815]/60 text-amber-200/80 text-xs">
           <div className="flex items-center gap-2">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span>Extracting PDF content...</span>
@@ -93,22 +93,22 @@ export default function TopicPdfImport({ value, onChange }: { value: File | null
       )}
 
       {value && !isExtracting && (
-        <div className="mt-2 p-2 border border-purple-500/30 rounded-xl bg-black/40 text-purple-300 text-xs max-h-48 overflow-auto">
+        <div className="mt-2 p-2 border border-amber-800/20 rounded-xl bg-[#1a1815]/60 text-amber-200/80 text-xs max-h-48 overflow-auto">
           <div className="flex items-center gap-2 mb-2">
             {extractionStatus === 'success' ? (
-              <CheckCircle className="h-3 w-3 text-green-400" />
+              <CheckCircle className="h-3 w-3 text-green-500" />
             ) : (
-              <FileText className="h-3 w-3 text-purple-400" />
+              <FileText className="h-3 w-3 text-amber-400/60" />
             )}
             <span className="font-medium">{value?.name}</span>
             {(value as PdfFileWithContent)?.pages && (
-              <span className="text-purple-400">({(value as PdfFileWithContent).pages} pages)</span>
+              <span className="text-amber-400/60">({(value as PdfFileWithContent).pages} pages)</span>
             )}
           </div>
           {(value as PdfFileWithContent)?.extractedContent && (
-            <div className="mt-2 pt-2 border-t border-purple-500/20">
-              <div className="text-purple-400 font-medium mb-1">Extracted Content Preview:</div>
-              <div className="text-purple-300 whitespace-pre-wrap">
+            <div className="mt-2 pt-2 border-t border-amber-800/15">
+              <div className="text-amber-400/70 font-medium mb-1">Extracted Content Preview:</div>
+              <div className="text-amber-200/80 whitespace-pre-wrap">
                 {(value as PdfFileWithContent).extractedContent?.substring(0, 500)}
                 {(value as PdfFileWithContent).extractedContent && 
                  (value as PdfFileWithContent).extractedContent!.length > 500 && '...'}
@@ -118,7 +118,7 @@ export default function TopicPdfImport({ value, onChange }: { value: File | null
         </div>
       )}
 
-      <p className="text-xs text-purple-500">
+      <p className="text-xs text-amber-400/50">
         Please upload a PDF file, preferably 5 pages max. Content will be automatically extracted.
       </p>
     </div>

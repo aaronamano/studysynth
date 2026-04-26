@@ -7,12 +7,12 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        "bg-black/60 text-card-foreground flex flex-col gap-6 rounded-xl border border-purple-500/20 backdrop-blur-md py-6 shadow-xl shadow-purple-500/5 relative overflow-hidden",
+        "bg-[#12100e] text-card-foreground flex flex-col gap-6 rounded-xl border border-amber-800/15 backdrop-blur-md py-6 shadow-xl shadow-black/30 relative overflow-hidden",
         className
       )}
       {...props}
     >
-      <div className="absolute inset-0 bg-linear-to-br from-purple-600/5 via-transparent to-purple-800/5 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-900/5 via-transparent to-orange-950/5 pointer-events-none"></div>
       <div className="relative z-10 flex flex-col gap-6">
         {props.children}
       </div>

@@ -24,27 +24,27 @@ export default function StudyPlanAdjuster({
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Label>Study Intensity</Label>
-        <RadioGroup value={studyPlan.intensity} onValueChange={handleIntensityChange} className="flex space-x-2">
+        <Label className="text-amber-200/80">Study Intensity</Label>
+        <RadioGroup value={studyPlan.intensity} onValueChange={handleIntensityChange} className="flex space-x-4">
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="light" id="light" className="border-purple-500/30 text-purple-400" />
-            <Label htmlFor="light">Light</Label>
+            <RadioGroupItem value="light" id="light" />
+            <Label htmlFor="light" className="text-amber-300/70">Light</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="balanced" id="balanced" className="border-purple-500/30 text-purple-400" />
-            <Label htmlFor="balanced">Balanced</Label>
+            <RadioGroupItem value="balanced" id="balanced" />
+            <Label htmlFor="balanced" className="text-amber-300/70">Balanced</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="intensive" id="intensive" className="border-purple-500/30 text-purple-400" />
-            <Label htmlFor="intensive">Intensive</Label>
+            <RadioGroupItem value="intensive" id="intensive" />
+            <Label htmlFor="intensive" className="text-amber-300/70">Intensive</Label>
           </div>
         </RadioGroup>
       </div>
 
       <div className="space-y-2">
-        <Label>Learning Style Priority</Label>
+        <Label className="text-amber-200/80">Learning Style Priority</Label>
         <Select value={studyPlan.learningStyle} onValueChange={handleLearningStyleChange}>
-          <SelectTrigger className="border-purple-500/30 focus:ring-purple-500/30">
+          <SelectTrigger>
             <SelectValue placeholder="Select learning style" />
           </SelectTrigger>
           <SelectContent>

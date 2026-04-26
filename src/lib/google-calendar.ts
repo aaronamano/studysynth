@@ -14,14 +14,22 @@ export const oauth2Client = new google.auth.OAuth2(
   REDIRECT_URI
 );
 
-export const getGoogleAuthURL = (userToken?: string) => {
+export const getGoogleAuthURL = (userToken?: string, redirectUri?: string) => {
   const scopes = [
     'https://www.googleapis.com/auth/calendar',
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile'
   ];
 
-  return oauth2Client.generateAuthUrl({
+  const redirectURL = redirectUri || REDIRECT_URI;
+
+  const oauthClient = new google.auth.OAuth2(
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    redirectURL
+  );
+
+  return oauthClient.generateAuthUrl({
     access_type: 'offline',
     scope: scopes,
     prompt: 'consent',

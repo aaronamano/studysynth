@@ -12,15 +12,15 @@ interface TopicInputSwitchProps {
 
 export default function TopicInputSwitch({ inputType, onInputTypeChange }: TopicInputSwitchProps) {
   return (
-    <div className="flex items-center gap-1 p-1 bg-black/40 border border-purple-500/30 rounded-lg">
+    <div className="flex items-center gap-1 p-1 bg-[#1a1815]/60 border border-amber-800/20 rounded-lg">
       <Button
         variant={inputType === 'pdf' ? 'default' : 'ghost'}
         size="sm"
         onClick={() => onInputTypeChange('pdf')}
         className={`flex items-center gap-2 ${
           inputType === 'pdf' 
-            ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' 
-            : 'text-purple-300 hover:text-purple-200 hover:bg-purple-900/20'
+            ? 'bg-amber-600 text-amber-100 shadow-md shadow-amber-600/20' 
+            : 'text-amber-300/70 hover:text-amber-200 hover:bg-amber-900/20'
         }`}
       >
         <FileText className="h-4 w-4" />
@@ -33,8 +33,8 @@ export default function TopicInputSwitch({ inputType, onInputTypeChange }: Topic
         onClick={() => onInputTypeChange('text')}
         className={`flex items-center gap-2 ${
           inputType === 'text' 
-            ? 'bg-purple-600 text-white shadow-md shadow-purple-500/20' 
-            : 'text-purple-300 hover:text-purple-200 hover:bg-purple-900/20'
+            ? 'bg-amber-600 text-amber-100 shadow-md shadow-amber-600/20' 
+            : 'text-amber-300/70 hover:text-amber-200 hover:bg-amber-900/20'
         }`}
       >
         <Type className="h-4 w-4" />

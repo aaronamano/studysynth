@@ -1,23 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
 import { oauth2Client } from '@/lib/google-calendar';
 import { saveUserGoogleCalendarTokens } from '@/lib/google-calendar-tokens';
-import type { DecodedToken } from '@/lib/types';
-
-async function getUserIdFromToken(token: string): Promise<string | null> {
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as DecodedToken;
-    return decoded.userId;
-  } catch {
-    return null;
-  }
-}
 
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const code = searchParams.get('code');
-    const state = searchParams.get('state');
 
     if (!code) {
       return NextResponse.json({ 
@@ -25,22 +13,9 @@ export async function GET(req: NextRequest) {
       }, { status: 400 });
     }
 
-    if (!state) {
-      return NextResponse.json({ 
-        error: 'User token is required' 
-      }, { status: 400 });
-    }
-
-    const userId = await getUserIdFromToken(state);
-    if (!userId) {
-      return NextResponse.json({ 
-        error: 'Invalid user token' 
-      }, { status: 401 });
-    }
-
     const { tokens } = await oauth2Client.getToken(code);
     
-    const success = await saveUserGoogleCalendarTokens(userId, {
+    const success = await saveUserGoogleCalendarTokens({
       access_token: tokens.access_token!,
       refresh_token: tokens.refresh_token || undefined,
       expiry_date: tokens.expiry_date || undefined
@@ -52,14 +27,12 @@ export async function GET(req: NextRequest) {
       }, { status: 500 });
     }
 
-    // Create HTML response that closes popup and sets calendar tab
     const htmlResponse = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Google Calendar Connected</title>
           <script>
-            // Set localStorage flag to indicate calendar tab should be active
             if (window.opener) {
               window.opener.localStorage.setItem('redirect_to_calendar', 'true');
               window.opener.postMessage({ 
@@ -68,7 +41,6 @@ export async function GET(req: NextRequest) {
               }, '*');
               window.close();
             } else {
-              // If no opener (opened directly), set localStorage and reload
               localStorage.setItem('redirect_to_calendar', 'true');
               window.location.reload();
             }

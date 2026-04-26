@@ -10,16 +10,16 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-to-r from-purple-700 to-purple-800 text-primary-foreground shadow-lg shadow-purple-600/20 hover:from-purple-600 hover:to-purple-700 hover:shadow-xl hover:shadow-purple-500/30 border border-purple-500/30 hover:scale-[1.02] hover:shadow-purple-500/25",
+          "bg-gradient-to-r from-amber-600 to-orange-700 text-amber-100 shadow-lg shadow-amber-600/20 hover:from-amber-500 hover:to-orange-600 hover:shadow-xl hover:shadow-amber-500/30 border border-amber-600/30 hover:scale-[1.02] hover:shadow-amber-500/25",
         destructive:
-          "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-gradient-to-r from-red-800 to-red-900 text-red-100 shadow-lg shadow-red-900/30 hover:from-red-700 hover:to-red-800 border border-red-700/40",
         outline:
-          "border border-purple-500/30 bg-black/60 shadow-xs hover:bg-purple-900/40 hover:text-purple-300 dark:bg-black/60 dark:border-purple-500/30 dark:hover:bg-purple-900/50",
+          "border border-amber-700/40 bg-transparent text-amber-200/80 shadow-sm hover:bg-amber-900/25 hover:text-amber-100 hover:border-amber-600/60",
         secondary:
-          "bg-black/60 text-purple-400 border border-purple-500/30 shadow-md shadow-purple-600/10 hover:bg-purple-900/40 hover:border-purple-500/40 hover:text-purple-300",
+          "bg-[#1a1815]/80 text-amber-300/80 border border-amber-800/25 shadow-md shadow-amber-900/10 hover:bg-amber-900/25 hover:border-amber-700/40 hover:text-amber-200",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
+          "hover:bg-amber-900/25 hover:text-amber-100 text-amber-200/70",
+        link: "text-amber-400 underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

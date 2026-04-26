@@ -14,22 +14,14 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Checkbox } from './ui/checkbox';
 import type { Event, CustomToolbarProps } from '@/lib/types';
-import { jwtDecode } from "jwt-decode";
-import { safeLocalStorage } from "@/lib/storage";
 import { useCalendarEvents } from '@/hooks/use-calendar-events';
 import { GoogleCalendarIntegration } from './google-calendar-integration';
 
-// Utility function to parse and render links in text
 const parseLinksInText = (text: string) => {
   if (!text) return text;
-  
-  // Regex to match http:// or https:// URLs
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  
   const parts = text.split(urlRegex);
-  
   return parts.map((part, index) => {
-    // Check if this part is a URL
     if (part.match(urlRegex)) {
       return (
         <a
@@ -37,8 +29,8 @@ const parseLinksInText = (text: string) => {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-purple-400 hover:text-purple-300 hover:underline underline"
-          onClick={(e) => e.stopPropagation()} // Prevent event selection when clicking link
+          className="text-amber-400 hover:text-amber-300 hover:underline underline"
+          onClick={(e) => e.stopPropagation()}
         >
           {part}
         </a>
@@ -48,9 +40,7 @@ const parseLinksInText = (text: string) => {
   });
 };
 
-const locales = {
-  'en-US': enUS,
-};
+const locales = { 'en-US': enUS };
 
 const localizer = dateFnsLocalizer({
   format,
@@ -92,103 +82,67 @@ export function CalendarView() {
   useEffect(() => {
     const handleStorageChange = (e: globalThis.StorageEvent) => {
       if (e.key === 'googleCalendarDisconnected' && e.newValue === 'true') {
-        // Refresh events to show unsynced state
         invalidateCache();
       }
     };
-
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [invalidateCache]);
 
   const handleAddEvent = async () => {
-    const token = safeLocalStorage.getItem('token');
-    if (!token) {
-      // Handle case where user is not logged in
-      return;
-    }
-    jwtDecode(token);
-
     const response = await fetch('/api/calendar/sync-events', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         ...newEvent, 
         startDate: newEvent.start, 
         endDate: newEvent.end,
         description: newEvent.description,
-        syncToGoogle: isGoogleConnected && syncToGoogle
       }),
     });
     if (response.ok) {
-      const { googleError } = await response.json();
       invalidateCache();
-      
-      if (googleError) {
-        console.warn('Google Calendar sync warning:', googleError);
-      }
     }
   };
 
   const handleDeleteEvent = async (eventToDelete: Event) => {
-    const token = safeLocalStorage.getItem('token');
-    if (!token) return;
-
     const isGoogleEvent = (eventToDelete as { isGoogleEvent?: boolean }).isGoogleEvent;
     const response = await fetch(`/api/calendar/sync-events?eventId=${eventToDelete._id}&syncToGoogle=${isGoogleEvent}`, {
-        method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-        },
+      method: 'DELETE',
     });
-
     if (response.ok) {
-        invalidateCache();
+      invalidateCache();
     } else {
-        console.error("Failed to delete event");
+      console.error("Failed to delete event");
     }
   };
 
   const handleUpdateEvent = async (updatedEvent: Event) => {
-    const token = safeLocalStorage.getItem('token');
-    if (!token) return;
-
     const isGoogleEvent = (updatedEvent as { isGoogleEvent?: boolean }).isGoogleEvent;
     const response = await fetch('/api/calendar/sync-events', {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-            _id: updatedEvent._id,
-            title: updatedEvent.title,
-            startDate: updatedEvent.start,
-            endDate: updatedEvent.end,
-            description: updatedEvent.description || '',
-            syncToGoogle: isGoogleEvent,
-        }),
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        _id: updatedEvent._id,
+        title: updatedEvent.title,
+        startDate: updatedEvent.start,
+        endDate: updatedEvent.end,
+        description: updatedEvent.description || '',
+      }),
     });
-
     if (response.ok) {
-        invalidateCache();
-        setSelectedEvent(null);
+      invalidateCache();
+      setSelectedEvent(null);
     } else {
-        console.error("Failed to update event");
+      console.error("Failed to update event");
     }
   };
 
   const handleEventSelection = (eventId: string, checked: boolean) => {
     setSelectedEvents(prev => {
       const newSet = new Set(prev);
-      if (checked) {
-        newSet.add(eventId);
-      } else {
-        newSet.delete(eventId);
-      }
+      if (checked) { newSet.add(eventId); }
+      else { newSet.delete(eventId); }
       return newSet;
     });
   };
@@ -201,41 +155,20 @@ export function CalendarView() {
     setSelectedEvents(new Set(localEventIds));
   };
 
-  const handleClearSelection = () => {
-    setSelectedEvents(new Set());
-  };
+  const handleClearSelection = () => { setSelectedEvents(new Set()); };
 
   const handleBatchDelete = async () => {
-    const token = safeLocalStorage.getItem('token');
-    if (!token) return;
-
-    if (selectedEvents.size === 0) {
-      return;
-    }
-
-    // Show confirmation dialog
-    const confirmed = window.confirm(`Are you sure you want to delete ${selectedEvents.size} selected event(s)? This action cannot be undone.`);
-    if (!confirmed) {
-      return;
-    }
-
+    if (selectedEvents.size === 0) return;
+    const confirmed = window.confirm(`Delete ${selectedEvents.size} selected event(s)? This cannot be undone.`);
+    if (!confirmed) return;
     try {
       const eventIds = Array.from(selectedEvents).join(',');
       const response = await fetch(`/api/calendar/sync-events?eventIds=${eventIds}&syncToGoogle=true`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
       });
-
       if (response.ok) {
-        const result = await response.json();
         setSelectedEvents(new Set());
         invalidateCache();
-        
-        if (result.googleErrors && result.googleErrors.length > 0) {
-          console.warn('Google Calendar sync warnings:', result.googleErrors);
-        }
       } else {
         console.error("Failed to delete events");
       }
@@ -244,30 +177,27 @@ export function CalendarView() {
     }
   };
 
-const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: boolean) => {
+  const eventStyleGetter = (event: Event) => {
     const isGoogleEvent = (event as { isGoogleEvent?: boolean }).isGoogleEvent;
-    const style = {
-        backgroundColor: isGoogleEvent ? '#4285F4' : '#8B5CF6',
+    return {
+      style: {
+        backgroundColor: isGoogleEvent ? '#4285F4' : '#d97706',
         borderRadius: '5px',
         opacity: 0.8,
         color: 'white',
-        border: '1px solid rgba(139, 92, 246, 0.3)',
+        border: '1px solid rgba(217, 119, 6, 0.3)',
         display: 'block',
-        boxShadow: '0 2px 4px rgba(139, 92, 246, 0.2)'
+        boxShadow: '0 2px 4px rgba(217, 119, 6, 0.2)'
+      }
     };
-    return {
-        style: style
-    };
-};
+  };
 
   const CustomEvent = ({ event }: { event: Event }) => {
     const isGoogleEvent = (event as { isGoogleEvent?: boolean }).isGoogleEvent;
     return (
       <div className="rbc-event-content">
         <div className="font-semibold text-xs flex items-center gap-1">
-          {isGoogleEvent && (
-            <span className="text-blue-200">G</span>
-          )}
+          {isGoogleEvent && <span className="text-blue-200">G</span>}
           {event.title}
         </div>
         {event.description && (
@@ -282,122 +212,63 @@ const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: b
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2">
-        <GoogleCalendarIntegration 
-          onConnectionChange={setIsGoogleConnected}
-        />
+        <GoogleCalendarIntegration onConnectionChange={setIsGoogleConnected} />
         <Card className='mb-4'>
           <CardContent className='p-4'>
             <h3 className='text-lg font-semibold mb-2'>Add New Study Session</h3>
             <div className='flex flex-col space-y-2'>
-              <Input
-                type='text'
-                placeholder='Title'
-                value={newEvent.title}
-                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-              />
+              <Input type='text' placeholder='Title' value={newEvent.title} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} />
               <div className="space-y-2">
-                <Input
-                  type='text'
-                  placeholder='Description (optional)'
-                  value={newEvent.description || ''}
-                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                />
+                <Input type='text' placeholder='Description (optional)' value={newEvent.description || ''} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} />
                 {newEvent.description && (
-                  <div className="text-xs text-purple-400 p-2 bg-black/40 rounded border border-purple-500/20">
+                  <div className="text-xs text-amber-400 p-2 bg-black/40 rounded border border-amber-500/20">
                     <strong>Preview:</strong>
-                    <div className="mt-1 whitespace-pre-wrap">
-                      {parseLinksInText(newEvent.description)}
-                    </div>
+                    <div className="mt-1 whitespace-pre-wrap">{parseLinksInText(newEvent.description)}</div>
                   </div>
                 )}
               </div>
               <div className='flex space-x-2'>
-                <DatePicker
-                  selected={newEvent.start}
-                  onChange={(start) => setNewEvent({ ...newEvent, start: start as Date })}
-                  showTimeSelect
-                  dateFormat='Pp'
-                  className='w-full bg-black/60 border-purple-500/30 text-purple-200 placeholder:text-purple-500'
-                />
-                <DatePicker
-                  selected={newEvent.end}
-                  onChange={(end) => setNewEvent({ ...newEvent, end: end as Date })}
-                  showTimeSelect
-                  dateFormat='Pp'
-                  className='w-full bg-black/60 border-purple-500/30 text-purple-200 placeholder:text-purple-500'
-                />
+                <DatePicker selected={newEvent.start} onChange={(start) => setNewEvent({ ...newEvent, start: start as Date })} showTimeSelect dateFormat='Pp' className='w-full bg-black/60 border-amber-500/30 text-amber-200 placeholder:text-amber-500' />
+                <DatePicker selected={newEvent.end} onChange={(end) => setNewEvent({ ...newEvent, end: end as Date })} showTimeSelect dateFormat='Pp' className='w-full bg-black/60 border-amber-500/30 text-amber-200 placeholder:text-amber-500' />
               </div>
               <div className="flex items-center space-x-2">
                 {isGoogleConnected && (
                   <label className="flex items-center space-x-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={syncToGoogle}
-                      onChange={(e) => setSyncToGoogle(e.target.checked)}
-                      className="rounded-full border-purple-500/30 bg-black/60 text-purple-600 focus:ring-purple-500/30"
-                    />
-                    <span className="text-purple-300">Sync to Google Calendar</span>
+                    <input type="checkbox" checked={syncToGoogle} onChange={(e) => setSyncToGoogle(e.target.checked)} className="rounded-full border-amber-500/30 bg-black/60 text-amber-600 focus:ring-amber-500/30" />
+                    <span className="text-amber-300">Sync to Google Calendar</span>
                   </label>
                 )}
-                <Button onClick={handleAddEvent} className="bg-purple-600">Add Event</Button>
+                <Button onClick={handleAddEvent} className="bg-amber-600">Add Event</Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor='start'
-          endAccessor='end'
-          style={{ height: 500 }}
-          onSelectEvent={event => setSelectedEvent(event)}
-          view={view}
-          onView={(view) => setView(view)}
-          date={date}
-          onNavigate={setDate}
-          components={{
-            toolbar: CustomToolbar,
-            event: CustomEvent,
-          }}
-          eventPropGetter={eventStyleGetter}
-        />
+        <Calendar localizer={localizer} events={events} startAccessor='start' endAccessor='end' style={{ height: 500 }}
+          onSelectEvent={event => setSelectedEvent(event)} view={view} onView={(view) => setView(view)} date={date} onNavigate={setDate}
+          components={{ toolbar: CustomToolbar, event: CustomEvent }} eventPropGetter={eventStyleGetter} />
       </div>
       <div>
-        <h2 className="text-lg font-semibold text-purple-300 mb-4">Upcoming Study Sessions</h2>
+        <h2 className="text-lg font-semibold text-amber-300 mb-4">Upcoming Study Sessions</h2>
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="upcoming-sessions" className="border-purple-500/30">
-            <AccordionTrigger className="text-purple-300 hover:text-purple-200 py-4">
+          <AccordionItem value="upcoming-sessions" className="border-amber-500/30">
+            <AccordionTrigger className="text-amber-300 hover:text-amber-200 py-4">
               <span className="flex items-center justify-between w-full">
                 <span>Study Sessions ({events.length})</span>
               </span>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-between p-2 bg-purple-900/20 rounded-lg">
+                <div className="flex items-center justify-between p-2 bg-amber-900/20 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={events.filter(e => !(e as { isGoogleEvent?: boolean }).isGoogleEvent && e._id).length > 0 && 
-                              events.filter(e => !(e as { isGoogleEvent?: boolean }).isGoogleEvent && e._id).every(e => selectedEvents.has(e._id!))}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          handleSelectAll();
-                        } else {
-                          handleClearSelection();
-                        }
-                      }}
-                    />
-                    <span className="text-purple-300 text-sm">Select All</span>
+                    <Checkbox checked={events.filter(e => !(e as { isGoogleEvent?: boolean }).isGoogleEvent && e._id).length > 0 && events.filter(e => !(e as { isGoogleEvent?: boolean }).isGoogleEvent && e._id).every(e => selectedEvents.has(e._id!))}
+                      onCheckedChange={(checked) => { if (checked) handleSelectAll(); else handleClearSelection(); }} />
+                    <span className="text-amber-300 text-sm">Select All</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="text-purple-400 text-sm">
-                      {selectedEvents.size} selected
-                    </div>
+                    <div className="text-amber-400 text-sm">{selectedEvents.size} selected</div>
                     {selectedEvents.size > 0 && (
-                      <Button 
-                        onClick={handleBatchDelete}
-                        className="bg-linear-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white text-sm px-3 py-1"
-                      >
+                      <Button onClick={handleBatchDelete} className="bg-linear-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white text-sm px-3 py-1">
                         Delete Selected
                       </Button>
                     )}
@@ -409,63 +280,38 @@ const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: b
                   const isGoogleEvent = (event as { isGoogleEvent?: boolean }).isGoogleEvent;
                   const eventId = event._id;
                   const isSelectable = !isGoogleEvent && eventId;
-                  
                   return (
                     <Accordion key={index} type="single" collapsible className="w-full">
-                      <AccordionItem value={`event-${index}`} className="border-purple-500/30 bg-black/40">
-                        <AccordionTrigger className="text-purple-200 hover:text-purple-100 py-4 px-4 rounded-t-lg">
+                      <AccordionItem value={`event-${index}`} className="border-amber-500/30 bg-black/40">
+                        <AccordionTrigger className="text-amber-200 hover:text-amber-100 py-4 px-4 rounded-t-lg">
                           <div className="flex items-center justify-between w-full pr-2">
                             <div className="flex items-center gap-2">
-                              {isSelectable && (
-                                <Checkbox
-                                  checked={selectedEvents.has(eventId)}
-                                  onCheckedChange={(checked) => handleEventSelection(eventId, checked as boolean)}
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              )}
+                              {isSelectable && <Checkbox checked={selectedEvents.has(eventId)} onCheckedChange={(checked) => handleEventSelection(eventId, checked as boolean)} onClick={(e) => e.stopPropagation()} />}
                               <span className="font-medium">{event.title}</span>
-                              <span className="text-purple-400 text-sm">{`${format(event.start, 'P')}`}</span>
+                              <span className="text-amber-400 text-sm">{format(event.start, 'P')}</span>
                             </div>
                           </div>
                         </AccordionTrigger>
-                      <AccordionContent className="px-4 pb-4">
-                        <div className="space-y-3">
-                          <div className="text-purple-300 text-sm">
-                            <span className="font-medium">Time:</span> {`${format(event.start, 'P')} ${format(event.start, 'p')} - ${format(event.end, 'p')}`}
-                          </div>
-                          {event.description && (
-                            <div className="text-sm text-purple-400 italic whitespace-pre-wrap border-t border-purple-500/20 pt-3">
-                              <span className="font-medium not-italic text-purple-300">Description:</span>
-                              <div className="mt-1">
-                                {parseLinksInText(event.description)}
+                        <AccordionContent className="px-4 pb-4">
+                          <div className="space-y-3">
+                            <div className="text-amber-300 text-sm"><span className="font-medium">Time:</span> {format(event.start, 'P')} {format(event.start, 'p')} - {format(event.end, 'p')}</div>
+                            {event.description && (
+                              <div className="text-sm text-amber-400 italic whitespace-pre-wrap border-t border-amber-500/20 pt-3">
+                                <span className="font-medium not-italic text-amber-300">Description:</span>
+                                <div className="mt-1">{parseLinksInText(event.description)}</div>
                               </div>
+                            )}
+                            <div className="flex space-x-2 pt-2 border-t border-amber-500/20">
+                              <Button onClick={() => setSelectedEvent(event)} className="bg-linear-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-sm px-3 py-1">Edit</Button>
+                              <Button onClick={() => handleDeleteEvent(event)} className="bg-linear-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white text-sm px-3 py-1">Delete</Button>
                             </div>
-                          )}
-                          <div className="flex space-x-2 pt-2 border-t border-purple-500/20">
-                            <Button 
-                              onClick={() => setSelectedEvent(event)} 
-                              className="bg-linear-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-sm px-3 py-1"
-                            >
-                              Edit
-                            </Button>
-                            <Button 
-                              onClick={() => handleDeleteEvent(event)} 
-                              className="bg-linear-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white text-sm px-3 py-1"
-                            >
-                              Delete
-                            </Button>
                           </div>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                   );
                 })}
-                {events.length === 0 && (
-                  <div className="text-purple-400 text-center py-8 italic">
-                    No upcoming study sessions scheduled
-                  </div>
-                )}
+                {events.length === 0 && <div className="text-amber-400 text-center py-8 italic">No upcoming study sessions scheduled</div>}
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -474,48 +320,22 @@ const eventStyleGetter = (event: Event, _start: Date, _end: Date, _isSelected: b
         {selectedEvent && (
           <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
             <Card className="w-1/3">
-              <CardHeader>
-                <CardTitle>Edit Study Session</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Edit Study Session</CardTitle></CardHeader>
               <CardContent>
                 <div className='flex flex-col space-y-2'>
-                  <Input
-                    type='text'
-                    placeholder='Title'
-                    value={selectedEvent.title}
-                    onChange={(e) => setSelectedEvent({ ...selectedEvent, title: e.target.value })}
-                  />
+                  <Input type='text' placeholder='Title' value={selectedEvent.title} onChange={(e) => setSelectedEvent({ ...selectedEvent, title: e.target.value })} />
                   <div className="space-y-2">
-                    <Input
-                      type='text'
-                      placeholder='Description (optional)'
-                      value={selectedEvent.description || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })}
-                    />
+                    <Input type='text' placeholder='Description (optional)' value={selectedEvent.description || ''} onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })} />
                     {selectedEvent.description && (
-                      <div className="text-xs text-purple-400 p-2 bg-black/40 rounded border border-purple-500/20">
+                      <div className="text-xs text-amber-400 p-2 bg-black/40 rounded border border-amber-500/20">
                         <strong>Preview:</strong>
-                        <div className="mt-1 whitespace-pre-wrap">
-                          {parseLinksInText(selectedEvent.description)}
-                        </div>
+                        <div className="mt-1 whitespace-pre-wrap">{parseLinksInText(selectedEvent.description)}</div>
                       </div>
                     )}
                   </div>
                   <div className='flex space-x-2'>
-                    <DatePicker
-                      selected={selectedEvent.start}
-                      onChange={(start) => setSelectedEvent({ ...selectedEvent, start: start as Date })}
-                      showTimeSelect
-                      dateFormat='Pp'
-                      className='w-full bg-black/60 border-purple-500/30 text-purple-200 placeholder:text-purple-500'
-                    />
-                    <DatePicker
-                      selected={selectedEvent.end}
-                      onChange={(end) => setSelectedEvent({ ...selectedEvent, end: end as Date })}
-                      showTimeSelect
-                      dateFormat='Pp'
-                      className='w-full bg-black/60 border-purple-500/30 text-purple-200 placeholder:text-purple-500'
-                    />
+                    <DatePicker selected={selectedEvent.start} onChange={(start) => setSelectedEvent({ ...selectedEvent, start: start as Date })} showTimeSelect dateFormat='Pp' className='w-full bg-black/60 border-amber-500/30 text-amber-200 placeholder:text-amber-500' />
+                    <DatePicker selected={selectedEvent.end} onChange={(end) => setSelectedEvent({ ...selectedEvent, end: end as Date })} showTimeSelect dateFormat='Pp' className='w-full bg-black/60 border-amber-500/30 text-amber-200 placeholder:text-amber-500' />
                   </div>
                   <div className="flex space-x-2">
                     <Button onClick={() => handleUpdateEvent(selectedEvent)}>Update</Button>

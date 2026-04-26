@@ -1,91 +1,50 @@
-import clientPromise from './mongodb';
-import { ObjectId } from 'mongodb';
-import type { GoogleCalendarTokens } from './types';
-
-export interface UserGoogleCalendar {
-  userId: ObjectId;
-  googleCalendarTokens: GoogleCalendarTokens | null;
-  calendarId: string;
-  isConnected: boolean;
+export interface GoogleCalendarTokens {
+  access_token: string;
+  refresh_token?: string;
+  expiry_date?: number;
 }
 
-export async function getUserGoogleCalendarTokens(userId: string): Promise<GoogleCalendarTokens | null> {
-  try {
-    const client = await clientPromise;
-    const db = client.db('studysynth');
-    const userGoogleCalendar = db.collection('userGoogleCalendar');
+const GOOGLE_CALENDAR_KEY = 'studysynth_google_calendar';
 
-    const result = await userGoogleCalendar.findOne({ userId: new ObjectId(userId) });
-    return result?.googleCalendarTokens || null;
+export async function getUserGoogleCalendarTokens(): Promise<GoogleCalendarTokens | null> {
+  try {
+    const data = localStorage.getItem(GOOGLE_CALENDAR_KEY);
+    if (!data) return null;
+    return JSON.parse(data) as GoogleCalendarTokens;
   } catch (error) {
-    console.error('Error fetching user Google Calendar tokens:', error);
+    console.error('Error fetching Google Calendar tokens:', error);
     return null;
   }
 }
 
 export async function saveUserGoogleCalendarTokens(
-  userId: string, 
-  tokens: GoogleCalendarTokens,
-  calendarId: string = 'primary'
+  tokens: GoogleCalendarTokens
 ): Promise<boolean> {
   try {
-    const client = await clientPromise;
-    const db = client.db('studysynth');
-    const userGoogleCalendar = db.collection('userGoogleCalendar');
-
-    await userGoogleCalendar.updateOne(
-      { userId: new ObjectId(userId) },
-      { 
-        $set: {
-          userId: new ObjectId(userId),
-          googleCalendarTokens: tokens,
-          calendarId,
-          isConnected: true,
-          updatedAt: new Date()
-        }
-      },
-      { upsert: true }
-    );
-
+    localStorage.setItem(GOOGLE_CALENDAR_KEY, JSON.stringify(tokens));
     return true;
   } catch (error) {
-    console.error('Error saving user Google Calendar tokens:', error);
+    console.error('Error saving Google Calendar tokens:', error);
     return false;
   }
 }
 
-export async function disconnectUserGoogleCalendar(userId: string): Promise<boolean> {
+export async function disconnectUserGoogleCalendar(): Promise<boolean> {
   try {
-    const client = await clientPromise;
-    const db = client.db('studysynth');
-    const userGoogleCalendar = db.collection('userGoogleCalendar');
-
-    await userGoogleCalendar.updateOne(
-      { userId: new ObjectId(userId) },
-      { 
-        $set: {
-          googleCalendarTokens: null,
-          isConnected: false,
-          updatedAt: new Date()
-        }
-      }
-    );
-
+    localStorage.removeItem(GOOGLE_CALENDAR_KEY);
     return true;
   } catch (error) {
-    console.error('Error disconnecting user Google Calendar:', error);
+    console.error('Error disconnecting Google Calendar:', error);
     return false;
   }
 }
 
-export async function isUserGoogleCalendarConnected(userId: string): Promise<boolean> {
+export async function isUserGoogleCalendarConnected(): Promise<boolean> {
   try {
-    const client = await clientPromise;
-    const db = client.db('studysynth');
-    const userGoogleCalendar = db.collection('userGoogleCalendar');
-
-    const result = await userGoogleCalendar.findOne({ userId: new ObjectId(userId) });
-    return result?.isConnected || false;
+    const data = localStorage.getItem(GOOGLE_CALENDAR_KEY);
+    if (!data) return false;
+    const tokens = JSON.parse(data) as GoogleCalendarTokens;
+    return !!tokens.access_token;
   } catch (error) {
     console.error('Error checking Google Calendar connection:', error);
     return false;

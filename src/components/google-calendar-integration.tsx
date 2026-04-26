@@ -166,7 +166,7 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
   }, []);
 
   return (
-    <div className="relative flex items-center justify-between p-4 bg-black/60 border border-purple-500/20 rounded-2xl backdrop-blur-md">
+    <div className="relative flex items-center justify-between p-4 bg-black/60 border border-amber-500/20 rounded-2xl backdrop-blur-md">
       <div className="flex items-center space-x-3">
         <div className="flex items-center justify-center w-10 h-10 bg-white rounded-xl">
           <svg className="w-8 h-8" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
@@ -184,10 +184,10 @@ export function GoogleCalendarIntegration({ onConnectionChange }: GoogleCalendar
           </svg>
         </div>
         <div>
-          <p className="text-sm font-medium text-purple-200">
+          <p className="text-sm font-medium text-amber-200">
             Google Calendar {isConnected ? 'Connected' : 'Not Connected'}
           </p>
-          <p className="text-xs text-purple-500">
+          <p className="text-xs text-amber-500">
             {isConnected 
               ? 'Events will sync with your calendar'
               : 'Connect to sync events automatically'

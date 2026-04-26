@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Event } from '@/lib/types';
-import { safeLocalStorage } from '@/lib/storage';
 
 const CACHE_KEY = 'calendar_events_cache';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
 
 interface CacheData {
   events: Event[];
@@ -18,13 +17,6 @@ export function useCalendarEvents() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchEvents = useCallback(async (forceRefresh = false) => {
-    const token = safeLocalStorage.getItem('token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    // Check cache first
     if (!forceRefresh) {
       const cachedData = localStorage.getItem(CACHE_KEY);
       if (cachedData) {
@@ -43,7 +35,6 @@ export function useCalendarEvents() {
             return;
           }
         } catch {
-          // Invalid cache, proceed with fetch
         }
       }
     }
@@ -52,9 +43,6 @@ export function useCalendarEvents() {
       setLoading(true);
       const response = await fetch('/api/calendar/sync-events', {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
       });
       
       if (response.ok) {
@@ -67,7 +55,6 @@ export function useCalendarEvents() {
         
         setEvents(formattedEvents);
         
-        // Update cache
         const cacheData: CacheData = {
           events: formattedEvents.map((event: Event) => ({
             ...event,

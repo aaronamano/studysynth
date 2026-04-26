@@ -33,7 +33,7 @@ export default function TopicInput({ items, setItems, placeholder, label }: Topi
 
   return (
     <div className="space-y-3">
-      <Label>{label}</Label>
+      <Label className="text-amber-200/80">{label}</Label>
       {items.map((item, index) => (
         <div key={index} className="flex items-center gap-2">
           <Input value={item} onChange={(e) => updateItem(index, e.target.value)} placeholder={placeholder} />
@@ -51,7 +51,7 @@ export default function TopicInput({ items, setItems, placeholder, label }: Topi
       <Button
         variant="outline"
         size="sm"
-        className="mt-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+        className="mt-2 border-amber-700/30 text-amber-300/70 hover:bg-amber-900/25 hover:text-amber-200"
         onClick={addItem}
       >
         <PlusCircle className="mr-2 h-4 w-4" />

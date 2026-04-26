@@ -8,13 +8,13 @@ export default function EventsDisplay({ events, isGenerating }: EventsDisplayPro
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-green-400">Study Schedule</CardTitle>
+          <CardTitle className="text-lg font-semibold text-green-500">Study Schedule</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-purple-900/40 rounded w-3/4"></div>
-            <div className="h-4 bg-purple-900/40 rounded w-2/3"></div>
-            <div className="h-4 bg-purple-900/40 rounded w-4/5"></div>
+            <div className="h-4 bg-amber-900/30 rounded w-3/4"></div>
+            <div className="h-4 bg-amber-900/30 rounded w-2/3"></div>
+            <div className="h-4 bg-amber-900/30 rounded w-4/5"></div>
           </div>
         </CardContent>
       </Card>
@@ -61,7 +61,7 @@ export default function EventsDisplay({ events, isGenerating }: EventsDisplayPro
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-green-400 flex items-center">
+        <CardTitle className="text-lg font-semibold text-green-500 flex items-center">
           <Calendar className="h-5 w-5 mr-2" />
           Study Schedule ({events.length} events)
         </CardTitle>
@@ -72,13 +72,13 @@ export default function EventsDisplay({ events, isGenerating }: EventsDisplayPro
             <div key={index} className="border-l-4 border-green-500/60 pl-4 py-2">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h4 className="font-medium text-purple-200 mb-1">{event.title}</h4>
+                  <h4 className="font-medium text-amber-200 mb-1">{event.title}</h4>
                   {event.description && (
-                    <p className="text-sm text-purple-400 mb-2 leading-relaxed">
+                    <p className="text-sm text-amber-400/70 mb-2 leading-relaxed">
                       {event.description}
                     </p>
                   )}
-                  <div className="flex items-center space-x-4 text-xs text-purple-500">
+                  <div className="flex items-center space-x-4 text-xs text-amber-400/60">
                     <div className="flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
                       {formatDate(event.startDate)}
@@ -97,9 +97,9 @@ export default function EventsDisplay({ events, isGenerating }: EventsDisplayPro
             </div>
           ))}
         </div>
-        <div className="mt-4 pt-4 border-t border-purple-500/20">
-          <p className="text-xs text-purple-500 text-center">
-            ✅ All events have been added to your calendar
+        <div className="mt-4 pt-4 border-t border-amber-800/15">
+          <p className="text-xs text-amber-400/50 text-center">
+            All events have been added to your calendar
           </p>
         </div>
       </CardContent>
