@@ -6,8 +6,18 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Video, BookText, FileText, ImageIcon } from "lucide-react"
 import type { MediaPreferencesProps } from "@/lib/types"
+import { useState } from "react"
 
-export default function MediaPreferences({ preferences, setPreferences }: MediaPreferencesProps) {
+export default function MediaPreferences(props?: MediaPreferencesProps) {
+  const [preferences, setPreferencesState] = useState<MediaPreferencesProps["preferences"]>(
+    props?.preferences ?? { videos: true, diagrams: false, readings: true, summaries: false }
+  )
+
+  const setPreferences = (prefs: MediaPreferencesProps["preferences"]) => {
+    setPreferencesState(prefs)
+    props?.setPreferences?.(prefs)
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

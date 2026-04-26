@@ -70,13 +70,11 @@ const CustomToolbar = ({ label, onNavigate, onView }: CustomToolbarProps) => {
 };
 
 export function CalendarView() {
-  const { events, invalidateCache } = useCalendarEvents();
-  const [newEvent, setNewEvent] = useState<Event>({ title: '', start: new Date(), end: new Date(), description: '' });
+const { events, invalidateCache } = useCalendarEvents();
+  const [isGoogleConnected, setIsGoogleConnected] = useState<boolean>(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
-  const [isGoogleConnected, setIsGoogleConnected] = useState<boolean>(false);
-  const [syncToGoogle, setSyncToGoogle] = useState<boolean>(false);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -88,22 +86,6 @@ export function CalendarView() {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [invalidateCache]);
-
-  const handleAddEvent = async () => {
-    const response = await fetch('/api/calendar/sync-events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        ...newEvent, 
-        startDate: newEvent.start, 
-        endDate: newEvent.end,
-        description: newEvent.description,
-      }),
-    });
-    if (response.ok) {
-      invalidateCache();
-    }
-  };
 
   const handleDeleteEvent = async (eventToDelete: Event) => {
     const isGoogleEvent = (eventToDelete as { isGoogleEvent?: boolean }).isGoogleEvent;
@@ -213,37 +195,6 @@ export function CalendarView() {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2">
         <GoogleCalendarIntegration onConnectionChange={setIsGoogleConnected} />
-        <Card className='mb-4'>
-          <CardContent className='p-4'>
-            <h3 className='text-lg font-semibold mb-2'>Add New Study Session</h3>
-            <div className='flex flex-col space-y-2'>
-              <Input type='text' placeholder='Title' value={newEvent.title} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} />
-              <div className="space-y-2">
-                <Input type='text' placeholder='Description (optional)' value={newEvent.description || ''} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} />
-                {newEvent.description && (
-                  <div className="text-xs text-amber-400 p-2 bg-black/40 rounded border border-amber-500/20">
-                    <strong>Preview:</strong>
-                    <div className="mt-1 whitespace-pre-wrap">{parseLinksInText(newEvent.description)}</div>
-                  </div>
-                )}
-              </div>
-              <div className='flex space-x-2'>
-                <DatePicker selected={newEvent.start} onChange={(start) => setNewEvent({ ...newEvent, start: start as Date })} showTimeSelect dateFormat='Pp' className='w-full bg-black/60 border-amber-500/30 text-amber-200 placeholder:text-amber-500' />
-                <DatePicker selected={newEvent.end} onChange={(end) => setNewEvent({ ...newEvent, end: end as Date })} showTimeSelect dateFormat='Pp' className='w-full bg-black/60 border-amber-500/30 text-amber-200 placeholder:text-amber-500' />
-              </div>
-              <div className="flex items-center space-x-2">
-                {isGoogleConnected && (
-                  <label className="flex items-center space-x-2 text-sm">
-                    <input type="checkbox" checked={syncToGoogle} onChange={(e) => setSyncToGoogle(e.target.checked)} className="rounded-full border-amber-500/30 bg-black/60 text-amber-600 focus:ring-amber-500/30" />
-                    <span className="text-amber-300">Sync to Google Calendar</span>
-                  </label>
-                )}
-                <Button onClick={handleAddEvent} className="bg-amber-600">Add Event</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         <Calendar localizer={localizer} events={events} startAccessor='start' endAccessor='end' style={{ height: 500 }}
           onSelectEvent={event => setSelectedEvent(event)} view={view} onView={(view) => setView(view)} date={date} onNavigate={setDate}
           components={{ toolbar: CustomToolbar, event: CustomEvent }} eventPropGetter={eventStyleGetter} />
@@ -316,36 +267,6 @@ export function CalendarView() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-
-        {selectedEvent && (
-          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-            <Card className="w-1/3">
-              <CardHeader><CardTitle>Edit Study Session</CardTitle></CardHeader>
-              <CardContent>
-                <div className='flex flex-col space-y-2'>
-                  <Input type='text' placeholder='Title' value={selectedEvent.title} onChange={(e) => setSelectedEvent({ ...selectedEvent, title: e.target.value })} />
-                  <div className="space-y-2">
-                    <Input type='text' placeholder='Description (optional)' value={selectedEvent.description || ''} onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })} />
-                    {selectedEvent.description && (
-                      <div className="text-xs text-amber-400 p-2 bg-black/40 rounded border border-amber-500/20">
-                        <strong>Preview:</strong>
-                        <div className="mt-1 whitespace-pre-wrap">{parseLinksInText(selectedEvent.description)}</div>
-                      </div>
-                    )}
-                  </div>
-                  <div className='flex space-x-2'>
-                    <DatePicker selected={selectedEvent.start} onChange={(start) => setSelectedEvent({ ...selectedEvent, start: start as Date })} showTimeSelect dateFormat='Pp' className='w-full bg-black/60 border-amber-500/30 text-amber-200 placeholder:text-amber-500' />
-                    <DatePicker selected={selectedEvent.end} onChange={(end) => setSelectedEvent({ ...selectedEvent, end: end as Date })} showTimeSelect dateFormat='Pp' className='w-full bg-black/60 border-amber-500/30 text-amber-200 placeholder:text-amber-500' />
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button onClick={() => handleUpdateEvent(selectedEvent)}>Update</Button>
-                    <Button onClick={() => setSelectedEvent(null)}>Cancel</Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
       </div>
     </div>
   );

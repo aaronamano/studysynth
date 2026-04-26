@@ -5,30 +5,32 @@
 import TopicPdfImport from "./topic-pdf-import"
 import TopicTextContent from "./topic-text-content"
 import TopicInputSwitch from "./topic-input-switch"
-import type { TopicTextareaProps } from "@/lib/types"
+import { useState } from "react"
 
-export default function TopicInputSelector({ 
-  value, 
-  onChange, 
-  inputType, 
-  onInputTypeChange 
-}: TopicTextareaProps) {
+export default function TopicInputSelector() {
+  const [value, setValue] = useState<File | string | null>(null)
+  const [inputType, setInputType] = useState<'pdf' | 'text'>('pdf')
+
   const handleValueChange = (newValue: File | string | null) => {
-    // Clear the other input type when switching
     if (inputType === 'pdf' && typeof newValue === 'string') {
       return
     }
     if (inputType === 'text' && newValue instanceof File) {
       return
     }
-    onChange(newValue)
+    setValue(newValue)
+  }
+
+  const handleInputTypeChange = (type: 'pdf' | 'text') => {
+    setInputType(type)
+    setValue(null)
   }
 
   return (
     <div className="space-y-4">
       <TopicInputSwitch 
         inputType={inputType}
-        onInputTypeChange={onInputTypeChange}
+        onInputTypeChange={handleInputTypeChange}
       />
       
       {inputType === 'pdf' ? (
