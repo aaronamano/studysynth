@@ -5,15 +5,20 @@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Video, BookText, FileText, ImageIcon } from "lucide-react"
-import type { MediaPreferencesProps } from "@/lib/types"
+import type { MediaPreferences } from "@/lib/types"
 import { useState } from "react"
 
-export default function MediaPreferences(props?: MediaPreferencesProps) {
-  const [preferences, setPreferencesState] = useState<MediaPreferencesProps["preferences"]>(
-    props?.preferences ?? { videos: true, diagrams: false, readings: true, summaries: false }
+const defaultPreferences: MediaPreferences = { videos: true, diagrams: false, readings: true, summaries: false }
+
+export default function MediaPreferences(props?: { 
+  preferences?: MediaPreferences
+  setPreferences?: (prefs: MediaPreferences) => void 
+}) {
+  const [preferences, setPreferencesState] = useState<MediaPreferences>(
+    props?.preferences ?? defaultPreferences
   )
 
-  const setPreferences = (prefs: MediaPreferencesProps["preferences"]) => {
+  const setPreferences = (prefs: MediaPreferences) => {
     setPreferencesState(prefs)
     props?.setPreferences?.(prefs)
   }

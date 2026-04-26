@@ -15,7 +15,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './
 import { Checkbox } from './ui/checkbox';
 import type { Event, CustomToolbarProps } from '@/lib/types';
 import { useCalendarEvents } from '@/hooks/use-calendar-events';
-import { GoogleCalendarIntegration } from './google-calendar-integration';
 
 const parseLinksInText = (text: string) => {
   if (!text) return text;
@@ -70,8 +69,7 @@ const CustomToolbar = ({ label, onNavigate, onView }: CustomToolbarProps) => {
 };
 
 export function CalendarView() {
-const { events, invalidateCache } = useCalendarEvents();
-  const [isGoogleConnected, setIsGoogleConnected] = useState<boolean>(false);
+  const { events, invalidateCache } = useCalendarEvents();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
@@ -194,7 +192,6 @@ const { events, invalidateCache } = useCalendarEvents();
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2">
-        <GoogleCalendarIntegration onConnectionChange={setIsGoogleConnected} />
         <Calendar localizer={localizer} events={events} startAccessor='start' endAccessor='end' style={{ height: 500 }}
           onSelectEvent={event => setSelectedEvent(event)} view={view} onView={(view) => setView(view)} date={date} onNavigate={setDate}
           components={{ toolbar: CustomToolbar, event: CustomEvent }} eventPropGetter={eventStyleGetter} />

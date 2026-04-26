@@ -5,15 +5,24 @@
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { StudyPlanAdjusterProps } from "@/lib/types"
 import { useState } from "react"
 
-export default function StudyPlanAdjuster(props?: StudyPlanAdjusterProps) {
-  const [studyPlan, setStudyPlanState] = useState<StudyPlanAdjusterProps["studyPlan"]>(
-    props?.studyPlan ?? { intensity: "balanced", learningStyle: "visual" }
+interface StudyPlan {
+  intensity: string;
+  learningStyle: string;
+}
+
+const defaultStudyPlan: StudyPlan = { intensity: "balanced", learningStyle: "visual" }
+
+export default function StudyPlanAdjuster(props?: { 
+  studyPlan?: StudyPlan
+  setStudyPlan?: (plan: StudyPlan) => void 
+}) {
+  const [studyPlan, setStudyPlanState] = useState<StudyPlan>(
+    props?.studyPlan ?? defaultStudyPlan
   )
 
-  const setStudyPlan = (plan: StudyPlanAdjusterProps["studyPlan"]) => {
+  const setStudyPlan = (plan: StudyPlan) => {
     setStudyPlanState(plan)
     props?.setStudyPlan?.(plan)
   }
@@ -22,7 +31,6 @@ export default function StudyPlanAdjuster(props?: StudyPlanAdjusterProps) {
     setStudyPlan({ ...studyPlan, intensity: value });
   };
 
-  // Handler for learning style change
   const handleLearningStyleChange = (value: string) => {
     setStudyPlan({ ...studyPlan, learningStyle: value });
   };

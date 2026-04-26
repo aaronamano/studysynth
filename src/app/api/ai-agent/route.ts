@@ -77,8 +77,8 @@ class StudyAgent {
         content: `Create a study guide for: ${prompt}\n\n${
           studyData ? `
           User Context:
-          - Strengths: ${studyData.strengths.join(', ')}
-          - Weaknesses: ${studyData.weaknesses.join(', ')}
+          - Strengths: ${studyData.strengths?.join(', ') || 'None'}
+          - Weaknesses: ${studyData.weaknesses?.join(', ') || 'None'}
           - Media Preferences: ${JSON.stringify(studyData.mediaPreferences)}
           - Study Plan: ${JSON.stringify(studyData.studyPlan)}
           ` : ''
@@ -204,7 +204,7 @@ class StudyAgent {
       .trim();
   }
 
-  private extractEventsFromText(content: string): Array<{ startDate: Date; endDate: Date; title: string; description: string }> {
+  private extractEventsFromText(content: string): CalendarEvent[] {
     // Look for individual event-like objects in the text
     const eventPattern = /{[\s\S]*?}/g;
     const matches = content.match(eventPattern) || [];
@@ -220,9 +220,10 @@ class StudyAgent {
         
         if (titleMatch && startMatch && endMatch) {
           events.push({
+            _id: crypto.randomUUID(),
             title: titleMatch[1],
-            startDate: new Date(startMatch[1]),
-            endDate: new Date(endMatch[1]),
+            startDate: startMatch[1],
+            endDate: endMatch[1],
             description: descMatch ? descMatch[1] : ''
           });
         }
@@ -327,10 +328,10 @@ CONSTRAINTS: ${constraints}
 
 ${studyData ? `
 USER CONTEXT:
-- Strengths: ${studyData.strengths.join(', ')}
-- Weaknesses: ${studyData.weaknesses.join(', ')}
-- Study Intensity: ${studyData.studyPlan.intensity}
-- Learning Style: ${studyData.studyPlan.learningStyle}
+- Strengths: ${studyData.strengths?.join(', ') || 'None'}
+- Weaknesses: ${studyData.weaknesses?.join(', ') || 'None'}
+- Study Intensity: ${studyData.studyPlan?.intensity || 'balanced'}
+- Learning Style: ${studyData.studyPlan?.learningStyle || 'visual'}
 ` : ''}
 
 IMPORTANT: Match specific resources to each calendar event based on topic relevance. Include the most relevant resources in each event's description.`
@@ -360,8 +361,9 @@ IMPORTANT: Match specific resources to each calendar event based on topic releva
       
       const events = JSON.parse(cleanedJsonContent);
       return events.map((event: { startDate: string; endDate: string; title?: string; description?: string }) => ({
-        startDate: new Date(event.startDate),
-        endDate: new Date(event.endDate),
+        _id: crypto.randomUUID(),
+        startDate: event.startDate,
+        endDate: event.endDate,
         title: event.title || '',
         description: event.description || ''
       }));
@@ -395,7 +397,7 @@ IMPORTANT: Match specific resources to each calendar event based on topic releva
     
     // Step 2: Find resources (for embedding in event descriptions)
     onProgress?.({ type: 'progress', content: 'Finding educational resources...', step: 2 });
-    const resources = await this.find_resources(studyGuide, studyData?.mediaPreferences);
+    const resources = await this.find_resources(studyGuide, studyData?.mediaPreferences as Record<string, unknown> | undefined);
     onProgress?.({ type: 'resources', content: resources.join('\n'), step: 2 });
     
     // Step 3: Create calendar subevents with resource matching

@@ -2,7 +2,16 @@ import { google } from 'googleapis';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/google-calendar/callback';
+const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+
+export const GOOGLE_SCOPES = [
+  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/documents',
+  'https://www.googleapis.com/auth/spreadsheets',
+  'https://www.googleapis.com/auth/drive',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile'
+];
 
 if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
   console.warn('Google OAuth credentials not found in environment variables');
@@ -15,12 +24,6 @@ export const oauth2Client = new google.auth.OAuth2(
 );
 
 export const getGoogleAuthURL = (userToken?: string, redirectUri?: string) => {
-  const scopes = [
-    'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile'
-  ];
-
   const redirectURL = redirectUri || REDIRECT_URI;
 
   const oauthClient = new google.auth.OAuth2(
@@ -31,7 +34,7 @@ export const getGoogleAuthURL = (userToken?: string, redirectUri?: string) => {
 
   return oauthClient.generateAuthUrl({
     access_type: 'offline',
-    scope: scopes,
+    scope: GOOGLE_SCOPES,
     prompt: 'consent',
     state: userToken || ''
   });

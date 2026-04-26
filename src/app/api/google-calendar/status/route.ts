@@ -1,9 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { isUserGoogleCalendarConnected, disconnectUserGoogleCalendar } from '@/lib/google-calendar-tokens';
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { disconnectUserGoogleCalendar } from '@/lib/google-calendar-tokens';
 
-export async function GET(req: NextRequest) {
+const GOOGLE_CALENDAR_KEY = 'studysynth_google_calendar';
+
+export async function GET() {
   try {
-    const isConnected = await isUserGoogleCalendarConnected();
+    const cookieStore = await cookies();
+    const isConnected = cookieStore.has(GOOGLE_CALENDAR_KEY);
     
     return NextResponse.json({ 
       isConnected,
@@ -18,16 +22,13 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE() {
   try {
-    const success = await disconnectUserGoogleCalendar();
+    const cookieStore = await cookies();
+    cookieStore.delete(GOOGLE_CALENDAR_KEY);
     
-    if (!success) {
-      return NextResponse.json({ 
-        error: 'Failed to disconnect Google Calendar' 
-      }, { status: 500 });
-    }
-
+    await disconnectUserGoogleCalendar();
+    
     return NextResponse.json({ 
       message: 'Google Calendar disconnected successfully'
     }, { status: 200 });
