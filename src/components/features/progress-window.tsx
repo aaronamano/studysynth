@@ -1,6 +1,6 @@
 "use client"
 
-import { Loader2, BookOpen, Search, Calendar, FileText, CheckCircle, AlertCircle } from "lucide-react"
+import { Loader2, BookOpen, Search, Calendar, FileText, CheckCircle, ChevronDown, ChevronUp } from "lucide-react"
 import { useEffect, useState } from "react"
 
 interface ProgressWindowProps {
@@ -20,6 +20,19 @@ const stepConfig = {
 
 export default function ProgressWindow({ isOpen, progressData, onClose, isComplete }: ProgressWindowProps) {
   const [isVisible, setIsVisible] = useState(false)
+  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
+
+  const toggleExpand = (index: number) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev)
+      if (next.has(index)) {
+        next.delete(index)
+      } else {
+        next.add(index)
+      }
+      return next
+    })
+  }
 
   useEffect(() => {
     if (isOpen) {
@@ -46,39 +59,46 @@ export default function ProgressWindow({ isOpen, progressData, onClose, isComple
                 {isComplete ? "Complete" : "Generating Study Plan"}
               </span>
             </div>
-            <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-lg transition-colors">
-              <AlertCircle className="w-4 h-4 text-amber-200/60" />
-            </button>
           </div>
         </div>
 
         <div className="flex-1 p-4 overflow-auto">
           <div className="space-y-3">
             {progressData.map((data, index) => {
-              const stepInfo = data.step ? stepConfig[data.step as keyof typeof stepConfig] : null
-              const Icon = stepInfo?.icon || CheckCircle
+               const stepInfo = data.step ? stepConfig[data.step as keyof typeof stepConfig] : null
+               const Icon = stepInfo?.icon || CheckCircle
+               const isExpanded = expandedItems.has(index)
 
-              return (
-                <div
-                  key={index}
-                  className={`flex items-start gap-3 p-3 rounded-lg transition-all duration-300 ${
-                    data.type === 'error' ? 'bg-red-500/10 border border-red-500/20' : 'bg-white/2 border border-white/5'
-                  }`}
-                >
-                  <div className={`mt-0.5 ${stepInfo?.color || 'text-amber-400/60'}`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs text-amber-200/80">{data.content}</div>
-                    {data.type === 'study_guide' && (
-                      <div className="mt-2 p-2 bg-white/5 rounded text-xs text-amber-200/60 max-h-24 overflow-auto">
-                        {data.content.substring(0, 200)}...
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
+               return (
+                 <div
+                   key={index}
+                   className={`flex items-start gap-3 p-3 rounded-lg transition-all duration-300 ${data.type === 'error' ? 'bg-red-500/10 border border-red-500/20' : 'bg-white/2 border border-white/5'
+                     }`}
+                 >
+                   <div className={`mt-0.5 ${stepInfo?.color || 'text-amber-400/60'}`}>
+                     <Icon className="w-4 h-4" />
+                   </div>
+                    <div className="flex-1 min-w-0">
+                      <button
+                        onClick={() => toggleExpand(index)}
+                        className="flex items-center justify-between w-full text-left gap-2"
+                      >
+                        <span className="text-xs text-amber-200/80 truncate flex-1 min-w-0">{data.content.substring(0, 60)}{data.content.length > 60 ? '...' : ''}</span>
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-amber-400 shrink-0" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-amber-400 shrink-0" />
+                        )}
+                      </button>
+                      {isExpanded && (
+                        <div className="mt-2 p-2 bg-white/5 rounded text-xs text-amber-200/80 max-h-48 overflow-auto whitespace-pre-wrap wrap-break-word">
+                          {data.content}
+                        </div>
+                      )}
+                    </div>
+                 </div>
+               )
+             })}
           </div>
         </div>
 

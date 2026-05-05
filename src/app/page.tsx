@@ -120,9 +120,19 @@ function Dashboard() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [studyGuideContent, setStudyGuideContent] = useState<string | null>(null)
   const [topicValue, setTopicValue] = useState<File | string | null>(null)
-  const [progressData, setProgressData] = useState<Array<{ type: string; content: string; step?: number }>>([])
-  const [showProgress, setShowProgress] = useState(false)
-  const [isComplete, setIsComplete] = useState(false)
+  const mockProgressData = [
+    { type: 'study_guide', content: 'Study Guide: Introduction to React\n\nReact is a JavaScript library for building user interfaces. It lets you compose complex UIs from small and isolated pieces of code called "components". React components implement a render() method that takes input data and returns what to display. Components can maintain internal state data accessed via this.state. When a component’s state data changes, the rendered markup will be updated by re-invoking render().', step: 1 },
+    { type: 'resources', content: 'Found 5 relevant resources:\n1. React Official Documentation - https://react.dev\n2. MDN Web Docs - https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/React_getting_started\n3. React Tutorial for Beginners - https://www.youtube.com/watch?v=SqcY0GlETPc\n4. Full React Course 2024 - https://www.freecodecamp.org/news/react-course-for-beginners/\n5. React Patterns - https://reactpatterns.com/', step: 2 },
+    { type: 'calendar_events', content: 'Created 14 calendar events:\n- Day 1: React Basics & JSX (2 hours)\n- Day 2: Components & Props (2 hours)\n- Day 3: State & Lifecycle (2 hours)\n- Day 4: Handling Events (1.5 hours)\n- Day 5: Conditional Rendering (1.5 hours)\n- Day 6: Lists & Keys (2 hours)\n- Day 7: Forms & Controlled Components (2 hours)\n- Day 8: Composition vs Inheritance (1.5 hours)\n- Day 9: Thinking in React (2 hours)\n- Day 10: Hooks Introduction (2 hours)\n- Day 11: useState Hook (2 hours)\n- Day 12: useEffect Hook (2 hours)\n- Day 13: useContext Hook (1.5 hours)\n- Day 14: Custom Hooks (2 hours)', step: 3 },
+    { type: 'google_doc', content: 'Google Doc created successfully! View your study guide at: https://docs.google.com/document/d/abc123xyz/edit?usp=sharing', step: 4 },
+    { type: 'calendar_sync', content: 'All 14 events have been synced to your Google Calendar. Check your calendar app to see the scheduled study sessions.', step: 5 },
+    { type: 'error', content: 'Warning: Could not fetch additional resources from external API. Proceeding with available resources.', step: undefined },
+    { type: 'study_guide', content: 'Quick tip: Remember to practice every day and build small projects to reinforce your learning. Consistency is key to mastering React!', step: undefined },
+  ]
+
+  const [progressData, setProgressData] = useState<Array<{ type: string; content: string; step?: number }>>(mockProgressData)
+  const [showProgress, setShowProgress] = useState(true)
+  const [isComplete, setIsComplete] = useState(true)
 
   const handleGenerate = async () => {
     if (!studyStartDate || !studyEndDate) {
