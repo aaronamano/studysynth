@@ -10,7 +10,7 @@ import { enUS } from 'date-fns/locale/en-US';
 import { Button } from './ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Checkbox } from './ui/checkbox';
-import type { Event, CustomToolbarProps } from '@/lib/types';
+import type { CalendarEventInput, CustomToolbarProps } from '@/lib/types';
 import { useCalendarEvents } from '@/hooks/use-calendar-events';
 
 const parseLinksInText = (text: string) => {
@@ -81,7 +81,7 @@ export function CalendarView() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [invalidateCache]);
 
-  const handleDeleteEvent = async (eventToDelete: Event) => {
+  const handleDeleteEvent = async (eventToDelete: CalendarEventInput) => {
     const isGoogleEvent = (eventToDelete as { isGoogleEvent?: boolean }).isGoogleEvent;
     const response = await fetch(`/api/calendar/sync-events?eventId=${eventToDelete._id}&syncToGoogle=${isGoogleEvent}`, {
       method: 'DELETE',
@@ -132,7 +132,7 @@ export function CalendarView() {
     }
   };
 
-  const eventStyleGetter = (event: Event) => {
+  const eventStyleGetter = (event: CalendarEventInput) => {
     const isGoogleEvent = (event as { isGoogleEvent?: boolean }).isGoogleEvent;
     return {
       style: {
@@ -147,7 +147,7 @@ export function CalendarView() {
     };
   };
 
-  const CustomEvent = ({ event }: { event: Event }) => {
+  const CustomEvent = ({ event }: { event: CalendarEventInput }) => {
     const isGoogleEvent = (event as { isGoogleEvent?: boolean }).isGoogleEvent;
     return (
       <div className="rbc-event-content">

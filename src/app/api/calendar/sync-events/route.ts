@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { cookies } from 'next/headers';
+import type { CalendarEvent } from '@/lib/types';
 
 const AUTH_COOKIE_NAME = 'studysynth_google_auth';
-
-interface CalendarEvent {
-  _id: string;
-  startDate: string;
-  endDate: string;
-  title: string;
-  description: string;
-  googleEventId?: string;
-  isGoogleEvent?: boolean;
-}
 
 async function getAuthFromCookies() {
   const cookieStore = await cookies();

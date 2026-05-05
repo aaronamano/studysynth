@@ -1,18 +1,18 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react';
-import type { Event } from '@/lib/types';
+import type { CalendarEventInput } from '@/lib/types';
 
 const CACHE_KEY = 'calendar_events_cache';
 const CACHE_DURATION = 5 * 60 * 1000;
 
 interface CacheData {
-  events: Event[];
+  events: CalendarEventInput[];
   timestamp: number;
 }
 
 export function useCalendarEvents() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<CalendarEventInput[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,7 +25,7 @@ export function useCalendarEvents() {
           const now = Date.now();
           
           if (now - timestamp < CACHE_DURATION) {
-            const formattedEvents = cachedEvents.map((event: Event) => ({
+            const formattedEvents = cachedEvents.map((event) => ({
               ...event,
               start: new Date(event.start),
               end: new Date(event.end),
@@ -47,8 +47,8 @@ export function useCalendarEvents() {
       });
       
       if (response.ok) {
-        const data = await response.json();
-        const formattedEvents = data.map((event: { _id?: string; title: string; start: string; end: string; description?: string }) => ({
+        const data = await response.json() as Array<{ _id?: string; title: string; start: string; end: string; description?: string }>;
+        const formattedEvents: CalendarEventInput[] = data.map((event) => ({
           ...event,
           start: new Date(event.start),
           end: new Date(event.end),
@@ -57,10 +57,10 @@ export function useCalendarEvents() {
         setEvents(formattedEvents);
         
         const cacheData: CacheData = {
-          events: formattedEvents.map((event: Event) => ({
+          events: formattedEvents.map((event) => ({
             ...event,
-            start: event.start.toISOString(),
-            end: event.end.toISOString(),
+            start: event.start instanceof Date ? event.start.toISOString() : event.start,
+            end: event.end instanceof Date ? event.end.toISOString() : event.end,
           })),
           timestamp: Date.now(),
         };

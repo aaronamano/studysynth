@@ -4,11 +4,11 @@ export interface StudyGuideHistory {
   createdAt: string;
 }
 
-export interface Event {
+export interface CalendarEventInput {
   _id?: string;
   title: string;
-  start: Date;
-  end: Date;
+  start: Date | string;
+  end: Date | string;
   description?: string;
 }
 

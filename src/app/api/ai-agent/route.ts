@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import type { CalendarEvent } from '@/lib/types';
-import type { StudyPlanData } from '@/lib/types';
+import type { CalendarEvent, StudyPlanData } from '@/lib/types';
 import { GoogleGenAI, Type } from '@google/genai';
 import { randomUUID } from 'crypto';
 import { cookies } from 'next/headers';

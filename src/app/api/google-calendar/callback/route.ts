@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { oauth2Client } from '@/lib/google-calendar';
-import { saveUserGoogleCalendarTokens } from '@/lib/google-calendar-tokens';
 
 const GOOGLE_CALENDAR_KEY = 'studysynth_google_calendar';
 
@@ -23,8 +22,6 @@ export async function GET(req: NextRequest) {
       expiry_date: tokens.expiry_date || undefined
     };
     
-    await saveUserGoogleCalendarTokens(calendarTokens);
-
     const htmlResponse = `
       <!DOCTYPE html>
       <html>

@@ -5,7 +5,7 @@
 import { Label } from "@/components/ui/label"
 import { Info, Loader2, FileText, CheckCircle } from "lucide-react"
 import { useRef, useState } from "react"
-import type { PdfFileWithContent } from "@/lib/types"
+import type { PdfFileWithContent } from '@/lib/types'
 import { toast } from "sonner"
 
 export default function TopicPdfImport({ value, onChange }: { value: File | null, onChange: (value: File | null) => void }) {
