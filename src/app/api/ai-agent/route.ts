@@ -1,442 +1,410 @@
 import { NextRequest } from 'next/server';
+import { z } from 'zod';
 import type { CalendarEvent } from '@/lib/types';
 import type { StudyPlanData } from '@/lib/types';
+import { GoogleGenAI, Type } from '@google/genai';
+import { randomUUID } from 'crypto';
+import { cookies } from 'next/headers';
+import { google } from 'googleapis';
+
+const DateRangeSchema = z.object({
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'startDate must be YYYY-MM-DD'),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'endDate must be YYYY-MM-DD'),
+});
+
+const StudyPlanDataSchema = z.object({
+  topics: z.array(z.string()).optional(),
+  fileContent: z.string().optional(),
+  strengths: z.array(z.string()).optional(),
+  weaknesses: z.array(z.string()).optional(),
+  dateRange: DateRangeSchema.optional(),
+});
+
+const AgentRequestSchema = z.object({
+  prompt: z.string().min(1, 'Prompt is required'),
+  studyData: StudyPlanDataSchema.optional(),
+  stream: z.boolean().optional().default(false),
+});
+
+const CalendarEventSchema = z.object({
+  startDate: z.string(),
+  endDate: z.string(),
+  title: z.string(),
+  description: z.string(),
+});
+
+const AgentResponseSchema = z.object({
+  studyGuide: z.string(),
+  events: z.array(CalendarEventSchema),
+  googleDocUrl: z.string().optional(),
+});
+
+const AUTH_COOKIE_NAME = 'studysynth_google_auth';
+const CALENDAR_AUTH_COOKIE = 'studysynth_google_calendar';
+
+async function getGoogleAuth() {
+  const cookieStore = await cookies();
+
+  const authCookie = cookieStore.get(AUTH_COOKIE_NAME);
+  if (authCookie) {
+    try {
+      return JSON.parse(authCookie.value);
+    } catch {
+      // Continue to check calendar auth
+    }
+  }
+
+  const calendarCookie = cookieStore.get(CALENDAR_AUTH_COOKIE);
+  if (calendarCookie) {
+    try {
+      const parsed = JSON.parse(calendarCookie.value);
+      return { tokens: parsed };
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+async function createGoogleDoc(studyGuide: string, title: string, auth: { tokens: { access_token?: string; refresh_token?: string } }) {
+  const authClient = new google.auth.OAuth2();
+  authClient.setCredentials({
+    access_token: auth.tokens.access_token,
+    refresh_token: auth.tokens.refresh_token,
+  });
+
+  const docs = google.docs({ version: 'v1', auth: authClient });
+
+  const doc = await docs.documents.create({
+    requestBody: { title },
+  });
+
+  const docId = doc.data.documentId;
+  if (!docId) throw new Error('Failed to create Google Doc');
+
+  await docs.documents.batchUpdate({
+    documentId: docId,
+    requestBody: {
+      requests: [
+        {
+          insertText: {
+            location: { index: 1 },
+            text: studyGuide,
+          },
+        },
+      ],
+    },
+  });
+
+  return `https://docs.google.com/document/d/${docId}/edit`;
+}
+
+async function syncEventsToGoogleCalendar(events: CalendarEvent[], auth: { tokens: { access_token?: string; refresh_token?: string } }) {
+  const authClient = new google.auth.OAuth2();
+  authClient.setCredentials({
+    access_token: auth.tokens.access_token,
+    refresh_token: auth.tokens.refresh_token,
+  });
+
+  const calendar = google.calendar({ version: 'v3', auth: authClient });
+
+  const results = await Promise.allSettled(
+    events.map(event =>
+      calendar.events.insert({
+        calendarId: 'primary',
+        requestBody: {
+          summary: event.title,
+          description: event.description || '',
+          start: { dateTime: event.startDate, timeZone: 'UTC' },
+          end: { dateTime: event.endDate, timeZone: 'UTC' },
+        },
+      })
+    )
+  );
+
+  const createdEvents: CalendarEvent[] = [];
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled' && result.value.data?.id) {
+      createdEvents.push({
+        ...events[index],
+        googleEventId: result.value.data.id as string,
+        isGoogleEvent: true,
+      });
+    }
+  });
+  return createdEvents;
+}
 
 class StudyAgent {
-  private perplexityApiKey: string;
+  private ai: GoogleGenAI;
 
   constructor(apiKey: string) {
-    this.perplexityApiKey = apiKey;
-  }
-
-  private async makeRequest(messages: { role: string; content: string }[]) {
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.perplexityApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'sonar-reasoning-pro',
-        messages,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Perplexity API error: ${response.status}`);
-    }
-
-    return response.json();
-  }
-
-  private async performSearch(query: string): Promise<Array<{ title: string; url: string; snippet: string; date?: string }>> {
-    try {
-      const response = await fetch('https://api.perplexity.ai/search', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.perplexityApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          max_results: 10,
-          search_type: 'news', // Focus on recent educational content
-          domain_filter: null, // Allow all domains for broader resources
-        }),
-      });
-
-      if (!response.ok) {
-        console.warn(`Search API error: ${response.status}, falling back to chat completions`);
-        return [];
-      }
-
-      const data = await response.json();
-      return data.results || [];
-    } catch (error) {
-      console.warn('Search API failed, falling back to chat completions:', error);
-      return [];
-    }
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
   async create_study_guide(prompt: string, studyData?: StudyPlanData): Promise<string> {
-    const systemPrompt = `You are an expert study guide creator. Generate a comprehensive study guide based on the user's requirements.
+    const fileContent = studyData?.fileContent ? `\n\nExtracted PDF/Text Content:\n${studyData.fileContent}` : '';
     
+    const systemPrompt = `You are an expert study guide creator. Generate a comprehensive, timeline-based study guide based on the user's requirements.
+
     Consider the following when creating the study guide:
-    - User's strengths and weaknesses to prioritize content
-    - Learning style preferences (visual, auditory, kinesthetic, etc.)
-    - Media preferences (videos, diagrams, readings, summaries)
-    - Study intensity level (light, balanced, intensive)
+    - User's strengths and weaknesses to prioritize content and time allocation
     - Time constraints and exam dates mentioned in the prompt
-    
+    - Create a DAY-BY-DAY timeline study plan
+    - Include specific topics to study each day
+    - Add recommended resources for each topic
+    - Format the output in a clean, structured way suitable for a Google Doc
+
     Create a structured, actionable study guide that helps the user achieve their learning goals effectively.`;
 
-    const response = await this.makeRequest([
-      { role: 'system', content: systemPrompt },
-      { 
-        role: 'user', 
-        content: `Create a study guide for: ${prompt}\n\n${
-          studyData ? `
-          User Context:
-          - Strengths: ${studyData.strengths?.join(', ') || 'None'}
-          - Weaknesses: ${studyData.weaknesses?.join(', ') || 'None'}
-          - Media Preferences: ${JSON.stringify(studyData.mediaPreferences)}
-          - Study Plan: ${JSON.stringify(studyData.studyPlan)}
-          ` : ''
-        }`
-      },
-    ]);
+    const result = await this.ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{
+        role: 'user',
+        parts: [{
+          text: `${systemPrompt}\n\nCreate a study guide for: ${prompt}${fileContent}\n\n${
+            studyData ? `
+            User Context:
+            - Strengths: ${studyData.strengths?.join(', ') || 'None'}
+            - Weaknesses: ${studyData.weaknesses?.join(', ') || 'None'}
+            - Study Period: ${studyData.dateRange ? `${studyData.dateRange.startDate} to ${studyData.dateRange.endDate}` : 'Not specified'}
+            ` : ''
+          }`
+        }]
+      }],
+    });
 
-    return response.choices[0].message.content || '';
+    return result.text || '';
   }
 
-  async find_resources(studyGuide: string, mediaPreferences?: Record<string, unknown>): Promise<string[]> {
-    // First, try to extract key topics from the study guide
-    const topicExtractionPrompt = `Extract 5-7 key study topics from this study guide. Return only the topics, one per line, without numbering or extra text:\n\n${studyGuide}`;
-    
-    const topicResponse = await this.makeRequest([
-      { role: 'user', content: topicExtractionPrompt }
-    ]);
-    
-    const topics = topicResponse.choices[0].message.content
-      ?.split('\n')
-      .map((line: string) => line.trim())
-      .filter((line: string) => line.length > 0) || [];
+  async find_resources(studyGuide: string): Promise<string[]> {
+    const result = await this.ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{
+        role: 'user',
+        parts: [{
+          text: `Find 10-15 high-quality educational resources for this study guide. Include YouTube videos, articles, and tutorials with working URLs.
 
-    const resources: string[] = [];
-    
-    // Search for each topic using the search API
-    for (const topic of topics) {
-      try {
-        // Create search queries based on media preferences
-        const searchQueries = this.createSearchQueries(topic, mediaPreferences);
-        
-        for (const query of searchQueries) {
-          const searchResults = await this.performSearch(query);
-          
-          for (const result of searchResults.slice(0, 2)) { // Take top 2 results per query
-            const resource = this.formatResource(result, topic);
-            if (resource && !resources.includes(resource)) {
-              resources.push(resource);
-            }
-          }
-        }
-      } catch (error) {
-        console.warn(`Failed to search for topic: ${topic}`, error);
-      }
-    }
-    
-    // If search didn't yield enough results, fall back to chat completion
-    if (resources.length < 5) {
-      const fallbackResources = await this.fallbackResourceSearch(studyGuide, mediaPreferences);
-      resources.push(...fallbackResources.filter(r => !resources.includes(r)));
-    }
-    
-    return resources.slice(0, 15); // Limit to 15 resources
-  }
+          Study Guide:
+          ${studyGuide}
 
-  private createSearchQueries(topic: string, mediaPreferences?: Record<string, unknown>): string[] {
-    const queries = [];
-    const baseQuery = `${topic} educational tutorial`;
-    
-    // Always start with general educational query
-    queries.push(baseQuery);
-    
-    // Add specific queries based on media preferences
-    if (mediaPreferences) {
-      const prefs = mediaPreferences as Record<string, boolean>;
-      
-      if (prefs.videos) {
-        queries.push(`${topic} YouTube tutorial explanation`);
-      }
-      
-      if (prefs.readings) {
-        queries.push(`${topic} article guide study notes`);
-      }
-      
-      if (prefs.diagrams) {
-        queries.push(`${topic} visual diagram infographic`);
-      }
-      
-      if (prefs.summaries) {
-        queries.push(`${topic} summary cheat sheet quick reference`);
-      }
-    } else {
-      // Default preferences if not specified
-      queries.push(`${topic} YouTube tutorial explanation`);
-      queries.push(`${topic} study guide notes`);
-    }
-    
-    return queries;
-  }
+          Return format (one per line): "Title - URL (brief description)"
+          Only include resources with real, working URLs.`
+        }]
+      }],
+    });
 
-  private formatResource(result: { title: string; url: string; snippet: string; date?: string }, _topic: string): string {
-    // Check if the URL is accessible (basic validation)
-    if (!result.url || !result.title) return '';
-    
-    // Clean up the title and snippet
-    const title = result.title.replace(/\s+/g, ' ').trim();
-    const snippet = result.snippet ? result.snippet.replace(/\s+/g, ' ').trim().substring(0, 150) : '';
-    
-    return `${title} - ${result.url}${snippet ? ` (${snippet})` : ''}`;
-  }
-
-  private cleanJsonString(jsonString: string): string {
-    return jsonString
-      // Remove common control characters that cause parsing issues
-      // eslint-disable-next-line no-control-regex
-      .replace(/[\u0000-\u001F]/g, '')
-      // Fix common JSON escaping issues with quotes in strings
-      .replace(/(\w+): "([^"]*?)"/g, (match, key, value) => {
-        // Escape any unescaped quotes within string values
-        const escapedValue = value.replace(/(?<!\\)"/g, '\\"');
-        return `${key}: "${escapedValue}"`;
-      })
-      // Fix malformed JSON with trailing commas
-      .replace(/,\s*}/g, '}')
-      .replace(/,\s*]/g, ']')
-      // Handle broken Unicode escapes
-      .replace(/\\u[0-9]{0,3}/g, (match) => {
-        if (match.length < 6) {
-          return '\\u0000'; // Invalid escape, replace with null character
-        }
-        return match;
-      })
-      .trim();
-  }
-
-  private extractEventsFromText(content: string): CalendarEvent[] {
-    // Look for individual event-like objects in the text
-    const eventPattern = /{[\s\S]*?}/g;
-    const matches = content.match(eventPattern) || [];
-    const events = [];
-    
-    for (const match of matches) {
-      try {
-        // Try to extract basic fields from each event object
-        const titleMatch = match.match(/"title"\s*:\s*"([^"]+)"/);
-        const startMatch = match.match(/"startDate"\s*:\s*"([^"]+)"/);
-        const endMatch = match.match(/"endDate"\s*:\s*"([^"]+)"/);
-        const descMatch = match.match(/"description"\s*:\s*"([^"]*?)"/);
-        
-        if (titleMatch && startMatch && endMatch) {
-          events.push({
-            _id: crypto.randomUUID(),
-            title: titleMatch[1],
-            startDate: startMatch[1],
-            endDate: endMatch[1],
-            description: descMatch ? descMatch[1] : ''
-          });
-        }
-      } catch {
-        // Continue to next match if this one fails
-      }
-    }
-    
-    return events;
-  }
-
-  private async fallbackResourceSearch(studyGuide: string, mediaPreferences?: Record<string, unknown>): Promise<string[]> {
-    const systemPrompt = `You are an expert at finding high-quality educational resources. Find relevant, up-to-date resources for given study guide.
-    
-    For each topic mentioned in the study guide, find:
-    - YouTube videos (preferably under 10 minutes)
-    - Educational articles and blog posts
-    - Free online courses or tutorials
-    - Practice problems and exercises
-    - Interactive learning tools
-    
-    Focus on resources that are:
-    - Free or have substantial free tiers
-    - From reputable educational sources
-    - Recently updated or still relevant
-    - Matching the user's media preferences if specified
-    
-    CRITICAL: Only include resources with working URLs. Avoid broken or inaccessible links.
-    
-    Return your response as a numbered list of resources with brief descriptions and working URLs.`;
-
-    const response = await this.makeRequest([
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Find educational resources for this study guide:\n\n${studyGuide}\n\n${
-        mediaPreferences ? `Media preferences: ${JSON.stringify(mediaPreferences)}` : ''
-      }` },
-    ]);
-
-    const content = response.choices[0].message.content || '';
-    
-    // Parse the numbered list into an array
+    const content = result.text || '';
     const resources = content
       .split('\n')
-      .filter((line: string) => line.match(/^\d+\./))
-      .map((line: string) => line.replace(/^\d+\.\s*/, ''))
-      .filter((resource: string) => resource.length > 0 && resource.includes('http'));
+      .filter((line: string) => line.includes('http'))
+      .filter((line: string) => line.trim().length > 0)
+      .slice(0, 15);
 
-    return resources;
+    if (resources.length < 5) {
+      const fallbackResources = await this.fallbackResourceSearch(studyGuide);
+      resources.push(...fallbackResources.filter(r => !resources.includes(r)));
+    }
+
+    return resources.slice(0, 15);
+  }
+
+  private async fallbackResourceSearch(studyGuide: string): Promise<string[]> {
+    const result = await this.ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{
+        role: 'user',
+        parts: [{
+          text: `Find 5-10 educational resources with working URLs for this study guide:
+
+          ${studyGuide}
+
+          Return format (one per line): "Title - URL (brief description)"
+          Only include resources with real URLs.`
+        }]
+      }],
+    });
+
+    const content = result.text || '';
+
+    return content
+      .split('\n')
+      .filter((line: string) => line.includes('http'))
+      .filter((resource: string) => resource.trim().length > 0);
   }
 
   async create_calendar_subevents(
-    studyGuide: string, 
-    resources: string[], 
-    constraints: string,
+    studyGuide: string,
+    resources: string[],
+    prompt: string,
     studyData?: StudyPlanData
   ): Promise<CalendarEvent[]> {
-    const systemPrompt = `You are a study planner that creates a series of calendar events for a study plan.
-    
-    Based on the study guide, available resources, and constraints, create an array of calendar subevents.
-    Each event should be manageable and focused on specific topics.
-    
-    IMPORTANT: For each calendar event, you MUST include relevant resources in the description. Match resources to the specific topic of each event.
-    
-    Consider:
-    - User's strengths and weaknesses (spend more time on weaknesses)
-    - Study intensity (light = fewer/shorter sessions, intensive = more/longer sessions)
-    - Time constraints and deadlines mentioned
-    - Today's date: ${new Date().toISOString().split('T')[0]}
-    
-    RESOURCE MATCHING INSTRUCTIONS:
-    - Analyze each resource and determine which study topic it best matches
-    - Include 2-4 most relevant resources in each event's description
-    - Extract both the description/title AND the raw HTTP/HTTPS URL from resources
-    - Format each resource as: "[resource description/title](raw url)"
-    - Ensure URLs start with http:// or https://
-    - Prioritize resources that match the event's specific topic
-    - Include both the resource description and the complete URL for each resource
-    
-    Return ONLY a JSON array with this exact structure:
-    [
-      {
-        "startDate": "YYYY-MM-DDTHH:mm:ss.sssZ",
-        "endDate": "YYYY-MM-DDTHH:mm:ss.sssZ", 
-        "title": "Study Topic Name",
-        "description": "Detailed description of what to study including:\n\nTopic Overview: [brief overview]\n\nKey Concepts: [main concepts to cover]\n\nRecommended Resources:\n[Khan Academy video on derivatives](https://www.khanacademy.org/math/calculus-1)\n[Interactive calculus tutorial](https://www.calculus.org/tutorial)\n[Practice problems worksheet](https://www.mathproblems.com/calculus)"
-      }
-    ]`;
+    const result = await this.ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{
+        role: 'user',
+        parts: [{
+          text: `Create calendar events for this study plan. Focus on specific topics from the study guide.
 
-    const response = await this.makeRequest([
-      { role: 'system', content: systemPrompt },
-      { 
-        role: 'user', 
-        content: `Create calendar events for:
-        
-STUDY GUIDE:
-${studyGuide}
+          Include 2-4 relevant resources per event. Format: "[title](url)". Match resources to each event's topic.
 
-AVAILABLE RESOURCES:
-${resources.map((resource, index) => `${index + 1}. ${resource}`).join('\n')}
+          STUDY GUIDE:
+          ${studyGuide}
 
-CONSTRAINTS: ${constraints}
+          RESOURCES:
+          ${resources.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 
-${studyData ? `
-USER CONTEXT:
-- Strengths: ${studyData.strengths?.join(', ') || 'None'}
-- Weaknesses: ${studyData.weaknesses?.join(', ') || 'None'}
-- Study Intensity: ${studyData.studyPlan?.intensity || 'balanced'}
-- Learning Style: ${studyData.studyPlan?.learningStyle || 'visual'}
-` : ''}
+          ${studyData ? `
+          USER CONTEXT:
+          - Strengths: ${studyData.strengths?.join(', ') || 'None'}
+          - Weaknesses: ${studyData.weaknesses?.join(', ') || 'None'}
+          - Study Period: ${studyData.dateRange ? `${studyData.dateRange.startDate} to ${studyData.dateRange.endDate}` : 'Not specified'}
+          ` : ''}
 
-IMPORTANT: Match specific resources to each calendar event based on topic relevance. Include the most relevant resources in each event's description.`
-      },
-    ]);
-
-    const content = response.choices[0].message.content || '[]';
-    
-    try {
-      // First try to extract JSON from markdown code blocks
-      let jsonContent = content;
-      
-      // Remove markdown code block wrappers if present
-      const codeBlockMatch = content.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
-      if (codeBlockMatch) {
-        jsonContent = codeBlockMatch[1];
-      } else {
-        // Fallback to original regex if no code blocks
-        const match = content.match(/\[[\s\S]*\]/);
-        if (match) {
-          jsonContent = match[0];
+          Return JSON array: [{"startDate": "YYYY-MM-DDTHH:mm:ss.sssZ", "endDate": "YYYY-MM-DDTHH:mm:ss.sssZ", "title": "Topic", "description": "Details and resources"}]`
+        }]
+      }],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              startDate: { type: Type.STRING },
+              endDate: { type: Type.STRING },
+              title: { type: Type.STRING },
+              description: { type: Type.STRING }
+            },
+            required: ['startDate', 'endDate', 'title', 'description']
+          }
         }
       }
-      
-      // Clean the JSON content to remove control characters and common issues
-      const cleanedJsonContent = this.cleanJsonString(jsonContent);
-      
-      const events = JSON.parse(cleanedJsonContent);
-      return events.map((event: { startDate: string; endDate: string; title?: string; description?: string }) => ({
-        _id: crypto.randomUUID(),
+    });
+
+    try {
+      const content = result.text || '[]';
+      const events = JSON.parse(content);
+      const validatedEvents = z.array(CalendarEventSchema).parse(events);
+      return validatedEvents.map((event) => ({
+        _id: randomUUID(),
         startDate: event.startDate,
         endDate: event.endDate,
-        title: event.title || '',
-        description: event.description || ''
+        title: event.title,
+        description: event.description
       }));
     } catch (error) {
-      console.error('Failed to parse calendar events:', content);
-      console.error('Parse error:', error);
-      
-      // Try a more lenient approach - extract individual event objects
-      try {
-        const events = this.extractEventsFromText(content);
-        if (events.length > 0) {
-          console.log('Successfully extracted events using fallback method');
-          return events;
-        }
-      } catch (fallbackError) {
-        console.error('Fallback extraction also failed:', fallbackError);
+      console.error('Failed to parse calendar events:', error);
+      if (error instanceof z.ZodError) {
+        console.error('Validation errors:', error.errors);
       }
-      
       return [];
     }
   }
 
-  async execute_workflow(prompt: string, studyData?: StudyPlanData, onProgress?: (data: { type: string; content: string; step?: number }) => void): Promise<{
+  async execute_workflow(
+    prompt: string,
+    studyData?: StudyPlanData,
+    onProgress?: (data: { type: string; content: string; step?: number }) => void,
+    auth?: { tokens: { access_token?: string; refresh_token?: string } }
+  ): Promise<{
     studyGuide: string;
     events: CalendarEvent[];
+    googleDocUrl?: string;
   }> {
-    // Step 1: Create study guide
     onProgress?.({ type: 'progress', content: 'Creating study guide...', step: 1 });
     const studyGuide = await this.create_study_guide(prompt, studyData);
     onProgress?.({ type: 'study_guide', content: studyGuide, step: 1 });
-    
-    // Step 2: Find resources (for embedding in event descriptions)
+
     onProgress?.({ type: 'progress', content: 'Finding educational resources...', step: 2 });
-    const resources = await this.find_resources(studyGuide, studyData?.mediaPreferences as Record<string, unknown> | undefined);
+    const resources = await this.find_resources(studyGuide);
     onProgress?.({ type: 'resources', content: resources.join('\n'), step: 2 });
-    
-    // Step 3: Create calendar subevents with resource matching
+
     onProgress?.({ type: 'progress', content: 'Creating calendar events...', step: 3 });
     const events = await this.create_calendar_subevents(studyGuide, resources, prompt, studyData);
     onProgress?.({ type: 'events', content: JSON.stringify(events), step: 3 });
-    
-    return { studyGuide, events };
+
+    let googleDocUrl: string | undefined;
+    if (auth?.tokens?.access_token) {
+      onProgress?.({ type: 'progress', content: 'Creating Google Doc & syncing calendar...', step: 4 });
+      const results = await Promise.allSettled([
+        createGoogleDoc(studyGuide, `Study Guide: ${prompt.slice(0, 50)}`, auth)
+          .then(url => {
+            onProgress?.({ type: 'google_doc', content: url, step: 4 });
+            return url;
+          })
+          .catch(error => {
+            console.error('Failed to create Google Doc:', error);
+            return undefined;
+          }),
+        syncEventsToGoogleCalendar(events, auth)
+          .then(syncedEvents => {
+            onProgress?.({ type: 'calendar_synced', content: `${syncedEvents.length} events synced`, step: 5 });
+            return syncedEvents;
+          })
+          .catch(error => {
+            console.error('Failed to sync to Google Calendar:', error);
+            return [];
+          })
+      ]);
+
+      if (results[0].status === 'fulfilled') {
+        googleDocUrl = results[0].value;
+      }
+    }
+
+    return { studyGuide, events, googleDocUrl };
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt, perplexity_api_key, studyData, stream = false } = await req.json();
-    if (!prompt || !perplexity_api_key) {
-      return Response.json({ error: 'Missing prompt or API key' }, { status: 400 });
+    const body = await req.json();
+    const validationResult = AgentRequestSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return Response.json(
+        { error: 'Invalid request', details: validationResult.error.errors },
+        { status: 400 }
+      );
     }
 
-    const agent = new StudyAgent(perplexity_api_key);
+    const { prompt, studyData, stream } = validationResult.data;
 
-    // If streaming is requested, return Server-Sent Events
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      return Response.json(
+        { error: 'GEMINI_API_KEY environment variable is not set' },
+        { status: 500 }
+      );
+    }
+
+    const auth = await getGoogleAuth();
+    const agent = new StudyAgent(geminiApiKey);
+
     if (stream) {
       const encoder = new TextEncoder();
       const readableStream = new ReadableStream({
         async start(controller) {
           try {
-            await agent.execute_workflow(prompt, studyData, (data) => {
-              const formattedData = `data: ${JSON.stringify(data)}\n\n`;
-              controller.enqueue(encoder.encode(formattedData));
-            });
+            await agent.execute_workflow(
+              prompt,
+              studyData,
+              (data) => {
+                const formattedData = `data: ${JSON.stringify(data)}\n\n`;
+                controller.enqueue(encoder.encode(formattedData));
+              },
+              auth
+            );
 
-            // Send completion signal
             const completionData = `data: ${JSON.stringify({ type: 'complete' })}\n\n`;
             controller.enqueue(encoder.encode(completionData));
             controller.close();
           } catch (error) {
-            const errorData = `data: ${JSON.stringify({ 
-              type: 'error', 
-              content: error instanceof Error ? error.message : 'Unknown error' 
+            const errorData = `data: ${JSON.stringify({
+              type: 'error',
+              content: error instanceof Error ? error.message : 'Unknown error'
             })}\n\n`;
             controller.enqueue(encoder.encode(errorData));
             controller.close();
@@ -453,9 +421,21 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Default non-streaming response
-    const result = await agent.execute_workflow(prompt, studyData);
-    return Response.json(result);
+    const result = await agent.execute_workflow(prompt, studyData, undefined, auth);
+
+    try {
+      const validatedResult = AgentResponseSchema.parse(result);
+      return Response.json(validatedResult);
+    } catch (error) {
+      console.error('Response validation failed:', error);
+      if (error instanceof z.ZodError) {
+        return Response.json(
+          { error: 'Invalid response format', details: error.errors },
+          { status: 500 }
+        );
+      }
+      return Response.json(result);
+    }
   } catch (e: unknown) {
     const error = e as Error;
     console.error('AI Agent Error:', error);

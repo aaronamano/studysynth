@@ -61,39 +61,17 @@ export interface TopicInputProps {
   label: string
 }
 
-export interface MediaPreferencesProps {
-  preferences?: MediaPreferences;
-  setPreferences?: (prefs: MediaPreferences) => void;
-}
-
-export interface StudyPlanAdjusterProps {
-  studyPlan?: {
-    intensity: string;
-    learningStyle: string;
-  };
-  setStudyPlan?: (plan: { intensity: string; learningStyle: string }) => void;
-}
-
-export interface MediaPreferences {
-  videos: boolean;
-  diagrams: boolean;
-  readings: boolean;
-  summaries: boolean;
-}
-
-export interface StudyPlan {
-  intensity: string;
-  learningStyle: string;
+export interface DateRange {
+  startDate: string;
+  endDate: string;
 }
 
 export interface StudyPlanData {
   topics?: string[];
-  preferences?: MediaPreferences;
-  studyPlan?: StudyPlan;
   fileContent?: string;
   strengths?: string[];
   weaknesses?: string[];
-  mediaPreferences?: MediaPreferences;
+  dateRange?: DateRange;
 }
 
 export interface CalendarEvent {

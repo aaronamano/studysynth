@@ -7,10 +7,7 @@ import { parse } from 'date-fns/parse';
 import { startOfWeek } from 'date-fns/startOfWeek';
 import { getDay } from 'date-fns/getDay';
 import { enUS } from 'date-fns/locale/en-US';
-import DatePicker from 'react-datepicker';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Checkbox } from './ui/checkbox';
 import type { Event, CustomToolbarProps } from '@/lib/types';
@@ -70,7 +67,6 @@ const CustomToolbar = ({ label, onNavigate, onView }: CustomToolbarProps) => {
 
 export function CalendarView() {
   const { events, invalidateCache } = useCalendarEvents();
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
@@ -94,27 +90,6 @@ export function CalendarView() {
       invalidateCache();
     } else {
       console.error("Failed to delete event");
-    }
-  };
-
-  const handleUpdateEvent = async (updatedEvent: Event) => {
-    const isGoogleEvent = (updatedEvent as { isGoogleEvent?: boolean }).isGoogleEvent;
-    const response = await fetch('/api/calendar/sync-events', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        _id: updatedEvent._id,
-        title: updatedEvent.title,
-        startDate: updatedEvent.start,
-        endDate: updatedEvent.end,
-        description: updatedEvent.description || '',
-      }),
-    });
-    if (response.ok) {
-      invalidateCache();
-      setSelectedEvent(null);
-    } else {
-      console.error("Failed to update event");
     }
   };
 
@@ -193,7 +168,7 @@ export function CalendarView() {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-2">
         <Calendar localizer={localizer} events={events} startAccessor='start' endAccessor='end' style={{ height: 500 }}
-          onSelectEvent={event => setSelectedEvent(event)} view={view} onView={(view) => setView(view)} date={date} onNavigate={setDate}
+          view={view} onView={(view) => setView(view)} date={date} onNavigate={setDate}
           components={{ toolbar: CustomToolbar, event: CustomEvent }} eventPropGetter={eventStyleGetter} />
       </div>
       <div>
@@ -250,7 +225,6 @@ export function CalendarView() {
                               </div>
                             )}
                             <div className="flex space-x-2 pt-2 border-t border-amber-500/20">
-                              <Button onClick={() => setSelectedEvent(event)} className="bg-linear-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-sm px-3 py-1">Edit</Button>
                               <Button onClick={() => handleDeleteEvent(event)} className="bg-linear-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white text-sm px-3 py-1">Delete</Button>
                             </div>
                           </div>

@@ -34,7 +34,8 @@ export function useCalendarEvents() {
             setLoading(false);
             return;
           }
-        } catch {
+        } catch (error) {
+          console.error('Cache parse error:', error);
         }
       }
     }

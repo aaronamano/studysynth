@@ -1,15 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
+
+interface FileWithContent extends File {
+  extractedContent?: string;
+}
 import { LoginButton } from "@/components/login-button"
 import { useGoogleAuth } from "@/hooks/use-google-auth"
 import TopicInputSelector from "@/components/features/topic-input-selector"
 import TopicInput from "@/components/features/topic-input"
-import MediaPreferences from "@/components/features/media-preferences"
-import StudyPlanAdjuster from "@/components/features/study-plan-adjuster"
 import { CalendarView } from "@/components/calendar-view"
-import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
 import { Loader2, Sparkles, BookOpen, Calendar } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import ProgressWindow from "@/components/features/progress-window"
 
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const [isVisible, setIsVisible] = useState(false)
@@ -109,9 +113,98 @@ function AuthScreen() {
 }
 
 function Dashboard() {
-  const [constraints, setConstraints] = useState("")
+  const [studyStartDate, setStudyStartDate] = useState("")
+  const [studyEndDate, setStudyEndDate] = useState("")
   const [strengths, setStrengths] = useState([""])
   const [weaknesses, setWeaknesses] = useState([""])
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [studyGuideContent, setStudyGuideContent] = useState<string | null>(null)
+  const [topicValue, setTopicValue] = useState<File | string | null>(null)
+  const [progressData, setProgressData] = useState<Array<{ type: string; content: string; step?: number }>>([])
+  const [showProgress, setShowProgress] = useState(false)
+  const [isComplete, setIsComplete] = useState(false)
+
+  const handleGenerate = async () => {
+    if (!studyStartDate || !studyEndDate) {
+      window.alert('Please select both start and end dates')
+      return
+    }
+
+    setIsGenerating(true)
+    setProgressData([])
+    setShowProgress(true)
+    setIsComplete(false)
+
+    try {
+      let fileContent = undefined
+      if (topicValue instanceof File) {
+        fileContent = (topicValue as FileWithContent).extractedContent
+      }
+
+      const topicText = typeof topicValue === 'string' ? topicValue : ''
+      const response = await fetch('/api/ai-agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: `Create a study guide for: ${topicText}`,
+          studyData: {
+            fileContent,
+            strengths: strengths.filter(s => s.trim()),
+            weaknesses: weaknesses.filter(w => w.trim()),
+            dateRange: {
+              startDate: studyStartDate,
+              endDate: studyEndDate
+            }
+          },
+          stream: true
+        })
+      })
+
+      if (!response.ok) throw new Error('Failed to generate study plan')
+
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader!.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(6))
+            if (data.type === 'complete') {
+              setIsComplete(true)
+              setIsGenerating(false)
+            } else if (data.type === 'error') {
+              setProgressData(prev => [...prev, { type: 'error', content: data.content }])
+              setIsGenerating(false)
+            } else {
+              setProgressData(prev => [...prev, data])
+              if (data.type === 'study_guide' && data.content) {
+                setStudyGuideContent(data.content)
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to generate study plan:', error)
+      setProgressData(prev => [...prev, { type: 'error', content: error instanceof Error ? error.message : 'Unknown error' }])
+      setIsGenerating(false)
+    }
+  }
+
+  const handleCloseProgress = () => {
+    setShowProgress(false)
+    if (isComplete) {
+      setIsGenerating(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[#0a0908] relative overflow-hidden">
@@ -135,46 +228,72 @@ function Dashboard() {
           </div>
         </header>
 
-        <div className="px-8 pb-16 md:px-16">
+        <div className={`px-8 pb-16 md:px-16 transition-all duration-300 ${showProgress ? 'mr-96' : ''}`}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white/2 border border-white/5 rounded-xl p-6 backdrop-blur-sm">
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-px h-4 bg-amber-400/50" />
                 <span className="text-xs tracking-[0.15em] text-white/40 uppercase">Input</span>
               </div>
-              
+
               <div className="space-y-6">
-                <TopicInputSelector />
-                
+                <TopicInputSelector onValueChange={setTopicValue} />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <TopicInput 
-                    label="Strengths" 
-                    items={strengths} 
-                    setItems={setStrengths} 
-                    placeholder="Areas you're confident in..." 
+                  <TopicInput
+                    label="Strengths"
+                    items={strengths}
+                    setItems={setStrengths}
+                    placeholder="Areas you're confident in..."
                   />
-                  
-                  <TopicInput 
-                    label="Weaknesses" 
-                    items={weaknesses} 
-                    setItems={setWeaknesses} 
-                    placeholder="Areas that need improvement..." 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-xs tracking-wide text-white/50">Additional constraints</label>
-                  <Textarea
-                    value={constraints}
-                    onChange={(e) => setConstraints(e.target.value)}
-                    placeholder="e.g., Focus on basic concepts..."
-                    className="min-h-25 bg-white/2 border-white/10 text-white/80 placeholder:text-white/20 text-sm"
+
+                  <TopicInput
+                    label="Weaknesses"
+                    items={weaknesses}
+                    setItems={setWeaknesses}
+                    placeholder="Areas that need improvement..."
                   />
                 </div>
+
+                <div className="space-y-3">
+                  <label className="text-xs tracking-wide text-white/50">Study Period (Until Exam)</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs text-white/30">Start Date</label>
+                      <Input
+                        type="date"
+                        value={studyStartDate}
+                        onChange={(e) => setStudyStartDate(e.target.value)}
+                        className="bg-white/2 border-white/10 text-white/80 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-white/30">End Date (Exam Day)</label>
+                      <Input
+                        type="date"
+                        value={studyEndDate}
+                        onChange={(e) => setStudyEndDate(e.target.value)}
+                        className="bg-white/2 border-white/10 text-white/80 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                  className="w-full bg-linear-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    'Generate Study Plan'
+                  )}
+                </Button>
               </div>
-              
-              <MediaPreferences />
-              <StudyPlanAdjuster />
             </div>
 
             <div className="bg-white/2 border border-white/5 rounded-xl p-6 backdrop-blur-sm">
@@ -185,8 +304,25 @@ function Dashboard() {
               <CalendarView />
             </div>
           </div>
+
+          {studyGuideContent && (
+            <div className="mt-6 bg-white/2 border border-white/5 rounded-xl p-6 backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-px h-4 bg-amber-400/50" />
+                <span className="text-xs tracking-[0.15em] text-white/40 uppercase">Study Guide</span>
+              </div>
+              <div className="text-white/80 text-sm whitespace-pre-wrap">{studyGuideContent}</div>
+            </div>
+          )}
         </div>
       </div>
+
+      <ProgressWindow
+        isOpen={showProgress}
+        progressData={progressData}
+        onClose={handleCloseProgress}
+        isComplete={isComplete}
+      />
     </main>
   )
 }

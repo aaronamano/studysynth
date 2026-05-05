@@ -25,7 +25,6 @@ export default function TopicPdfImport({ value, onChange }: { value: File | null
     setExtractionStatus('extracting');
 
     try {
-      // Extract PDF content
       const formData = new globalThis.FormData();
       formData.append('pdf', file);
       
